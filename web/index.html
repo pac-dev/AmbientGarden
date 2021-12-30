@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Ambient Garden</title>
+		<meta name="viewport" content="width=300, initial-scale=1">
+		<style>
+			body { margin: 0; }
+			#welcome_modal {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				width: min(600px, 100% - 90px);
+				padding: 30px;
+				background-color: #222e;
+				border: 4px solid #b3532e;
+				color: #eee;
+			}
+			#welcome_ok {
+				margin: auto;
+				border: 3px solid #b3532e;
+				background-color: #333;
+				display: block;
+				color: #eee;
+				padding: 8px 20px;
+			}
+			.disabled {
+				opacity: 0.5;
+				pointer-events: none;
+				cursor: default;
+			}
+			.editor_tip {
+				position: absolute;
+				transform: translate(-50%, -50%);
+				color: white;
+				font-weight: bold;
+				text-shadow: 0 0 1px black, 0 0 1px black, 0 0 1px black, 0 0 1px black;
+				user-select: none;
+			}
+			#welcome_ok:hover { background-color: #3a3a3a; }
+			figure { margin: 10px; }
+			figcaption { margin-left: 100px; }
+		</style>
+	</head>
+	<body>
+		<div id=gl_container></div>
+		<div id=welcome_modal>
+			<figure>
+				<blockquote cite="https://emergencemagazine.org/essay/eleven-ways/">
+					The ancient society of trees is conspiratorial as well as collaborative,
+					a fruitful tension. Our dullard noses and understanding are as yet able
+					to grasp only the edges of these conversations.
+				</blockquote>
+				<figcaption>—David G. Haskell, <cite>Eleven Ways of Smelling a Tree</cite></figcaption>
+			</figure>
+			<br>
+			<button id=welcome_ok class=disabled>Loading...</button>
+		</div>
+		<script type="module" src="js/appFrozen.js"></script>
+	</body>
+</html>

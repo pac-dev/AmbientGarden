@@ -1,0 +1,159 @@
+import * as THREE from './lib/three.module.js';
+import { updateLeafSize, updateLeafTime } from './LeafMaterial.js';
+import { initTerrain, nearGroup, farGroup } from './Terrain.js';
+import { worldPromise, heightAt, ratio, clock } from './World.js';
+import { ShadowMapViewer } from './lib/ShadowMapViewer.js';
+import { beaconGroup, initBeaconPool, initTrackPool, updateTracks } from './beacons.js';
+import { updateResources } from './ResourcePool.js';
+import { updateGlows } from './Glow.js';
+import { runMode } from './runMode.js';
+import { editMode } from './editMode.js';
+
+const shadowDim = 1024;
+const container = document.getElementById('gl_container');
+const dLight = new THREE.DirectionalLight(0xffffff, 0.5);
+
+export const renderer = new THREE.WebGLRenderer({ antialias: true });
+export const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
+export const scene = new THREE.Scene();
+export const initGfx = () => {
+	container.style.touchAction = 'none';
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setPixelRatio(ratio);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFShadowMap;
+	container.appendChild(renderer.domElement);
+	initPos();
+	scene.background = new THREE.Color(0xcdb1d7);
+	const aLight = new THREE.AmbientLight(0x333333);
+	scene.add(aLight);
+	dLight.position.set(9, 20, 13);
+	dLight.castShadow = true;
+	Object.assign(dLight.shadow.camera, {
+		near: 1, far: 1400, left: -1024, right: 1024, bottom: -1024, top: 1024
+	});
+	dLight.shadow.mapSize.width = shadowDim;
+	dLight.shadow.mapSize.height = shadowDim;
+	dLight.shadow.bias = 0;
+	scene.add(dLight);
+	scene.add(dLight.target);
+	// const dHelper = new THREE.DirectionalLightHelper(dLight, 2048);
+	// scene.add(dHelper);
+	// const shadowMapHelper = new ShadowMapViewer(dLight);
+	// shadowMapHelper.size.set( shadowDim, shadowDim );
+	updateLeafSize(dLight, window);
+};
+
+const teleport = (x, z) => camera.position.set(x, 50, z+200);
+const initPos = () => {
+	const aspect = window.innerWidth / window.innerHeight;
+	const x = (aspect - 0.83) * ((50 - 100) / (2.5 - 0.83)) - 50; // 2.5 -> -100 ; 0.83 -> -50
+	const z = (aspect - 0.83) * ((580 - 620) / (2.5 - 0.83)) + 620; // 2.5 -> 580 ; 0.83 -> 620
+	teleport(x, z);
+};
+
+let terrainReady = false;
+export const initWorld = async trackLoader => {
+	await worldPromise;
+	scene.add(beaconGroup);
+	initTerrain(scene, new THREE.Vector3());
+	initBeaconPool();
+	initTrackPool(trackLoader);
+	updateResources(camera.position.x, camera.position.z);
+	terrainReady = true;
+};
+
+let stats;
+export const startStats = Stats => {
+	stats = new Stats();
+	container.appendChild(stats.dom);
+};
+
+const walkCaster = new THREE.Raycaster();
+const mouseCaster = new THREE.Raycaster();
+mouseCaster.layers.set(1);
+const mouse = new THREE.Vector2();
+export const intersectMouse = () => {
+	if (!mouse.x && !mouse.y) return;
+	mouseCaster.setFromCamera(mouse, camera);
+	const mouseHits = mouseCaster.intersectObject(scene, true);
+	return mouseHits[0];
+};
+
+let lastAudioTime = 0;
+const stepWorld = (gfx=true) => {
+	clock.advance(gfx);
+	if (clock.diff < 1/80) return;
+	
+	// camera.position.add(cameraDeriv);
+	if (runMode.enabled) {
+		camera.rotation.y += (runMode.tgtYaw - camera.rotation.y) * 0.2;
+		if (runMode.stepFn) runMode.stepFn(clock.worldTime);
+		camera.position.lerp(runMode.tgtPos, clock.diff * 0.01 * 60);
+	}
+
+	const dropMe = editMode.enabled ? editMode.orbiter.target : camera.position;
+	if (terrainReady) {
+		walkCaster.set(new THREE.Vector3().copy(dropMe).setY(1000), new THREE.Vector3(0, -1, 0));
+		const inter = (walkCaster.intersectObject(farGroup, true))[0];
+		let iy;
+		if (inter) {
+			iy = inter.point.y + 50;
+		} else {
+			iy = heightAt(dropMe.x, dropMe.z) + 50;
+		}
+		const ydiff = iy - dropMe.y;
+		dropMe.y += ydiff;
+		if (editMode.enabled) camera.position.y += ydiff;
+	}
+	/** @type { THREE.Vector3 } */
+	const zax = new THREE.Vector3(0, 0, 1);
+	const tgt = dLight.target.position;
+	tgt.copy(camera.position).applyAxisAngle(zax, 0.7).multiplyScalar(0.25).round().multiplyScalar(4).applyAxisAngle(zax, -0.7);
+	// console.log(tgt.x, tgt.y, tgt.z)
+	dLight.position.copy(tgt).add(new THREE.Vector3(0, 700, 0).applyAxisAngle(zax, -0.7));
+	updateLeafTime();
+	updateGlows();
+	editMode.update();
+	runMode.update();
+
+	if (clock.worldTime - lastAudioTime > 0.3) {
+		if (terrainReady) updateResources(camera.position.x, camera.position.z);
+		updateTracks(camera.position.x, camera.position.z);
+		lastAudioTime = clock.worldTime;
+	}
+};
+
+const animate = () => {
+	requestAnimationFrame(animate);
+	stepWorld(true);
+	renderer.render(scene, camera);
+	// shadowMapHelper.render(renderer);
+	if (stats) stats.update();
+};
+
+export const startMainLoop = () => {
+	setInterval(stepWorld, 125, false);
+	animate();
+};
+
+export const addMainListeners = () => {
+	window.addEventListener('resize', () => {
+		if (document.getElementById('welcome_modal')) initPos();
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		// shadowMapHelper.updateForWindowResize();
+		updateLeafSize(dLight, window);
+	});
+	renderer.domElement.addEventListener('mousemove', event => {
+		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+	}, false);
+
+	renderer.domElement.addEventListener('mouseleave', () => {
+		mouse.x = 0;
+		mouse.y = 0;
+	}, false);
+};
