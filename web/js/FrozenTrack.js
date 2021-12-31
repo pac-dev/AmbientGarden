@@ -34,7 +34,6 @@ class FrozenTrack extends Track {
 		beginPart(introPart);
 	}
 	setAmp(x) {
-		x = x+0.7/(x*(x-1)+1)-0.7;
 		this.introAu.volume = x;
 		this.loop1Au.volume = x;
 		this.loop2Au.volume = x;

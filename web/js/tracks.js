@@ -3,7 +3,7 @@ import { clock } from './World.js';
 
 export class Track {
 	constructor(proximity) {
-		this.lastAmp = proximity;
+		this.lastAmp = proximity*0.3+0.7;
 		this.lastAmpTime = clock.worldTime;
 		this.lastLivingTime = clock.worldTime;
 	}
