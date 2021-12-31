@@ -1,7 +1,5 @@
 import * as THREE from './lib/three.module.js';
 import { noise2D } from './noise.js';
-import { genMap } from './mapgen.js';
-import { genFar } from './fargen.js';
 
 export let clock = {
 	lastTime: Date.now(),
@@ -40,31 +38,37 @@ export let mapcnv;
 
 let far, farw, farh, farw2, farh2, farcnv;
 
-const loadImg = async src => {
-	const img = new Image();
-	img.src = src;
-	const cnv = document.createElement('canvas');
-	const ctx = cnv.getContext('2d');
-	await img.decode();
-	[mapw, maph] = [img.width, img.height];
-	[mapw2, maph2] = [Math.floor(mapw / 2), Math.floor(maph / 2)];
-	[cnv.width, cnv.height] = [mapw, maph];
-	ctx.drawImage(img, 0, 0);
-	return [ctx.getImageData(0, 0, mapw, maph), cnv];
+const loadMap = async inMap => {
+	if (typeof inMap === 'string') {
+		const img = new Image();
+		img.src = inMap;
+		const cnv = document.createElement('canvas');
+		const ctx = cnv.getContext('2d');
+		await img.decode();
+		const [w, h] = [img.width, img.height];
+		[cnv.width, cnv.height] = [w, h];
+		ctx.drawImage(img, 0, 0);
+		return [
+			ctx.getImageData(0, 0, w, h), w, h,
+			Math.floor(w / 2), Math.floor(h / 2), cnv
+		];
+	} else {
+		const cnv = await inMap();
+		const [w, h] = [cnv.width, cnv.height];
+		return [
+			cnv.getContext('2d').getImageData(0, 0, w, h), w, h,
+			Math.floor(w / 2), Math.floor(h / 2), cnv
+		];
+	}
 };
 
-export const worldPromise = (async () => {
-	// [map, mapcnv] = await loadImg('map2.png');
-	mapcnv = await genMap();
-	[mapw, maph] = [mapcnv.width, mapcnv.height];
-	[mapw2, maph2] = [Math.floor(mapw / 2), Math.floor(maph / 2)];
-	map = mapcnv.getContext('2d').getImageData(0, 0, mapw, maph);
+export const loadNearMap = async inMap => {
+	[map, mapw, maph, mapw2, maph2, mapcnv] = await loadMap(inMap);
+};
 
-	farcnv = await genFar();
-	[farw, farh] = [farcnv.width, farcnv.height];
-	[farw2, farh2] = [Math.floor(farw / 2), Math.floor(farh / 2)];
-	far = farcnv.getContext('2d').getImageData(0, 0, farw, farh);
-})();
+export const loadFarMap = async inMap => {
+	[far, farw, farh, farw2, farh2, farcnv] = await loadMap(inMap);
+};
 
 const mod = (x, n) => ((x % n ) + n ) % n;
 const mirror = (x, n) => n - Math.abs(Math.abs(x) % (n * 2) - n);
@@ -138,3 +142,64 @@ export const heightAt = (x, z) => {
 	const farh = farLerp(...world2farCoord(x, z)) / 255
 	return nearh * 60 + farh * 700
 }
+
+// {c1x, c1y, c1r, c2x, c2y, c2r, c3x, c3y, c3r, c4x, c4y, c4r, y12}
+export const terrainGlsl = /*glsl*/`
+float c1r = 170.666;
+float c1x = 85.333;
+float c1y = 512.0;
+float c2r = 114.9204;
+float c2x = 321.038;
+float c2y = 350.745;
+float c3r = 114.9204;
+float c3x = 190.9614;
+float c3y = 161.2545;
+float c4r = 170.6666;
+float c4x = 426.666;
+float c4y = 0.0;
+float y12 = 96.365;
+
+vec2 world2mapPos(vec2 wpos) {
+	return 0.4 * vec2(wpos.x, -wpos.y)/mapsz + 0.5;
+}
+vec2 miwrap(vec2 p) {
+	return abs(mod(vec2(p.x, 1.0-p.y), 2.0) - 1.0);
+}
+vec3 pos2c(vec2 pos) {
+	if (pos.y < y12) {
+		return vec3(c4x, c4y, c4r);
+	}
+	if (pos.y - pos.x < 0.0) {
+		return vec3(c3x, c3y, c3r);
+	}
+	if (pos.y < mapsz - y12) {
+		return vec3(c2x, c2y, c2r);
+	}
+	return vec3(c1x, c1y, c1r);
+}
+float mapPos2roadDist(vec2 pos) {
+	if ((pos.x < mapsz/4.0) || (pos.x > 3.0*mapsz/4.0)) {
+		return 1.0;
+	}
+	vec3 c = pos2c(pos); // cx, cy, radius
+	float dif = sqrt((pos.x-c.x)*(pos.x-c.x) + (pos.y-c.y)*(pos.y-c.y)) - c.z;
+	return min(1.0, abs(dif) * 0.03);
+}
+const float rthresh = 0.16;
+const float rthreshin = rthresh - 0.01;
+vec4 terrain(vec2 coord) {
+	vec2 mapPos = world2mapPos(coord);
+	// road amt = proportion of (dist-deriv -> dist+deriv) under thresh
+	// eg. thresh = 5, rdist = 4, rdif = 2 -> 3/4
+	float rdist = mapPos2roadDist(miwrap(mapPos)*mapsz);
+	float rdif = dFdy(rdist);
+	float dmin = min(rdist - rdif, rdist + rdif);
+	float dmax = max(rdist - rdif, rdist + rdif);
+	float ramt = (rthresh - dmin) / (dmax - dmin);
+	ramt = clamp(ramt, 0.0, 1.0);
+	// float ramt = 1.0 - step(rthresh, rdist);
+
+	vec4 ret = texture2D(maptex, mapPos);
+	ret.rgb = mix(ret.rgb, vec3(0.75, 0.75, 0.7), ramt);
+	return ret;
+}`;

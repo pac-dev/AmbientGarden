@@ -105,7 +105,7 @@ const updatePool = (pool, camX, camZ) => {
 		pool.add(res, camX, camZ);
 		pool.loaded.push(res);
 	}
-	if (pool.afterUpdate) pool.afterUpdate(pool);
+	if (pool.afterUpdate) pool.afterUpdate(pool, camX, camZ);
 };
 
 export const updateResources = (camX, camZ) => {

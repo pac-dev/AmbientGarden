@@ -99,6 +99,7 @@ const trackId = (() => {
 })();
 
 const sq = x => x*x;
+let lastProxSetTime = 0;
 
 /** @param {import('./ResourcePool.js').Resource} resource */
 const proximity = (resource, camX, camZ) => {
@@ -129,15 +130,15 @@ export const initTrackPool = loader => addResourcePool({
 	remove(res) {
 		loader.stopTrack(res);
 		stopGlow(res.record);
+	},
+	afterUpdate(pool, camX, camZ) {
+		updateWake();
+		if (clock.worldTime - lastProxSetTime > 0.1) {
+			for (let resource of pool.loaded) {
+				if (!resource.track) continue;
+				resource.track.setProximity(proximity(resource, camX, camZ));
+			}
+			lastProxSetTime = clock.worldTime;
+		}
 	}
 });
-
-export const updateTracks = (camX, camZ) => {
-	const pool = getResourcePool('tracks');
-	if (!pool) return;
-	updateWake();
-	for (let resource of pool.loaded) {
-		if (!resource.track) continue;
-		resource.track.setProximity(proximity(resource, camX, camZ));
-	}
-}

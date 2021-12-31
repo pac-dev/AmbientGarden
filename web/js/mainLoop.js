@@ -1,9 +1,8 @@
 import * as THREE from './lib/three.module.js';
 import { updateLeafSize, updateLeafTime } from './LeafMaterial.js';
 import { initTerrain, nearGroup, farGroup } from './Terrain.js';
-import { worldPromise, heightAt, ratio, clock } from './World.js';
-import { ShadowMapViewer } from './lib/ShadowMapViewer.js';
-import { beaconGroup, initBeaconPool, initTrackPool, updateTracks } from './beacons.js';
+import { heightAt, ratio, clock, loadNearMap, loadFarMap } from './World.js';
+import { beaconGroup, initBeaconPool, initTrackPool } from './beacons.js';
 import { updateResources } from './ResourcePool.js';
 import { updateGlows } from './Glow.js';
 import { runMode } from './runMode.js';
@@ -54,8 +53,9 @@ const initPos = () => {
 };
 
 let terrainReady = false;
-export const initWorld = async trackLoader => {
-	await worldPromise;
+export const initWorld = async ({trackLoader, nearMap, farMap}) => {
+	await loadNearMap(nearMap);
+	await loadFarMap(farMap);
 	scene.add(beaconGroup);
 	initTerrain(scene, new THREE.Vector3());
 	initBeaconPool();
@@ -81,7 +81,6 @@ export const intersectMouse = () => {
 	return mouseHits[0];
 };
 
-let lastAudioTime = 0;
 const stepWorld = (gfx=true) => {
 	clock.advance(gfx);
 	if (clock.diff < 1/80) return;
@@ -117,12 +116,7 @@ const stepWorld = (gfx=true) => {
 	updateGlows();
 	editMode.update();
 	runMode.update();
-
-	if (clock.worldTime - lastAudioTime > 0.3) {
-		if (terrainReady) updateResources(camera.position.x, camera.position.z);
-		updateTracks(camera.position.x, camera.position.z);
-		lastAudioTime = clock.worldTime;
-	}
+	if (terrainReady) updateResources(camera.position.x, camera.position.z);
 };
 
 const animate = () => {

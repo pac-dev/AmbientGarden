@@ -2,7 +2,11 @@ import { addMainListeners, initGfx, initWorld, startMainLoop } from './mainLoop.
 import { FrozenTrackLoader } from './FrozenTrack.js';
 import { initUI } from './ui.js';
 
-initWorld(new FrozenTrackLoader());
+initWorld({
+	trackLoader: new FrozenTrackLoader(),
+	nearMap: 'img/nearmap.png',
+	farMap: 'img/farmap.png'
+});
 initGfx();
 addMainListeners();
 initUI();

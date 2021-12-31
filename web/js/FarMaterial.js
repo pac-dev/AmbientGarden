@@ -1,6 +1,5 @@
 import * as THREE from './lib/three.module.js'
-import { mapcnv } from './World.js'
-import { terrainGlsl } from './mapgen.js'
+import { mapcnv, terrainGlsl } from './World.js'
 
 const farVert = /*glsl*/`
 #include <common>

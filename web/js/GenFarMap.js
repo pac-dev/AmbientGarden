@@ -1,6 +1,6 @@
 import { mkPerlin2D, mulberry32 } from './noise.js'
 const dist = (x, y) => Math.sqrt(x*x+y*y)
-export const genFar = async show => {
+export const genFarMap = async show => {
 	const mapsz = 512
 	const perlin = mkPerlin2D(1)
 	const perlin2 = mkPerlin2D(12)
@@ -26,7 +26,7 @@ export const genFar = async show => {
 	addHills(cnvData.data)
 	ctx.putImageData(cnvData, 0, 0)
 	var canvasURI = canvas.toDataURL()
-	if (show) document.body.insertAdjacentHTML('afterend',`<a download="fargen.png" href="${canvasURI}">ok</a>`)
+	if (show) document.body.insertAdjacentHTML('afterend',`<a download="fargen.png" href="${canvasURI}">download</a>`)
 	return canvas
 }
 
