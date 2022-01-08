@@ -1,15 +1,19 @@
-import { runMode } from './runMode.js';
-
-const ok = document.getElementById('welcome_ok');
+import { runMode, toggleAutopilot } from './runMode.js';
 const modalKeyListener = e => { if (e.key === 'Enter') onModalOK() };
 
 // startMonolith().then(() => {
 export const initUI = () => {
 	window.document.addEventListener('keydown', modalKeyListener);
-	ok.classList.remove('disabled');
+	ok.disabled = false;
 	ok.innerText = 'Begin';
 	ok.addEventListener('click', onModalOK);
+	autoOn.disabled = false;
+	autoOn.addEventListener('click', onSwitchAuto(true));
+	autoOff.addEventListener('click', onSwitchAuto(false));
 };
+
+/** @type {HTMLButtonElement} */
+const ok = document.getElementById('welcome_ok');
 
 export const closeModal = () => {
 	const domEle = document.getElementById('welcome_modal');
@@ -21,4 +25,20 @@ export const closeModal = () => {
 const onModalOK = () => {
 	closeModal();
 	runMode.enable();
+};
+
+/** @type {HTMLButtonElement} */
+const autoOn = document.getElementById('autopilot_on');
+/** @type {HTMLButtonElement} */
+const autoOff = document.getElementById('autopilot_off');
+/** @type {HTMLSpanElement} */
+const autoStatus = document.getElementById('autopilot_status');
+export const setAutopilotUi = on => {
+	autoStatus.innerText = on ? 'On' : 'Off';
+	autoOn.classList.toggle('hidden', on);
+	autoOff.classList.toggle('hidden', !on);
+};
+const onSwitchAuto = on => () => {
+	toggleAutopilot(on);
+	setAutopilotUi(on);
 };

@@ -64,7 +64,6 @@ class TeasynthTrack extends Track {
 		this.node.connect(this.audioContext.destination);
 	}
 	setParam(name, val) {
-		if (this.url.includes('vibrem')) console.log('setting param', name, val);
 		this.node.port.postMessage({type: 'set param', name, val});
 	}
 	setAmp(val) {

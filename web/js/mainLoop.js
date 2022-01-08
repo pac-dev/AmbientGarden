@@ -5,7 +5,7 @@ import { heightAt, ratio, clock, loadNearMap, loadFarMap } from './World.js';
 import { beaconGroup, initBeaconPool, initTrackPool } from './beacons.js';
 import { updateResources } from './ResourcePool.js';
 import { updateGlows } from './Glow.js';
-import { runMode } from './runMode.js';
+import { runMode, xz } from './runMode.js';
 import { editMode } from './editMode.js';
 
 const shadowDim = 1024;
@@ -87,9 +87,11 @@ const stepWorld = (gfx=true) => {
 	
 	// camera.position.add(cameraDeriv);
 	if (runMode.enabled) {
-		camera.rotation.y += (runMode.tgtYaw - camera.rotation.y) * 0.2;
-		if (runMode.stepFn) runMode.stepFn(clock.worldTime);
-		camera.position.lerp(runMode.tgtPos, clock.diff * 0.01 * 60);
+		if (runMode.stepFn) runMode.stepFn();
+		camera.rotation.y += (runMode.tgtYaw - camera.rotation.y) * runMode.yawSmoothing;
+		const newPos = xz(camera.position).lerp(runMode.tgtXz, clock.diff * 0.01 * 60);
+		camera.position.x = newPos.x;
+		camera.position.z = newPos.y;
 	}
 
 	const dropMe = editMode.enabled ? editMode.orbiter.target : camera.position;
