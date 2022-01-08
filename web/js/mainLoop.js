@@ -88,7 +88,8 @@ const stepWorld = (gfx=true) => {
 	// camera.position.add(cameraDeriv);
 	if (runMode.enabled) {
 		if (runMode.stepFn) runMode.stepFn();
-		camera.rotation.y += (runMode.tgtYaw - camera.rotation.y) * runMode.yawSmoothing;
+		let smoothing = (clock.worldTime - runMode.dragTime > 2) ? 0.005 : 0.1;
+		camera.rotation.y += (runMode.tgtYaw - camera.rotation.y) * smoothing;
 		const newPos = xz(camera.position).lerp(runMode.tgtXz, clock.diff * 0.01 * 60);
 		camera.position.x = newPos.x;
 		camera.position.z = newPos.y;

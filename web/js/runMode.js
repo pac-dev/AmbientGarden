@@ -4,7 +4,7 @@ import { beginWakeIntro } from './beacons.js';
 import { clock } from './World.js';
 import { setAutopilotUi } from './ui.js';
 
-let lastMouseX, lastMouseY, totalMovement, lastDragTime = 0;
+let lastMouseX, lastMouseY, totalMovement;
 const yawAccel = x => Math.tanh(x*6-2.5)*0.5+1.5;
 
 const onPointerDown = event => {
@@ -15,8 +15,7 @@ const onPointerDown = event => {
 	renderer.domElement.addEventListener('pointermove', onCapturedMove);
 	renderer.domElement.addEventListener('pointerup', onCapturedUp);
 	runMode.tgtYaw = camera.rotation.y;
-	runMode.yawSmoothing = 0.1;
-	lastDragTime = clock.worldTime;
+	runMode.dragTime = clock.worldTime;
 };
 
 const onCapturedMove = event => {
@@ -29,16 +28,17 @@ const onCapturedMove = event => {
 
 	lastMouseX = event.clientX;
 	lastMouseY = event.clientY;
-	lastDragTime = clock.worldTime;
+	runMode.dragTime = clock.worldTime;
 };
 
 export const xz = inVec3 => new THREE.Vector2(inVec3.x, inVec3.z);
 
 const onCapturedUp = event => {
+	runMode.dragging = false;
 	renderer.domElement.releasePointerCapture(event.pointerId);
 	renderer.domElement.removeEventListener('pointermove', onCapturedMove);
 	renderer.domElement.removeEventListener('pointerup', onCapturedUp);
-	if (totalMovement > 0.01) return;
+	if (totalMovement > 0.01 || clock.worldTime - runMode.dragTime > 2) return;
 	const mouseHit = intersectMouse();
 	if (!mouseHit) return;
 	setAutopilotUi(false);
@@ -145,10 +145,11 @@ const closestWaypoint = refXz => {
 	return bestId;
 };
 
+const tau = Math.PI * 2;
 export const toggleAutopilot = toggle => {
 	if (toggle) {
 		tgtLockMesh.visible = false;
-		let startPos, endPos, posTime, endTime, startYaw, yawTime;
+		let startPos, endPos, posTime, endTime, startYaw, endYaw, yawTime;
 		const setWaypoint = waypoint => {
 			console.log('moving to: ', waypointId, waypoint)
 			startPos = runMode.tgtXz.clone();
@@ -158,6 +159,7 @@ export const toggleAutopilot = toggle => {
 			endTime = clock.worldTime + dur;
 			yawTime = clock.worldTime;
 			startYaw = runMode.tgtYaw;
+			endYaw = waypoint.yaw;
 		};
 		waypointId = closestWaypoint(runMode.tgtXz);
 		setWaypoint(waypoints[waypointId]);
@@ -168,10 +170,10 @@ export const toggleAutopilot = toggle => {
 			}
 			const progress = (clock.worldTime - posTime)/(endTime - posTime);
 			runMode.tgtXz = startPos.clone().lerp(endPos, progress);
-			if (clock.worldTime - lastDragTime > 2) {
+			if (clock.worldTime - runMode.dragTime > 2) {
+				const yawNo360 = endYaw + Math.round((startYaw - endYaw) / tau) * tau;
 				const yawProg = (clock.worldTime - yawTime)/(endTime - yawTime);
-				runMode.tgtYaw = (1 - yawProg) * startYaw + yawProg * waypoints[waypointId].yaw;
-				runMode.yawSmoothing = 0.005;
+				runMode.tgtYaw = (1 - yawProg) * startYaw + yawProg * yawNo360;
 			} else {
 				yawTime = clock.worldTime;
 				startYaw = runMode.tgtYaw;
@@ -214,5 +216,5 @@ const update = () => {
 
 export const runMode = {
 	enable, disable, update,
-	enabled: false, tgtPos: undefined, tgtYaw: undefined, stepFn: undefined, yawSmoothing: 0.1
+	enabled: false, tgtPos: undefined, tgtYaw: undefined, stepFn: undefined, dragTime: 0
 };
