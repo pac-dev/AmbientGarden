@@ -2,9 +2,8 @@ import * as THREE from './lib/three.module.js'
 import { leafMaterial, leafDepth } from './LeafMaterial.js'
 import { noise1D } from './noise.js';
 import { PtBuf } from './Points.js'
-import { heightAt } from './World.js'
+import { heightAt, randomPointRange } from './World.js'
 
-const loDist = 300, hiDist = 12000, shape = 0.25;
 const up = new THREE.Vector3(0, 1, 0);
 const front = new THREE.Vector3(0, 0, 1);
 const gold = 2.4;
@@ -56,8 +55,7 @@ export const addTreball = o => {
 
 		pos.toArray(buf.posBuf, buf.i * 3)
 		o.getColor(pos).toArray(buf.colBuf, buf.i * 3)
-		const dfac = 1 - (Math.random() / (1+shape));
-		const minDist = loDist + (shape/dfac - shape) * (hiDist - loDist);
+		const minDist = randomPointRange();
 		buf.setMinDist(minDist)
 		buf.advance()
 	}

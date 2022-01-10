@@ -16,6 +16,13 @@ export let clock = {
 	}
 };
 
+export const beaconLoadDist = 2000, pointHiDist = 1950, pointLoDist = 300;
+const distribution = x => {
+	x = 1 - x;
+	return x * x * 0.6 + x * 0.4;
+};
+export const randomPointRange = () => pointLoDist + distribution(Math.random()) * (pointHiDist - pointLoDist);
+
 export const ratio = 1; // window.devicePixelRatio // * 0.5
 
 export const tileSide = 192;

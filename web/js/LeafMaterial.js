@@ -1,5 +1,5 @@
 import * as THREE from './lib/three.module.js'
-import { ratio, clock } from './World.js'
+import { ratio, clock, pointHiDist } from './World.js'
 
 const ptEyeVert = /*glsl*/`
 #include <common>
@@ -46,19 +46,19 @@ void main() {
 	float d = distance(worldPosition.xz, cameraPosition.xz);
 	float shade = smoothstep(1152.0*0.5, 1152.0*1.5, d);
 	vColor = mix(shaded, vColor, shade);
-	float fog = smoothstep(1152.0*0.5, 1152.0*2.5, d);
+	float fog = smoothstep(${(pointHiDist*0.5).toFixed(1)}, ${pointHiDist.toFixed(1)}, d);
 	vColor = mix(vColor, vec3(0.61, 0.73, 0.86)*0.9, fog);
 
-	float unitSz = 1.2;
-	gl_PointSize = vpSize.y * (projectionMatrix[1][1] * unitSz / gl_Position.w + 0.0015);
+	float unitSz = 1.1;
+	gl_PointSize = vpSize.y * (projectionMatrix[1][1] * unitSz / gl_Position.w + 0.003);
 
 	if (d > mindist) {
 		gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-	} else if (d > mindist * 0.75) {
-		gl_PointSize *= (d - mindist) * -4.0 / mindist;
+	} else if (d > mindist * 0.9) {
+		gl_PointSize *= (d - mindist) * -10.0 / mindist;
 	}
-	float kk = gl_Position.x / gl_Position.w;
-	gl_PointSize *= kk*kk + 1.0;
+	float edgeness = gl_Position.x / gl_Position.w;
+	gl_PointSize *= edgeness*edgeness*0.5 + 1.0;
 }
 `
 

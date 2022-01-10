@@ -1,7 +1,7 @@
 import * as THREE from './lib/three.module.js'
 import { initTree, updateTree, disposeTree } from './Tree.js';
 import { addTreball, disposeTreball } from './Treball.js';
-import { farCoord2world, clock } from './World.js';
+import { farCoord2world, clock, beaconLoadDist } from './World.js';
 import { addResourcePool, getResourcePool } from './ResourcePool.js'
 import { addGlow, startGlow, stopGlow } from './Glow.js';
 import { runMode } from './runMode.js';
@@ -28,7 +28,7 @@ export const getMeta = record => {
 };
 
 export const beaconGroup = new THREE.Group();
-const beaconMinSquare = 2000*2000;
+const beaconMinSquare = beaconLoadDist*beaconLoadDist;
 let wakeMul = 0.7;
 let trackWake = 250*wakeMul;
 let trackWakeSquare = trackWake*trackWake;

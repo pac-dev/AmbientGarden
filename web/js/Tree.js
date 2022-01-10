@@ -1,9 +1,8 @@
 import * as THREE from './lib/three.module.js'
 import { leafMaterial, leafDepth } from './LeafMaterial.js'
-import { PtBuf, shuffleArray } from './Points.js'
-import { heightAt } from './World.js'
+import { PtBuf } from './Points.js'
+import { heightAt, randomPointRange } from './World.js'
 
-const loDist = 300, hiDist = 12000, shape = 0.25
 const gold = 2.4
 
 export class Species {
@@ -139,8 +138,7 @@ const updateLeaves = (o, pts) => {
 		segments.push(mkBranch(o, si))
 	}
 	for (let ini=0; ini<o.segPts; ini++) {
-		const dfac = 1 - ((ini / o.segPts) / (1+shape))
-		const minDist = loDist + (shape/dfac - shape) * (hiDist - loDist)
+		const minDist = randomPointRange();
 		for (let seg of segments) {
 			mkLeaf(o, seg, o.shuf[ini], minDist, buf)
 		}
