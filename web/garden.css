@@ -23,6 +23,10 @@ body { margin: 0; }
 figure { margin: 10px; }
 figcaption { margin-left: 100px; }
 #gl_container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
 	height: calc(100% - 50px);
 	overflow: hidden;
 }
