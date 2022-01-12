@@ -5,6 +5,32 @@ const inDur = 12;
 const loopDur = 18;
 const xfDur = 2;
 const margin = 0.1;
+const addAudio = (() => {
+	/** @type {DynamicsCompressorNode} */
+	let compressor;
+	/** @type {GainNode} */
+	let preAmp;
+	/** @type {AudioContext} */
+	let context;
+	return url => {
+		if (!context) {
+			context = new AudioContext();
+			preAmp = context.createGain();
+			compressor = context.createDynamicsCompressor();
+			preAmp.connect(compressor);
+			compressor.connect(context.destination);
+			preAmp.gain.value = 1.75;
+		}
+		const au = new Audio(url);
+		const source = context.createMediaElementSource(au);
+		source.connect(compressor);
+		au.cleanup = () => {
+			au.pause();
+			source.disconnect();
+		};
+		return au;
+	}
+})();
 
 class FrozenTrack extends Track {
 	constructor(introAu, loop1Au, loop2Au, amp) {
@@ -39,9 +65,9 @@ class FrozenTrack extends Track {
 		this.loop2Au.volume = x;
 	}
 	stop() {
-		this.introAu.pause();
-		this.loop1Au.pause();
-		this.loop2Au.pause();
+		this.introAu.cleanup();
+		this.loop1Au.cleanup();
+		this.loop2Au.cleanup();
 		delete this.introAu;
 		delete this.loop1Au;
 		delete this.loop2Au;
@@ -51,9 +77,9 @@ class FrozenTrack extends Track {
 export class FrozenTrackLoader extends TrackLoader {
 	/** @param {import('./ResourcePool.js').Resource} resource */
 	async startTrack(resource, proximity) {
-		const introAu = new Audio(resource.record.introUrl);
-		const loop1Au = new Audio(resource.record.loopUrl);
-		const loop2Au = new Audio(resource.record.loopUrl);
+		const introAu = addAudio(resource.record.introUrl);
+		const loop1Au = addAudio(resource.record.loopUrl);
+		const loop2Au = addAudio(resource.record.loopUrl);
 		await new Promise(resolve => introAu.addEventListener('canplaythrough', resolve));
 		const track = new FrozenTrack(introAu, loop1Au, loop2Au, proximity);
 		resource.track = track;
