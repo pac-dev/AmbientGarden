@@ -124,8 +124,10 @@ export const initTrackPool = loader => addResourcePool({
 	add(res, camX, camZ) {
 		Object.assign(res, res.record);
 		res.trackId = trackId();
-		loader.startTrack(res, proximity(res, camX, camZ));
-		startGlow(res.record);
+		(async () => {
+			await loader.startTrack(res, proximity(res, camX, camZ));
+			startGlow(res.record);
+		})();
 	},
 	remove(res) {
 		loader.stopTrack(res);

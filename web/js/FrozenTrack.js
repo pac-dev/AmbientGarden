@@ -28,6 +28,7 @@ const addAudio = (() => {
 			au.pause();
 			source.disconnect();
 		};
+		au.loaded = new Promise(resolve => au.addEventListener('canplaythrough', resolve));
 		return au;
 	}
 })();
@@ -80,7 +81,7 @@ export class FrozenTrackLoader extends TrackLoader {
 		const introAu = addAudio(resource.record.introUrl);
 		const loop1Au = addAudio(resource.record.loopUrl);
 		const loop2Au = addAudio(resource.record.loopUrl);
-		await new Promise(resolve => introAu.addEventListener('canplaythrough', resolve));
+		await Promise.all([introAu.loaded, loop1Au.loaded, loop2Au.loaded]);
 		const track = new FrozenTrack(introAu, loop1Au, loop2Au, proximity);
 		resource.track = track;
 		getMeta(resource.record).track = track;
