@@ -52,8 +52,8 @@ export const beaconRecords = [
 	{desc: 'sand 3/2*3/4 + 0.5 600', x: 780, z: -1794},
 	{desc: 'sand 3/4 + 0.5 600', x: 1177, z: -1579},
 	{desc: 'sand 1/2*3/4 + 0.5 600', x: 1398, z: -1776},
-	{desc: 'fracsin 4*3/4 3*8/5*3/4', x: 1425, z: -987},
-	{desc: 'fracbot 4*3/4 3*8/5*3/4', x: 1526, z: -1045},
+	{desc: 'fracsin 4*3/4 3*8/5*3/4', x: 1548, z: -943},
+	{desc: 'fracbot 4*3/4 3*8/5*3/4', x: 1354, z: -1024},
 	{desc: 'reso 1 4/3 5/3 + 1', x: 17, z: 583},
 	{desc: 'reso 2/3 2/3 7/6 + 1', x: 152, z: 237},
 	{desc: 'reso 4/3 16/9 20/9 + 1', x: -72, z: -43},
@@ -62,9 +62,11 @@ export const beaconRecords = [
 	{desc: 'vibrem 6 19/4', x: 481, z: -56},
 	{desc: 'sand 3/5 + 0.7', x: 702, z: -85},
 	{desc: 'sand 1 + 0.5', x: 751, z: -368},
-	{desc: 'reso 1 7/6 1/2', x: 1240, z: -461},
-	{desc: 'sand 7/6 + 1 360', x: 1439, z: -781},
-	{desc: 'sand 1 + 0.6', x: 1358, z: -515},
+	{desc: 'reso 1 7/6 1/2', x: 1260, z: -234},
+	{desc: 'sand 7/6 + 1 360', x: 1336, z: -749},
+	{desc: 'sand 1 + 0.6', x: 1111, z: -295},
+	{desc: 'fracsin 4*3/4 3*8/5*3/4', x: 1158, z: -908},
+	{desc: 'fracsin 4 6', x: 1162, z: -619},
 ];
 
 const parseToken = (tok, isExtra) => {

@@ -1,8 +1,8 @@
 import("stdfaust.lib");
 lp1 = hslider("lp1", 100, 50, 800, 0.001);
-f1 = hslider("f1", 100, 50, 200, 0.0001);
-f2 = hslider("f2", 123, 50, 200, 0.0001);
-f3 = hslider("f3", 87, 50, 200, 0.0001);
+f1 = hslider("f1", 100, 30, 330, 0.0001);
+f2 = hslider("f2", 123, 30, 330, 0.0001);
+f3 = hslider("f3", 87, 30, 330, 0.0001);
 pulseAmt = hslider("pulse", 0, 0, 1, 0.0001);
 noiseAmt = hslider("noise", 0, 0, 1, 0.0001);
 

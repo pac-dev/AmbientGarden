@@ -36,9 +36,15 @@ export class Graph {
             node.setGraph(this);
             allNodes.push(node);
             node.inNodes.forEach(inNode => addNode(inNode));
+            node.params.forEach(param => {
+                if (param.source) addNode(param.source);
+            });
         };
         addNode(this.out);
         this.sortedNodes = topologicalSort(allNodes);
+        if (this.sortedNodes.length !== allNodes.length) {
+            throw new Error('These nodes are... half-connected. It simply should not be.');
+        }
         this.host.events.on('can make processors', async () => {
             for (let node of this.sortedNodes) {
                 const paramProcessor = node.makeParamProcessor();

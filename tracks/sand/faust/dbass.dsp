@@ -7,8 +7,8 @@ noise2amt = vslider("noise2", 0, 0, 1, 0.0001);
 
 base = no.noise;
 
-noise1 = base * noise1amt : fi.lowpass(1, lp1) : fi.lowpass(2, lp2);
-noise2 = base * noise2amt * 0.15 : fi.lowpass(2, 5000) : fi.highpass(1, 5000) : _  * (no.lfnoise0(50) > 0.5);
+noise1 = base * noise1amt * 0.5 : fi.lowpass(1, lp1) : fi.lowpass(2, lp2);
+noise2 = base * noise2amt * 0.1 : fi.lowpass(2, 5000) : fi.highpass(1, 5000) : _  * (no.lfnoise0(10) > 0.5);
 
 exc = noise1 + noise2 : fi.highpass(2, 80);
 

@@ -7,14 +7,17 @@ const fau = new FaustNode('faust/dbass.dsp', {freq: 0, noise1: 0, noise2: 0, lp1
 const post = new FaustNode('faust/post.dsp');
 fau.connect(post).connect(graph.out);
 
-const flatten = graph.addParam('flatten');
 graph.addParam('freq1', {def: 50, min: 20, max: 200}).connect(fau.freq);
+const flatten = graph.addParam('flatten');
 graph.addParam('lp1', {def: 3300, min: 100, max: 10000}).connect(fau.lp1);
+
+let smoothFlat;
+graph.ctrl(t => { smoothFlat = flatten.value*(1-1/(t*t*0.15+1)); });
 
 const playWave = (param, amp) => {
     graph.ctrlDuration(Math.PI*2, sec => {
         param.value = (0.5-Math.cos(sec)*0.5)*amp;
-        param.value = 0.3*flatten.value + param.value*(1-flatten.value);
+        param.value = 0.3*smoothFlat + param.value*(1-smoothFlat);
     });
 };
 

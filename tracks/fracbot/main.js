@@ -1,5 +1,5 @@
 import { Graph, FaustNode, Seq, Poly } from '../_lib/tealib.js';
-import { getMixFreqs } from './ut.js';
+import { mixFreqs } from '../fraclib.js';
 
 export const sampleRate = 44100;
 const graph = new Graph({sampleRate});
@@ -33,7 +33,7 @@ const evil = (a, b) => Math.max(a, b) / Math.min(a, b) < 10/9;
 let intro = 3;
 const seq = new Seq(graph);
 seq.schedule(async () => {
-    const mfs = getMixFreqs(fParam1.value, fParam2.value);
+    const mfs = mixFreqs(fParam1.value, fParam2.value, 6);
     let flowlen = 3, flowdir = 2;
     while(true) {
         const ofs = Math.floor((flowlen-2)*0.13);

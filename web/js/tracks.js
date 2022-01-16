@@ -9,7 +9,9 @@ export class Track {
 	}
 	setAmp(val) { throw new Error('Override Track.setAmp!'); }
 	setProximity(val) {
-		this.lastAmp = this.lastAmp / Math.exp((clock.worldTime - this.lastAmpTime)*0.25);
+		// 0.25 -> 12s
+		// 0.15 -> 20s
+		this.lastAmp = this.lastAmp / Math.exp((clock.worldTime - this.lastAmpTime)*0.15);
 		if (val > this.lastAmp) this.lastAmp = val;
 		this.setAmp(this.lastAmp);
 		this.lastAmpTime = clock.worldTime;
