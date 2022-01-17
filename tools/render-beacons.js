@@ -4,9 +4,6 @@ import { loadTrack, createRenderer } from '../../Teasynth/tools/renderlib.js';
 import { beaconRecords } from '../web/js/beaconRecords.js';
 
 const args = parse(Deno.args);
-const inDur = args.intro ?? 12;
-const loopDur = args.loop ?? 18;
-const xfDur = args.xf ?? 2;
 const tracksDir = './tracks/';
 const webDir = './web/';
 
@@ -17,10 +14,18 @@ const renderBeacon = async beacon => {
 		return;
 	}
 	console.log('rendering: '+beacon.desc);
+	let inDur = args.intro ?? 12;
+	let loopDur = args.loop ?? 18;
+	const xfDur = args.xf ?? 2;
 	const track = await loadTrack(tracksDir+beacon.trackName+'/main.js');
 	track.setParams(beacon.trackParams);
 	const r = createRenderer(track);
 	const inPipe = await r.addOutput(webDir+beacon.introUrl);
+	if (track.host.willInterupt) {
+		delete track.host.willInterupt;
+		inDur = 666;
+		loopDur = 666;
+	}
 	await r.render(inDur);
 	r.fadeOut(inPipe, xfDur);
 	const loopPipe = await r.addOutput(webDir+beacon.loopUrl);

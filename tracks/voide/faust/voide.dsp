@@ -22,8 +22,8 @@ sop_o_q = (11, 10, 28, 32, 41);
 sop_u_q = (7, 12, 16, 21, 25);
 
 // exciter
-saw = os.sawtooth(f1) * sawAmt : fi.lowpass(1, f1*1.5) : fi.lowpass(2, 500+f1);
-noise = no.noise * 0.005 * noiseAmt : fi.ffbcombfilter(1/50 : ba.sec2samp, 2/f1 : ba.sec2samp, 0.7) : fi.lowpass(1, 2600 + f1*2);
+saw = os.sawtooth(f1) * sawAmt * 0.4 : fi.lowpass(1, f1*1.5) : fi.lowpass(2, 500+f1);
+noise = no.noise * 0.01 * noiseAmt : fi.ffbcombfilter(1/50 : ba.sec2samp, 1/f1 : ba.sec2samp, 0.9) : fi.lowpass(2, 600 + f1*1.5);
 exc = saw + noise;
 // body
 vowel = os.osc(0.3)*0.12+0.18;//0.3;//os.osc(4)*0.7+0.71;
@@ -34,7 +34,7 @@ form(i) = fi.resonbp(f, q, a) with {
     a = linterp(sop_a_amp,  sop_o_amp, i);
 };
 hform = fi.resonbp(5500, 10, 0.2);
-anti = fi.notchw(300, 3000) : fi.notchw(300, 4500);
+anti = fi.notchw(300, 2000) : fi.notchw(600, 3500);
 forms = _ <: par(i, 5, form(i)), hform :> anti;
 syn = exc : forms;
 

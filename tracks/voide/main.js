@@ -1,6 +1,7 @@
 import { Graph, Seq, FaustNode, CtrlSine, SampleProcessor } from '../_lib/tealib.js';
 import { mixFreqs } from '../fraclib.js';
 
+host.willInterupt = true;
 export const sampleRate = 44100;
 const graph = new Graph({sampleRate});
 
@@ -55,7 +56,9 @@ seq.schedule(async () => {
         fTgt = freqs[freqi];
         await seq.play(3);
         pressTgt = 0;
-        await seq.play(3);
+        await seq.play(1);
+        if (freqi === 1) host.wantInterrupt = true;
+        await seq.play(2);
         freqi = (freqi + 1) % freqs.length;
         fTgt = freqs[freqi]*0.75;
         await seq.play(1);

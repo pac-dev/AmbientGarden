@@ -1,8 +1,6 @@
 import { getMeta } from './beacons.js';
 import { Track, TrackLoader } from './tracks.js';
 
-const inDur = 12;
-const loopDur = 18;
 const xfDur = 2;
 const margin = 0.1;
 const addAudio = (() => {
@@ -43,9 +41,9 @@ class FrozenTrack extends Track {
 		/** @type {HTMLAudioElement} */
 		this.loop2Au = loop2Au;
 		this.setAmp(amp);
-		const loop2Part = { au: loop2Au, dur: loopDur + xfDur };
-		const loop1Part = { au: loop1Au, dur: loopDur + xfDur, next: loop2Part };
-		const introPart = { au: introAu, dur: inDur, next: loop1Part };
+		const loop2Part = { au: loop2Au, dur: loop1Au.duration - xfDur };
+		const loop1Part = { au: loop1Au, dur: loop1Au.duration - xfDur, next: loop2Part };
+		const introPart = { au: introAu, dur: introAu.duration - xfDur, next: loop1Part };
 		loop2Part.next = loop1Part;
 		const beginPart = part => {
 			const listener = () => {

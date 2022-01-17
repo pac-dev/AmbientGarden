@@ -1,6 +1,8 @@
 import { Graph, FaustNode, Seq, Poly } from '../_lib/tealib.js';
+import { mainHost as host } from '../host.js';
 import { mixFreqs } from '../fraclib.js';
 
+host.willInterupt = true;
 export const sampleRate = 44100;
 const graph = new Graph({sampleRate});
 
@@ -28,6 +30,8 @@ graph.ctrl(tSeconds => {
         voice.noise.value = pulse(20, voice.notePos)*voice.amp;
     });
 });
+let spliceFreq, noteN = 0;
+
 post.connect(graph.out);
 const evil = (a, b) => Math.max(a, b) / Math.min(a, b) < 10/9;
 let intro = 3;
@@ -43,7 +47,17 @@ seq.schedule(async () => {
         for (let fpos = 0; fpos < flowlen * 2; fpos++) {
             intro = Math.max(intro - 0.5, 0);
             poly.note(freqs[fpos % freqs.length], (0.2 + 0.8/(fpos+1)));
-            await seq.play(0.3 + 2 / (flowlen*0.5 + 5) + (fpos % 2) + Math.round(intro));
+            await seq.play(0.3 + 2 / (flowlen*0.5 + 5) + Math.round(intro));
+            if (noteN++ > 15 && fpos % 2 && spliceFreq === freqs[fpos % freqs.length]) {
+                noteN = 0;
+                host.wantInterrupt = true;
+            }
+            if (noteN > 10 && !spliceFreq && fpos % 2) {
+                noteN = 0;
+                spliceFreq = freqs[fpos % freqs.length];
+                host.wantInterrupt = true;
+            }
+            await seq.play(fpos % 2);
         }
         if (flowdir > 0 && flowlen >= hiLen.value) flowdir = -flowdir;
         if (flowdir < 0 && flowlen <= 3) flowdir = -flowdir;
