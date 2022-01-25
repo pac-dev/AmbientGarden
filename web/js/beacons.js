@@ -1,6 +1,7 @@
 import * as THREE from './lib/three.module.js'
 import { initTree, updateTree, disposeTree } from './Tree.js';
 import { addTreball, disposeTreball } from './Treball.js';
+import { addTrelsys, disposeTrelsys } from './Trelsys.js';
 import { farCoord2world, clock, beaconLoadDist } from './World.js';
 import { addResourcePool, getResourcePool } from './ResourcePool.js'
 import { addGlow, startGlow, stopGlow } from './Glow.js';
@@ -58,6 +59,8 @@ const loadBeacon = resource => {
 		updateTree(resource.form);
 	} else if (resource.record.formName === 'treball') {
 		resource.form = addTreball(formParams);
+	} else if (resource.record.formName === 'trelsys') {
+		resource.form = addTrelsys(formParams);
 	} else {
 		throw new Error('Unknown beacon form: '+resource.record.formName);
 	}

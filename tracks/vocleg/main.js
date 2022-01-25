@@ -1,4 +1,5 @@
 import { Graph, Seq, FaustNode, CtrlSine, SampleProcessor } from '../_lib/tealib.js';
+import { mainHost as host } from '../host.js';
 import { mixFreqs } from '../fraclib.js';
 
 host.willInterupt = true;

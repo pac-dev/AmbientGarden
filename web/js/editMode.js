@@ -16,6 +16,7 @@ const getBeaconFreqs = beacon => {
 		case 'vibrem':
 		case 'fracsin':
 		case 'fracbot':
+		case 'vocleg':
 			return [p.freq1, p.freq2];
 		case 'reso':
 			return [p.freq1, p.freq2, p.freq3];
@@ -23,6 +24,8 @@ const getBeaconFreqs = beacon => {
 			return [...new Array(7)].map((_,i) => (i+4)*p.freq1);
 		case 'sand':
 			return [p.freq1];
+		case 'vocdrone':
+			return p.freq2 ? [p.freq1, p.freq2] : [p.freq1];
 		default:
 			throw new Error('what is '+beacon.trackName);
 	  }

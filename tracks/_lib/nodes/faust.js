@@ -171,6 +171,7 @@ export class FaustNode extends TeaNode {
         return teaParam;
     }
     process(frame) {
+        if (this.muted) return this.instance.outView;
         this.usedParams.forEach(p => 
             this.module.factory.setParamValue(this.instance.dspOfs, p.faustIndex, p.teaParam.value)
         );

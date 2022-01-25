@@ -19,7 +19,6 @@ export const addTreball = o => {
 	o.cup = o.cup ?? 1;
 	o.separation = o.separation ?? 0;
 	o.numPts = 400;
-	o.shuf = [...Array(o.segPts).keys()]
 	if (o.colorFn === 'pick') {
 		const cs = o.colorParams.map(c =>
 			new THREE.Color().setHSL(...c)
