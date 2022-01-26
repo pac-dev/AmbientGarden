@@ -13,7 +13,7 @@ window.beaconRecords = beaconRecords;
 /**
  * @typedef {Object} BeaconMeta
  * @property {import('./tracks.js').Track} [track]
- * @property {THREE.Sprite} [glow]
+ * @property {Array.<THREE.Mesh>} [glow]
  * @property {number} [startTime]
  * @property {boolean} [transforming]
  * @property {boolean} [selected]

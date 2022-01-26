@@ -249,10 +249,11 @@ export const mkNearMaterial = () => {
 		vertexShader: nearVert,
 		fragmentShader: nearFrag,
 		lights: true,
+		// transparent: for near-terrain to fade onto far-terrain
 		transparent: true,
-		// polygonOffset: true,
-		// polygonOffsetFactor: 400.0,
-		// polygonOffsetUnits: 400.0
+		// no-depthWrite: for drawing the "sound waves" on top of all terrain
+		// terrain still somehow occludes beacons (good, but... how?)
+		depthWrite: false,
 	})
 	return ret
 }
