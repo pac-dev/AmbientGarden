@@ -192,7 +192,7 @@ const willow = (rec, x) => {
 const reachy = (rec, x) => {
 	rec.formName = 'trelsys';
 	rec.formParams = {
-		height: 70,
+		height: 80,
 		branching: lev => 3-Math.max(0, lev-3),
 		branchPts: (lev, id) => 2+lev+lev*(id%4),//+Math.max(0, 2-lev),
 		twist: lev => 0.02+Math.min(2, lev)*0.03,

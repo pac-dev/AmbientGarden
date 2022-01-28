@@ -7,6 +7,7 @@ import { updateResources } from './ResourcePool.js';
 import { updateGlows } from './Glow.js';
 import { runMode, xz } from './runMode.js';
 import { editMode } from './editMode.js';
+import { enableTips } from './Tips.js';
 
 const shadowDim = 1024;
 const container = document.getElementById('gl_container');
@@ -60,6 +61,7 @@ export const initWorld = async ({trackLoader, nearMap, farMap}) => {
 	initTerrain(scene, new THREE.Vector3());
 	initBeaconPool();
 	initTrackPool(trackLoader);
+	enableTips();
 	updateResources(camera.position.x, camera.position.z);
 	terrainReady = true;
 };

@@ -143,7 +143,7 @@ const select = () => {
 	for (let res of getResourcePool('beacons').loaded) {
 		getMeta(res.record).selected = false;
 	}
-	for (let tipRes of getResourcePool('tips').loaded) {
+	for (let tipRes of getResourcePool('editor tips').loaded) {
 		if (!tipRes.attached.record) continue;
 		if (tipRes.domEle.style.display !== 'block') continue;
 		getMeta(tipRes.attached.record).selected = true;
@@ -210,8 +210,8 @@ const addTransformerPool = () => addResourcePool({
 	}
 });
 
-const addTipsPool = () => addResourcePool({
-	name: 'tips',
+const addEditorTipsPool = () => addResourcePool({
+	name: 'editor tips',
 	*generate(camX, camZ) {
 		for (let res of getResourcePool('beacons').loaded) {
 			const dSquare = sq(camX - res.x) + sq(camZ - res.z);
@@ -333,7 +333,7 @@ const enable = () => {
 	teleport(camera.position.x, camera.position.z-200);
 	addTransformerPool();
 	addHarmolinePool();
-	addTipsPool();
+	addEditorTipsPool();
 	window.document.addEventListener('keydown', editKeyListener);
 	editMode.enabled = true;
 };
@@ -343,7 +343,7 @@ const disable = () => {
 	editMode.orbiter.dispose();
 	removeResourcePool('harmolines');
 	removeResourcePool('transformers');
-	removeResourcePool('tips');
+	removeResourcePool('editor tips');
 	window.document.removeEventListener('keydown', editKeyListener);
 	editMode.enabled = false;
 };

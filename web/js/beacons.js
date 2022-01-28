@@ -51,8 +51,8 @@ const updateWake = () => {
 /** @param {import('./ResourcePool.js').Resource} resource */
 const loadBeacon = resource => {
 	const formParams = Object.assign(
-		{x: resource.x, z: resource.z},
-		resource.record.formParams
+		resource.record.formParams,
+		{x: resource.x, z: resource.z}
 	);
 	if (resource.record.formName === 'tree') {
 		resource.form = initTree(formParams);

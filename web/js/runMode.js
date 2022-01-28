@@ -3,6 +3,7 @@ import { intersectMouse, renderer, camera, scene } from './mainLoop.js';
 import { beginWakeIntro } from './beacons.js';
 import { clock } from './World.js';
 import { setAutopilotUi } from './ui.js';
+import { disableTips, enableTips, tipsEnabled } from './Tips.js';
 
 let lastMouseX, lastMouseY, totalMovement;
 const yawAccel = x => Math.tanh(x*6-2.5)*0.5+1.5;
@@ -75,10 +76,12 @@ const enable = () => {
 	beginWakeIntro();
 	renderer.domElement.addEventListener('pointerdown', onPointerDown);
 	// renderer.domElement.addEventListener('pointercancel', onPointerCancel);
+	if (!tipsEnabled) enableTips();
 	runMode.enabled = true;
 };
 
 const disable = () => {
+	if (tipsEnabled) disableTips();
 	if (!runMode.enabled) return;
 	renderer.domElement.removeEventListener('pointerdown', onPointerDown);
 	// this is checked by the track pool, so it stops all tracks

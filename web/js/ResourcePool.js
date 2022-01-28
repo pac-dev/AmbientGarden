@@ -4,8 +4,9 @@
  * @property {boolean} [wanted]
  * @property {number} x
  * @property {number} z
+ * @property {number} [dSquare]
  * @property {import('./beaconRecords.js').BeaconRecord} [record]
- * @property {*} [form]
+ * @property {import('./lib/three.module.js').Object3D} [form]
  * @property {*} [zone]
  * @property {string} [trackName]
  * @property {string} [trackId]
