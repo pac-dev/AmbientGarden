@@ -3,7 +3,7 @@ import { Graph, Seq, FaustNode } from '../_lib/tealib.js';
 export const sampleRate = 44100;
 const graph = new Graph({sampleRate});
 
-const fau = new FaustNode('faust/dbass.dsp', {freq: 0, noise1: 0, noise2: 0, lp1: 3300, lp2: 580});
+const fau = new FaustNode('faust/contrabass.dsp', {freq: 0, noise1: 0, noise2: 0, lp1: 3300, lp2: 580});
 const post = new FaustNode('faust/post.dsp');
 fau.connect(post).connect(graph.out);
 

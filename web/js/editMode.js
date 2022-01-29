@@ -13,18 +13,18 @@ import { beaconRecords, parseTrack } from './beaconRecords.js';
 const getBeaconFreqs = beacon => {
 	const p = beacon.trackParams;
 	switch (beacon.trackName) {
-		case 'vibrem':
-		case 'fracsin':
-		case 'fracbot':
-		case 'vocleg':
+		case 'vibraphones':
+		case 'sine-drone':
+		case 'harmonic-bottle':
+		case 'soprano':
 			return [p.freq1, p.freq2];
-		case 'reso':
+		case 'resonant-drone':
 			return [p.freq1, p.freq2, p.freq3];
-		case 'harmou':
+		case 'harmonic-series':
 			return [...new Array(7)].map((_,i) => (i+4)*p.freq1);
-		case 'sand':
+		case 'contrabass':
 			return [p.freq1];
-		case 'vocdrone':
+		case 'vocal-overtones':
 			return p.freq2 ? [p.freq1, p.freq2] : [p.freq1];
 		default:
 			throw new Error('what is '+beacon.trackName);

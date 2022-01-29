@@ -6,7 +6,7 @@ host.willInterupt = true;
 export const sampleRate = 44100;
 const graph = new Graph({sampleRate});
 
-const fau = new FaustNode('faust/voide.dsp', {f1: 0, noise: 0, saw: 0});
+const fau = new FaustNode('faust/soprano.dsp', {f1: 0, noise: 0, saw: 0});
 const post = new FaustNode('faust/post.dsp');
 fau.connect(post).connect(graph.out);
 

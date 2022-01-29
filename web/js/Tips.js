@@ -70,7 +70,7 @@ const addTipsPool = () => addResourcePool({
 	add(res) {
 		res.domEle = document.createElement('div');
 		const rec = res.attached.record;
-		res.domEle.innerHTML = rec.trackName + ' <i>(edit)</i>';
+		res.domEle.innerHTML = rec.trackName.replace(/\-/g, ' ') + ' <i>(edit)</i>';
 		res.domEle.onclick = () => {
 			console.log(rec.desc);
 		}
