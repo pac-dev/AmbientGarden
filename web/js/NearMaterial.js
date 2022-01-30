@@ -251,9 +251,6 @@ export const mkNearMaterial = () => {
 		lights: true,
 		// transparent: for near-terrain to fade onto far-terrain
 		transparent: true,
-		// no-depthWrite: for drawing the "sound waves" on top of all terrain
-		// terrain still somehow occludes beacons (good, but... how?)
-		depthWrite: false,
 	})
 	return ret
 }

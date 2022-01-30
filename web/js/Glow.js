@@ -10,11 +10,15 @@ const addWave = grp => {
 	// material per object required for individual opacities
 	const waveMat = new THREE.MeshBasicMaterial({
 		map: waveMap,
-		// no-depthWrite appears to prevent glitches when many waves are intersecting
 		depthWrite: false,
+		depthTest: false,
 		blending: THREE.AdditiveBlending,
 		transparent: true,
-		opacity: 0
+		opacity: 0,
+		// use stencil to keep waves under beacon's LeafMaterial
+		stencilWrite: true,
+		stencilFunc: THREE.EqualStencilFunc,
+		stencilRef: 0
 	});
 	const wave = new THREE.Mesh(planeGeo, waveMat);
 	wave.rotation.x = Math.PI * -.5;

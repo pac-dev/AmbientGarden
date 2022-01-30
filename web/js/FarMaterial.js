@@ -52,8 +52,6 @@ export const mkFarMaterial = () => {
 		fragmentShader: farFrag,
 		// transparent: for the mountains to fade intead of popping in
 		transparent: true,
-		// no-depthWrite: for drawing the "sound waves" on top of all terrain
-		depthWrite: false,
 	})
 	return ret
 }

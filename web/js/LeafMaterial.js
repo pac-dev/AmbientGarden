@@ -128,6 +128,10 @@ const initLeafMaterials = () => {
 		fragmentShader: ptEyeFrag,
 		fog: true,
 		lights: true,
+		// use stencil to stay on top of Glow waves
+		stencilWrite: true,
+		stencilRef: 1,
+		stencilZPass: THREE.ReplaceStencilOp
 	})
 	leafDepth = new THREE.RawShaderMaterial({
 		uniforms: THREE.UniformsUtils.merge([
