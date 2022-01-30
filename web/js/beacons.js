@@ -1,10 +1,10 @@
 import * as THREE from './lib/three.module.js'
-import { initTree, updateTree, disposeTree } from './Tree.js';
-import { addTreball, disposeTreball } from './Treball.js';
-import { addTrelsys, disposeTrelsys } from './Trelsys.js';
-import { farCoord2world, clock, beaconLoadDist } from './World.js';
-import { addResourcePool, getResourcePool } from './ResourcePool.js'
-import { addGlow, startGlow, stopGlow } from './Glow.js';
+import { initTree, updateTree, disposeTree } from './tree.js';
+import { addTreball, disposeTreball } from './treball.js';
+import { addTrelsys, disposeTrelsys } from './trelsys.js';
+import { farCoord2world, clock, beaconLoadDist } from './world.js';
+import { addResourcePool, getResourcePool } from './resourcePool.js'
+import { addGlow, startGlow, stopGlow } from './glow.js';
 import { runMode } from './runMode.js';
 import { beaconRecords } from './beaconRecords.js';
 
@@ -53,7 +53,7 @@ const updateWake = () => {
  * @property {import('./beaconRecords.js').BeaconRecord} record
  * @property {import('./lib/three.module.js').Object3D} [form]
  * 
- * @typedef {import('./ResourcePool.js').Resource & _BeaconResource} BeaconResource
+ * @typedef {import('./resourcePool.js').Resource & _BeaconResource} BeaconResource
  */
 
 /** @param {BeaconResource} resource */
@@ -122,7 +122,7 @@ let lastProxSetTime = 0;
  * @property {Object} [trackParams]
  * @property {import('./tracks.js').Track} [track]
  * 
- * @typedef {import('./ResourcePool.js').Resource & _TrackResource} TrackResource
+ * @typedef {import('./resourcePool.js').Resource & _TrackResource} TrackResource
  */
 
 /** @param {TrackResource} resource */
@@ -159,7 +159,7 @@ export const initTrackPool = loader => addResourcePool({
 		loader.stopTrack(res);
 		stopGlow(res.record);
 	},
-	/** @param {import('./ResourcePool.js').ResourcePool & {loaded: Array.<TrackResource>}} pool */
+	/** @param {import('./resourcePool.js').ResourcePool & {loaded: Array.<TrackResource>}} pool */
 	afterUpdate(pool, camX, camZ) {
 		updateWake();
 		if (clock.worldTime - lastProxSetTime > 0.1) {

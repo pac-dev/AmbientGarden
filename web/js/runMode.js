@@ -1,9 +1,9 @@
 import * as THREE from './lib/three.module.js';
 import { intersectMouse, renderer, camera, scene } from './mainLoop.js';
 import { beginWakeIntro } from './beacons.js';
-import { clock } from './World.js';
+import { clock } from './world.js';
 import { setAutopilotUi } from './ui.js';
-import { disableTips, enableTips, tipsEnabled } from './Tips.js';
+import { disableTips, enableTips, tipsEnabled } from './tips.js';
 
 let lastMouseX, lastMouseY, totalMovement;
 const yawAccel = x => Math.tanh(x*6-2.5)*0.5+1.5;

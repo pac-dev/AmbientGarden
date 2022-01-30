@@ -1,8 +1,8 @@
 import { getMeta } from './beacons.js';
 import * as THREE from './lib/three.module.js';
 import { renderer, camera, scene } from './mainLoop.js';
-import { addResourcePool, getResourcePool, removeResourcePool } from './ResourcePool.js';
-import { clock } from './World.js';
+import { addResourcePool, getResourcePool, removeResourcePool } from './resourcePool.js';
+import { clock } from './world.js';
 
 const dotMaterial = new THREE.PointsMaterial({
 	// color: 0xeeeeee,
@@ -71,7 +71,7 @@ export const disableTips = () => {
  * @property {TipResource} [below]
  * @property {TipResource} [above]
  * 
- * @typedef {import('./ResourcePool.js').Resource & _TipResource} TipResource
+ * @typedef {import('./resourcePool.js').Resource & _TipResource} TipResource
  */
 
 const sq = x => x*x;
@@ -105,7 +105,7 @@ const addTipsPool = () => addResourcePool({
 	compare(res1, res2) {
 		return res1.beacon === res2.beacon;
 	},
-	/** @param {import('./ResourcePool.js').ResourcePool & {loaded: Array.<TipResource>}} pool */
+	/** @param {import('./resourcePool.js').ResourcePool & {loaded: Array.<TipResource>}} pool */
 	afterUpdate(pool) {
 		let tipIdx = 0;
 		const camDir = camera.getWorldDirection(new THREE.Vector3());

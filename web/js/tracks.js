@@ -1,5 +1,5 @@
 import { getMeta } from './beacons.js';
-import { clock } from './World.js';
+import { clock } from './world.js';
 
 export class Track {
 	constructor(proximity) {

@@ -1,5 +1,5 @@
 import * as THREE from './lib/three.module.js'
-import { ratio, clock, pointHiDist } from './World.js'
+import { ratio, clock, pointHiDist } from './world.js'
 
 const ptEyeVert = /*glsl*/`
 #include <common>

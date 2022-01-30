@@ -1,7 +1,7 @@
 import * as THREE from './lib/three.module.js'
-import { leafMaterial, leafDepth } from './LeafMaterial.js'
-import { PtBuf } from './Points.js'
-import { heightAt, randomPointRange } from './World.js'
+import { leafMaterial, leafDepth } from './leafMaterial.js'
+import { PtBuf } from './points.js'
+import { heightAt, randomPointRange } from './world.js'
 
 const gold = 2.4
 

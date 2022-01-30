@@ -1,5 +1,5 @@
 import { addMainListeners, initGfx, initWorld, startMainLoop } from './mainLoop.js';
-import { FrozenTrackLoader } from './FrozenTrack.js';
+import { FrozenTrackLoader } from './frozenTrack.js';
 import { initUI } from './ui.js';
 
 initWorld({

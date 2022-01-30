@@ -1,6 +1,6 @@
 import * as THREE from './lib/three.module.js'
 import { getMeta } from './beacons.js';
-import { clock } from './World.js';
+import { clock } from './world.js';
 
 const waveMap = new THREE.TextureLoader().load('img/wave512.png');
 const planeGeo = new THREE.PlaneGeometry(20, 20);

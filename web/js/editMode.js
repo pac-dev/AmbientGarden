@@ -2,8 +2,8 @@ import * as THREE from './lib/three.module.js';
 import { OrbitControls } from './lib/OrbitControls.js'
 import { TransformControls } from './lib/TransformControls.js'
 import { intersectMouse, renderer, camera, scene } from './mainLoop.js';
-import { addResourcePool, getResourcePool, removeResourcePool, updateResources } from './ResourcePool.js';
-import { heightAt } from './World.js';
+import { addResourcePool, getResourcePool, removeResourcePool, updateResources } from './resourcePool.js';
+import { heightAt } from './world.js';
 import { getMeta, trackHush } from './beacons.js';
 import { closeModal } from './ui.js';
 import { runMode } from './runMode.js';
@@ -76,7 +76,7 @@ const teleport = (x, z) => {
  * @property {number} [dissonance]
  * @property {import('./lib/three.module.js').Mesh} [mesh]
  * 
- * @typedef {import('./ResourcePool.js').Resource & _HarmolineResource} HarmolineResource
+ * @typedef {import('./resourcePool.js').Resource & _HarmolineResource} HarmolineResource
  */
 
 const addHarmolinePool = () => addResourcePool({
@@ -174,7 +174,7 @@ const forSelected = fn => {
  * @property {import('./beacons.js').BeaconResource} beacon
  * @property {import('./lib/three.module.js').Object3D} [form]
  * 
- * @typedef {import('./ResourcePool.js').Resource & _TransformerResource} TransformerResource
+ * @typedef {import('./resourcePool.js').Resource & _TransformerResource} TransformerResource
  */
 
 /**
@@ -239,7 +239,7 @@ const addTransformerPool = () => addResourcePool({
  * @property {HarmolineResource} [line]
  * @property {HTMLDivElement} [domEle]
  * 
- * @typedef {import('./ResourcePool.js').Resource & _EditorTipResource} EditorTipResource
+ * @typedef {import('./resourcePool.js').Resource & _EditorTipResource} EditorTipResource
  */
 
 const addEditorTipsPool = () => addResourcePool({
@@ -281,7 +281,7 @@ const addEditorTipsPool = () => addResourcePool({
 		if (res1.beacon) return res1.beacon === res2.beacon;
 		else return res1.line === res2.line;
 	},
-	/** @param {import('./ResourcePool.js').ResourcePool & {loaded: Array.<EditorTipResource>}} pool */
+	/** @param {import('./resourcePool.js').ResourcePool & {loaded: Array.<EditorTipResource>}} pool */
 	afterUpdate(pool) {
 		for (let res of pool.loaded) {
 			let wPos;

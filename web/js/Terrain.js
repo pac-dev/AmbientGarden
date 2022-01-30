@@ -1,8 +1,8 @@
 import * as THREE from './lib/three.module.js'
-import { mkNearMaterial } from './NearMaterial.js'
-import { mkFarMaterial } from './FarMaterial.js'
-import { heightAt, tileSide } from './World.js'
-import { addResourcePool } from './ResourcePool.js'
+import { mkNearMaterial } from './nearMaterial.js'
+import { mkFarMaterial } from './farMaterial.js'
+import { heightAt, tileSide } from './world.js'
+import { addResourcePool } from './resourcePool.js'
 
 const farSide = tileSide * 6
 
@@ -72,7 +72,7 @@ const updateFarZone = (mesh, x, z) => {
  * @typedef {Object} _ZoneResource
  * @property {import('./lib/three.module.js').Mesh} [mesh]
  * 
- * @typedef {import('./ResourcePool.js').Resource & _ZoneResource} ZoneResource
+ * @typedef {import('./resourcePool.js').Resource & _ZoneResource} ZoneResource
  */
 
 const addZonePool = ({side, span, initFn, updateFn, name}) => addResourcePool({

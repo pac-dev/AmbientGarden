@@ -1,13 +1,13 @@
 import * as THREE from './lib/three.module.js';
-import { updateLeafSize, updateLeafTime } from './LeafMaterial.js';
-import { initTerrain, nearGroup, farGroup } from './Terrain.js';
-import { heightAt, ratio, clock, loadNearMap, loadFarMap } from './World.js';
+import { updateLeafSize, updateLeafTime } from './leafMaterial.js';
+import { initTerrain, nearGroup, farGroup } from './terrain.js';
+import { heightAt, ratio, clock, loadNearMap, loadFarMap } from './world.js';
 import { beaconGroup, initBeaconPool, initTrackPool } from './beacons.js';
-import { updateResources } from './ResourcePool.js';
-import { updateGlows } from './Glow.js';
+import { updateResources } from './resourcePool.js';
+import { updateGlows } from './glow.js';
 import { runMode, xz } from './runMode.js';
 import { editMode } from './editMode.js';
-import { enableTips } from './Tips.js';
+import { enableTips } from './tips.js';
 
 const shadowDim = 1024;
 const container = document.getElementById('gl_container');
