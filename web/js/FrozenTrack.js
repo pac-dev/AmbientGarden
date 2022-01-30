@@ -74,7 +74,7 @@ class FrozenTrack extends Track {
 }
 
 export class FrozenTrackLoader extends TrackLoader {
-	/** @param {import('./ResourcePool.js').Resource} resource */
+	/** @param {import('./beacons.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
 		const introAu = addAudio(resource.record.introUrl);
 		const loop1Au = addAudio(resource.record.loopUrl);

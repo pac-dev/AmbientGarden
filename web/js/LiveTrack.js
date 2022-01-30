@@ -97,7 +97,7 @@ const cachedFetch = async (url, format) => {
 };
 
 export class LiveTrackLoader extends TrackLoader {
-	/** @param {import('./ResourcePool.js').Resource} resource */
+	/** @param {import('./beacons.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
 		const workletRoot = `generated/worklets/${resource.trackName}/`;
 		const processorName = `worklet_${resource.trackName}`;

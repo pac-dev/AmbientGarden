@@ -24,9 +24,9 @@ export class Track {
 }
 
 export class TrackLoader {
-	/** @param {import('./ResourcePool.js').Resource} resource */
+	/** @param {import('./beacons.js').TrackResource} resource */
 	async startTrack(resource, proximity) { throw new Error('Override TrackLoader.startTrack!'); }
-	/** @param {import('./ResourcePool.js').Resource} resource */
+	/** @param {import('./beacons.js').TrackResource} resource */
 	stopTrack(resource) {
 		resource.track.stop();
 		resource.track = undefined;

@@ -48,7 +48,15 @@ const updateWake = () => {
 	trackWakeSquare = trackWake*trackWake;
 };
 
-/** @param {import('./ResourcePool.js').Resource} resource */
+/**
+ * @typedef {Object} _BeaconResource
+ * @property {import('./beaconRecords.js').BeaconRecord} record
+ * @property {import('./lib/three.module.js').Object3D} [form]
+ * 
+ * @typedef {import('./ResourcePool.js').Resource & _BeaconResource} BeaconResource
+ */
+
+/** @param {BeaconResource} resource */
 const loadBeacon = resource => {
 	const formParams = Object.assign(
 		resource.record.formParams,
@@ -84,9 +92,11 @@ export const initBeaconPool = () => addResourcePool({
 			yield {x, z, record};
 		}
 	},
+	/** @param {BeaconResource} res */
 	add(res) {
 		loadBeacon(res);
 	},
+	/** @param {BeaconResource} res */
 	remove(res) {
 		if (res.form.userData.disposeTransformer) {
 			res.form.userData.disposeTransformer();
@@ -104,7 +114,18 @@ const trackId = (() => {
 const sq = x => x*x;
 let lastProxSetTime = 0;
 
-/** @param {import('./ResourcePool.js').Resource} resource */
+/**
+ * @typedef {Object} _TrackResource
+ * @property {import('./beaconRecords.js').BeaconRecord} record
+ * @property {string} [trackName]
+ * @property {string} [trackId]
+ * @property {Object} [trackParams]
+ * @property {import('./tracks.js').Track} [track]
+ * 
+ * @typedef {import('./ResourcePool.js').Resource & _TrackResource} TrackResource
+ */
+
+/** @param {TrackResource} resource */
 const proximity = (resource, camX, camZ) => {
 	const d = Math.sqrt(sq(resource.x - camX) + sq(resource.z - camZ));
 	return Math.max(0, (trackHush - d)/(trackHush));
@@ -124,6 +145,7 @@ export const initTrackPool = loader => addResourcePool({
 			yield {x, z, record};
 		}
 	},
+	/** @param {TrackResource} res */
 	add(res, camX, camZ) {
 		Object.assign(res, res.record);
 		res.trackId = trackId();
@@ -132,10 +154,12 @@ export const initTrackPool = loader => addResourcePool({
 			startGlow(res.record);
 		})();
 	},
+	/** @param {TrackResource} res */
 	remove(res) {
 		loader.stopTrack(res);
 		stopGlow(res.record);
 	},
+	/** @param {import('./ResourcePool.js').ResourcePool & {loaded: Array.<TrackResource>}} pool */
 	afterUpdate(pool, camX, camZ) {
 		updateWake();
 		if (clock.worldTime - lastProxSetTime > 0.1) {

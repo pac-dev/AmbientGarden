@@ -49,6 +49,15 @@ export const disableTips = () => {
 };
 
 /**
+ * @typedef {Object} _TipResource
+ * @property {import('./beacons.js').BeaconResource} beacon
+ * @property {number} dSquare
+ * @property {HTMLDivElement} [domEle]
+ * 
+ * @typedef {import('./ResourcePool.js').Resource & _TipResource} TipResource
+ */
+
+/**
  * @typedef {Object} TipLayout
  * @property {THREE.Vector3} textRoot
  * @property {string} dir
@@ -60,16 +69,17 @@ const sq = x => x*x;
 const addTipsPool = () => addResourcePool({
 	name: 'tips',
 	*generate(camX, camZ) {
-		for (let res of getResourcePool('beacons').loaded) {
-			const dSquare = sq(camX - res.x) + sq(camZ - res.z);
+		for (let beacon of getResourcePool('beacons').loaded) {
+			const dSquare = sq(camX - beacon.x) + sq(camZ - beacon.z);
 			if (dSquare > sq(500)) continue;
-			if (!res.record.formParams.height) continue;
-			yield { attached: res, dSquare };
+			if (!beacon.record.formParams.height) continue;
+			yield { beacon, dSquare };
 		}
 	},
+	/** @param {TipResource} res */
 	add(res) {
 		res.domEle = document.createElement('div');
-		const rec = res.attached.record;
+		const rec = res.beacon.record;
 		res.domEle.innerHTML = rec.trackName.replace(/\-/g, ' ') + ' <i>(edit)</i>';
 		res.domEle.onclick = () => {
 			console.log(rec.desc);
@@ -77,13 +87,14 @@ const addTipsPool = () => addResourcePool({
 		res.domEle.className = 'tip';
 		document.body.appendChild(res.domEle);
 	},
+	/** @param {TipResource} res */
 	remove(res) {
 		res.domEle.remove();
 	},
 	compare(res1, res2) {
-		return res1.attached === res2.attached;
+		return res1.beacon === res2.beacon;
 	},
-	/** @param {import('./ResourcePool.js').ResourcePool} pool */
+	/** @param {import('./ResourcePool.js').ResourcePool & {loaded: Array.<TipResource>}} pool */
 	afterUpdate(pool) {
 		let tipIdx = 0;
 		const camDir = camera.getWorldDirection(new THREE.Vector3());
@@ -96,9 +107,9 @@ const addTipsPool = () => addResourcePool({
 		const tipLayouts = [];
 		for (let res of pool.loaded) {
 			res.domEle.style.display = 'none';
-			res.attached.form.getWorldPosition(formPos);
-			let loY = res.attached.record.formParams.height * 0.6;
-			let hiY = res.attached.record.formParams.height + 40;
+			res.beacon.form.getWorldPosition(formPos);
+			let loY = res.beacon.record.formParams.height * 0.6;
+			let hiY = res.beacon.record.formParams.height + 40;
 			// check dot product to avoid showing text when facing exactly away from the target
 			const dot = camDir.dot(formDir.copy(formPos).sub(camera.position).normalize());
 			dot1Pos.copy(formPos).add({x: 0, y: loY, z: 0});

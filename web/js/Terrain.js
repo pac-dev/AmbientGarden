@@ -19,9 +19,9 @@ const initNearZone = () => {
 	nearGroup.add(tile);
 	// tile.add(initVeg());
 	const planeGeom = new THREE.PlaneGeometry(tileSide, tileSide, 16, 16).rotateX(-Math.PI / 2);
-	const zone = new THREE.Mesh(planeGeom, nearMat);
-	zone.layers.enable(1);
-	tile.add(zone);
+	const mesh = new THREE.Mesh(planeGeom, nearMat);
+	mesh.layers.enable(1);
+	tile.add(mesh);
 	// console.log(`inited ${++totNears} near zones`);
 	return tile
 }
@@ -47,26 +47,33 @@ const updateNearZone = (tile, x, z) => {
 let totFars = 0;
 const initFarZone = () => {
 	const zoneGeom = new THREE.PlaneGeometry(farSide, farSide, 12, 12).rotateX(-Math.PI / 2);
-	const zone = new THREE.Mesh(zoneGeom, farMat);
-	zone.layers.enable(1);
-	farGroup.add(zone);
+	const mesh = new THREE.Mesh(zoneGeom, farMat);
+	mesh.layers.enable(1);
+	farGroup.add(mesh);
 	// console.log(`inited ${++totFars} far zones`);
-	return zone
+	return mesh
 }
 
-const updateFarZone = (zone, x, z) => {
-	zone.position.set(x, 0, z)
-	const planeVerts = zone.geometry.attributes.position.array
+const updateFarZone = (mesh, x, z) => {
+	mesh.position.set(x, 0, z)
+	const planeVerts = mesh.geometry.attributes.position.array
 	for (let i=0; i<planeVerts.length/3; i++) {
 		const worldX = planeVerts[i*3] + x
 		const worldZ = planeVerts[i*3+2] + z
 		planeVerts[i*3+1] = heightAt(worldX, worldZ) - 8
 	}
-	zone.geometry.attributes.position.needsUpdate = true
-	zone.geometry.computeBoundingBox()
-	zone.geometry.computeBoundingSphere()
-	zone.updateWorldMatrix(false, true);
+	mesh.geometry.attributes.position.needsUpdate = true
+	mesh.geometry.computeBoundingBox()
+	mesh.geometry.computeBoundingSphere()
+	mesh.updateWorldMatrix(false, true);
 }
+
+/**
+ * @typedef {Object} _ZoneResource
+ * @property {import('./lib/three.module.js').Mesh} [mesh]
+ * 
+ * @typedef {import('./ResourcePool.js').Resource & _ZoneResource} ZoneResource
+ */
 
 const addZonePool = ({side, span, initFn, updateFn, name}) => addResourcePool({
 	name,
@@ -79,10 +86,11 @@ const addZonePool = ({side, span, initFn, updateFn, name}) => addResourcePool({
 			}
 		}
 	},
+	/** @param {ZoneResource} res */
 	add(res) {
-		res.zone = res.recycling?.zone;
-		if (!res.zone) res.zone = initFn();
-		updateFn(res.zone, res.x, res.z);
+		res.mesh = res.recycling?.mesh;
+		if (!res.mesh) res.mesh = initFn();
+		updateFn(res.mesh, res.x, res.z);
 	},
 	remove(res) { }
 });

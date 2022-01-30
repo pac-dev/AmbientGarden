@@ -68,26 +68,38 @@ const teleport = (x, z) => {
 	editMode.orbiter.target.set(x, 0, z);
 };
 
+/**
+ * @typedef {Object} _HarmolineResource
+ * @property {import('./beacons.js').BeaconResource} beacon1
+ * @property {import('./beacons.js').BeaconResource} beacon2
+ * @property {number} distance
+ * @property {number} [dissonance]
+ * @property {import('./lib/three.module.js').Mesh} [mesh]
+ * 
+ * @typedef {import('./ResourcePool.js').Resource & _HarmolineResource} HarmolineResource
+ */
+
 const addHarmolinePool = () => addResourcePool({
 	name: 'harmolines',
 	*generate() {
 		const loadedBeacons = getResourcePool('beacons').loaded;
-		for (let attached of loadedBeacons) {
-			const pos1 = attached.form.position;
-			for (let attached2 of loadedBeacons) {
-				const pos2 = attached2.form.position;
-				if (attached === attached2) continue;
+		for (let beacon1 of loadedBeacons) {
+			const pos1 = beacon1.form.position;
+			for (let beacon2 of loadedBeacons) {
+				const pos2 = beacon2.form.position;
+				if (beacon1 === beacon2) continue;
 				const distance = pos1.distanceTo(pos2);
 				if (distance > (trackHush*1.5)) continue;
-				yield {attached, attached2, distance};
+				yield {beacon1, beacon2, distance};
 			}
 		}
 	},
+	/** @param {HarmolineResource} res */
 	add(res) {
-		const rec1 = res.attached.record;
-		const rec2 = res.attached2.record;
-		const pos1 = res.attached.form.position;
-		const pos2 = res.attached2.form.position;
+		const rec1 = res.beacon1.record;
+		const rec2 = res.beacon2.record;
+		const pos1 = res.beacon1.form.position;
+		const pos2 = res.beacon2.form.position;
 		const normDist = res.distance / (trackHush*1.2);
 		res.dissonance = multiDissonance(getBeaconFreqs(rec1),getBeaconFreqs(rec2));
 		const normDiss = res.dissonance / 9;
@@ -102,17 +114,18 @@ const addHarmolinePool = () => addResourcePool({
 		const curve = new THREE.LineCurve3(pos1.clone().sub(formPos), pos2.clone().sub(formPos));
 		const geometry = new THREE.TubeGeometry(curve, 3, 4, 6, false);
 		const material = new THREE.MeshBasicMaterial({ color });
-		res.form = new THREE.Mesh(geometry, material);
-		res.form.position.copy(formPos);
-		res.form.translateY((1 - normDist) * 60 + 20);
+		res.mesh = new THREE.Mesh(geometry, material);
+		res.mesh.position.copy(formPos);
+		res.mesh.translateY((1 - normDist) * 60 + 20);
 		[res.x, res.z] = [formPos.x, formPos.z];
-		scene.add(res.form);
+		scene.add(res.mesh);
 	},
+	/** @param {HarmolineResource} res */
 	remove(res) {
-		res.form.removeFromParent();
+		res.mesh.removeFromParent();
 	},
 	compare(res1, res2) {
-		return res1.attached === res2.attached && res1.attached2 === res2.attached2 && res1.distance === res2.distance;
+		return res1.beacon1 === res2.beacon1 && res1.beacon2 === res2.beacon2 && res1.distance === res2.distance;
 	}
 });
 
@@ -144,9 +157,9 @@ const select = () => {
 		getMeta(res.record).selected = false;
 	}
 	for (let tipRes of getResourcePool('editor tips').loaded) {
-		if (!tipRes.attached.record) continue;
+		if (!tipRes.beacon) continue;
 		if (tipRes.domEle.style.display !== 'block') continue;
-		getMeta(tipRes.attached.record).selected = true;
+		getMeta(tipRes.beacon.record).selected = true;
 	}
 };
 const forSelected = fn => {
@@ -155,6 +168,14 @@ const forSelected = fn => {
 		if (getMeta(res.record).selected) fn(res);
 	}
 }
+
+/**
+ * @typedef {Object} _TransformerResource
+ * @property {import('./beacons.js').BeaconResource} beacon
+ * @property {import('./lib/three.module.js').Object3D} [form]
+ * 
+ * @typedef {import('./ResourcePool.js').Resource & _TransformerResource} TransformerResource
+ */
 
 /**
  * When switching into edit mode (by pressing E), transform controls
@@ -175,11 +196,12 @@ const addTransformerPool = () => addResourcePool({
 		for (let res of getResourcePool('beacons').loaded) {
 			const dSquare = sq(camX - res.x) + sq(camZ - res.z);
 			if (dSquare > sq(900)) continue;
-			yield { attached: res };
+			yield { beacon: res };
 		}
 	},
+	/** @param {TransformerResource} res */
 	add(res) {
-		const refObj = res.attached.form;
+		const refObj = res.beacon.form;
 		res.form = new TransformControls(camera, renderer.domElement);
 		res.form.traverse(child => {
 			if (child.name === 'X' || child.name === 'Z') child.layers.set(2);
@@ -188,69 +210,86 @@ const addTransformerPool = () => addResourcePool({
 		res.form.showY = false;
 		res.form.attach(refObj);
 		res.form.addEventListener('dragging-changed', event => {
-			changeDrag(res.attached, event.value);
+			changeDrag(res.beacon, event.value);
 			forSelected(bRes => changeDrag(bRes, event.value));
 			editMode.orbiter.enabled = !event.value;
-			if (!event.value) window.focusBeacon = res.attached.record;
+			if (!event.value) window.focusRecord = res.beacon.record;
 		});
 		res.form.addEventListener('objectChange', () => {
-			const diff = refObj.position.clone().sub(getMeta(res.attached.record).orig);
-			drag(res.attached, diff);
+			const diff = refObj.position.clone().sub(getMeta(res.beacon.record).orig);
+			drag(res.beacon, diff);
 			forSelected(bRes => drag(bRes, diff));
 		});
 		scene.add(res.form);
 	},
+	/** @param {TransformerResource} res */
 	remove(res) {
 		res.form.removeFromParent();
 		res.form.detach();
 		res.form.dispose();
 	},
 	compare(res1, res2) {
-		return res1.attached === res2.attached;
+		return res1.beacon === res2.beacon;
 	}
 });
+
+/**
+ * @typedef {Object} _EditorTipResource
+ * @property {import('./beacons.js').BeaconResource} [beacon]
+ * @property {HarmolineResource} [line]
+ * @property {HTMLDivElement} [domEle]
+ * 
+ * @typedef {import('./ResourcePool.js').Resource & _EditorTipResource} EditorTipResource
+ */
 
 const addEditorTipsPool = () => addResourcePool({
 	name: 'editor tips',
 	*generate(camX, camZ) {
-		for (let res of getResourcePool('beacons').loaded) {
-			const dSquare = sq(camX - res.x) + sq(camZ - res.z);
+		for (let beacon of getResourcePool('beacons').loaded) {
+			const dSquare = sq(camX - beacon.x) + sq(camZ - beacon.z);
 			if (dSquare > sq(900)) continue;
-			yield { attached: res };
+			yield { beacon };
 		}
-		for (let res of getResourcePool('harmolines').loaded) {
-			const dSquare = sq(camX - res.x) + sq(camZ - res.z);
+		for (let line of getResourcePool('harmolines').loaded) {
+			const dSquare = sq(camX - line.x) + sq(camZ - line.z);
 			if (dSquare > sq(900)) continue;
-			yield { attached: res };
+			yield { line };
 		}
 	},
+	/** @param {EditorTipResource} res */
 	add(res) {
 		res.domEle = document.createElement('div');
-		const rec = res.attached.record;
-		if (rec) {
-			res.domEle.innerText = rec.desc;
+		if (res.beacon) {
+			res.domEle.innerText = res.beacon.record.desc;
 			res.domEle.onclick = () => {
-				// getSelection().selectAllChildren(res.domEle);
-				// navigator.clipboard.writeText(rec.desc);
-				console.log(rec.trackParams, `add('${rec.desc}')`, `replace('${rec.desc}')`);
-				window.focusBeacon = rec;
+				console.log(res.beacon.record.trackParams,
+					`add('${res.beacon.record.desc}')`,
+					`replace('${res.beacon.record.desc}')`);
+				window.focusRecord = res.beacon.record;
 			}
 		} else {
-			res.domEle.innerText = res.attached.dissonance;
+			res.domEle.innerText = res.line.dissonance;
 		}
 		res.domEle.className = 'editor_tip';
 		document.body.appendChild(res.domEle);
 	},
+	/** @param {EditorTipResource} res */
 	remove(res) {
 		res.domEle.remove();
 	},
 	compare(res1, res2) {
-		return res1.attached === res2.attached;
+		if (res1.beacon) return res1.beacon === res2.beacon;
+		else return res1.line === res2.line;
 	},
+	/** @param {import('./ResourcePool.js').ResourcePool & {loaded: Array.<EditorTipResource>}} pool */
 	afterUpdate(pool) {
 		for (let res of pool.loaded) {
-			const wPos = res.attached.form.getWorldPosition(new THREE.Vector3());
-			if (res.attached.record) wPos.add({x: 0, y: 40, z: 0});
+			let wPos;
+			if (res.beacon) {
+				wPos = res.beacon.form.getWorldPosition(new THREE.Vector3()).add({x: 0, y: 40, z: 0});
+			} else {
+				wPos = res.line.mesh.getWorldPosition(new THREE.Vector3());
+			}
 			// check dot product to avoid showing text when facing exactly away from the target
 			const dot = camera.getWorldDirection(new THREE.Vector3()).dot(wPos.clone().sub(camera.position).normalize());
 			wPos.project(camera);
@@ -266,7 +305,7 @@ const addEditorTipsPool = () => addResourcePool({
 });
 
 const addAtCursor = rec => {
-	if (!rec) rec = window.focusBeacon;
+	if (!rec) rec = window.focusRecord;
 	if (!rec) return;
 	const mouseHit = intersectMouse();
 	if (!mouseHit) return;
@@ -275,21 +314,21 @@ const addAtCursor = rec => {
 	ret.x = mouseHit.point.x;
 	ret.z = mouseHit.point.z;
 	beaconRecords.push(ret);
-	window.focusBeacon = ret;
+	window.focusRecord = ret;
 };
 
 const deleteLast = () => {
-	if (!window.focusBeacon) return;
-	beaconRecords.splice(beaconRecords.indexOf(focusBeacon), 1);
+	if (!window.focusRecord) return;
+	beaconRecords.splice(beaconRecords.indexOf(focusRecord), 1);
 	updateResources(camera.position.x, camera.position.z);
-	window.focusBeacon = undefined;
+	window.focusRecord = undefined;
 };
 
 window.updateLast = x => {
 	beaconRecords.pop();
 	updateResources(camera.position.x, camera.position.z);
 	beaconRecords.push(x);
-	window.focusBeacon = x;
+	window.focusRecord = x;
 };
 
 window.add = desc => {
@@ -297,12 +336,12 @@ window.add = desc => {
 };
 
 window.replace = desc => {
-	const {x, z} = window.focusBeacon;
+	const {x, z} = window.focusRecord;
 	deleteLast();
 	const ret = { desc, x, z };
 	parseTrack(ret);
 	beaconRecords.push(ret);
-	window.focusBeacon = ret;
+	window.focusRecord = ret;
 };
 
 const exportRecords = async () => {

@@ -4,19 +4,6 @@
  * @property {boolean} [wanted]
  * @property {number} x
  * @property {number} z
- * @property {number} [dSquare]
- * @property {import('./beaconRecords.js').BeaconRecord} [record]
- * @property {import('./lib/three.module.js').Object3D} [form]
- * @property {*} [zone]
- * @property {string} [trackName]
- * @property {string} [trackId]
- * @property {Object} [trackParams]
- * @property {import('./tracks.js').Track} [track]
- * @property {Resource} [attached]
- * @property {Resource} [attached2]
- * @property {number} [distance]
- * @property {number} [dissonance]
- * @property {HTMLDivElement} [domEle]
  */
 
 /**
