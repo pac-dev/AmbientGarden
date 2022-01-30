@@ -53,16 +53,12 @@ export const disableTips = () => {
  * @property {import('./beacons.js').BeaconResource} beacon
  * @property {number} dSquare
  * @property {HTMLDivElement} [domEle]
+ * @property {THREE.Vector3} [textRoot]
+ * @property {string} [dir]
+ * @property {TipResource} [below]
+ * @property {TipResource} [above]
  * 
  * @typedef {import('./ResourcePool.js').Resource & _TipResource} TipResource
- */
-
-/**
- * @typedef {Object} TipLayout
- * @property {THREE.Vector3} textRoot
- * @property {string} dir
- * @property {TipLayout} [below]
- * @property {TipLayout} [above]
  */
 
 const sq = x => x*x;
@@ -86,6 +82,7 @@ const addTipsPool = () => addResourcePool({
 		}
 		res.domEle.className = 'tip';
 		document.body.appendChild(res.domEle);
+		res.textRoot = new THREE.Vector3();
 	},
 	/** @param {TipResource} res */
 	remove(res) {
@@ -98,67 +95,82 @@ const addTipsPool = () => addResourcePool({
 	afterUpdate(pool) {
 		let tipIdx = 0;
 		const camDir = camera.getWorldDirection(new THREE.Vector3());
+		// the box x/y size of a tip, in normalized device coordinates
 		const yTouch = 20 * 2 / renderer.domElement.clientHeight;
 		const xTouch = 200 * 2 / renderer.domElement.clientWidth;
+		// preallocate some, since we're looping in every frame
 		const formPos = new THREE.Vector3(), formDir = new THREE.Vector3(),
 			dot1Pos = new THREE.Vector3(), dot2Pos = new THREE.Vector3();
+		// sort so that front tips push back tips around
 		pool.loaded.sort((a, b) => a.dSquare - b.dSquare);
-		/** @type {Array.<TipLayout>} */
-		const tipLayouts = [];
-		for (let res of pool.loaded) {
-			res.domEle.style.display = 'none';
-			res.beacon.form.getWorldPosition(formPos);
-			let loY = res.beacon.record.formParams.height * 0.6;
-			let hiY = res.beacon.record.formParams.height + 40;
+		for (let tip of pool.loaded) {
+			delete tip.above;
+			delete tip.below;
+		}
+		/** @type {Array.<TipResource>} */
+		const visibleTips = [];
+		for (let tip of pool.loaded) {
+			tip.domEle.style.display = 'none';
+			tip.beacon.form.getWorldPosition(formPos);
+			// dot2 Y gets replaced, but determines if the tip will be visible
+			dot1Pos.copy(formPos).add({x: 0, y: 45, z: 0});
+			dot2Pos.copy(formPos).add({x: 0, y: 65, z: 0});
+			// preserve the old Y by default to prevent some popping
+			let tgtY = tip.textRoot.y ? tip.textRoot.y : 0.7;
+			tip.textRoot.copy(dot2Pos).project(camera);
 			// check dot product to avoid showing text when facing exactly away from the target
-			const dot = camDir.dot(formDir.copy(formPos).sub(camera.position).normalize());
-			dot1Pos.copy(formPos).add({x: 0, y: loY, z: 0});
-			dot2Pos.copy(formPos).add({x: 0, y: hiY, z: 0});
-			const textRoot = dot2Pos.clone().project(camera);
-			if (dot < 0 || textRoot.x < -0.9 || textRoot.x > 0.9 || textRoot.y < -0.8 || textRoot.y > 2) {
+			const facing = camDir.dot(formDir.copy(formPos).sub(camera.position).normalize());
+			if (facing < 0 || tip.textRoot.x < -0.9 || tip.textRoot.x > 0.9 
+			|| tip.textRoot.y < -0.8 || tip.textRoot.y > 2) {
+				tip.textRoot.set(0, 0, 0);
 				continue;
 			}
-			/** @type {TipLayout} */
-			const tipLayout = { textRoot, dir: (textRoot.x > 0) ? 'L' : 'R' };
-			let nearTipLayout;
-			for (let i=tipLayouts.length; i-- > 0; ) {
-				if (Math.abs(tipLayouts[i].textRoot.x - textRoot.x) < xTouch) {
-					nearTipLayout = tipLayouts[i];
+			// choose default direction based on tip's side of the screen
+			tip.dir = (tip.textRoot.x > 0) ? 'L' : 'R';
+			let nearTip;
+			for (let i=visibleTips.length; i-- > 0; ) {
+				if (Math.abs(visibleTips[i].textRoot.x - tip.textRoot.x) < xTouch) {
+					nearTip = visibleTips[i];
 					break;
 				}
 			}
-			if (nearTipLayout) {
-				tipLayout.dir = nearTipLayout.dir;
-				if ((tipLayout.dir === 'L' && textRoot.x < nearTipLayout.textRoot.x)
-				|| (tipLayout.dir === 'R' && textRoot.x > nearTipLayout.textRoot.x)) {
-					let lowest = nearTipLayout;
+			// tuck the tip to avoid collision with nearby tips
+			if (nearTip) {
+				// smooth transition into tuck to prevent some popping
+				let slide = Math.abs(nearTip.textRoot.x - tip.textRoot.x);
+				slide = Math.max(0, Math.min(1, (slide - xTouch*0.5) / (xTouch*0.5)));
+				tip.dir = nearTip.dir;
+				// go above or below the tip cluster
+				if ((tip.dir === 'L' && tip.textRoot.x < nearTip.textRoot.x)
+				|| (tip.dir === 'R' && tip.textRoot.x > nearTip.textRoot.x)) {
+					let lowest = nearTip;
 					while (lowest.below) lowest = lowest.below;
-					lowest.below = tipLayout;
-					tipLayout.above = lowest;
-					textRoot.y = lowest.textRoot.y - yTouch;
+					lowest.below = tip;
+					tip.above = lowest;
+					tgtY = (lowest.textRoot.y - yTouch)*(1 - slide) + lowest.textRoot.y * slide;
 				} else {
-					let highest = nearTipLayout;
+					let highest = nearTip;
 					while (highest.above) highest = highest.above;
-					highest.above = tipLayout;
-					tipLayout.below = highest;
-					textRoot.y = highest.textRoot.y + yTouch;
+					highest.above = tip;
+					tip.below = highest;
+					tgtY = (highest.textRoot.y + yTouch)*(1 - slide) + highest.textRoot.y * slide;
 				}
-			} else {
-				if (textRoot.y > 0.8) textRoot.y = 0.8;
-				if (textRoot.y < 0.5) textRoot.y = 0.5;
 			}
-			dot2Pos.copy(textRoot).unproject(camera);
+			// inertia could be added here, but it's ugly - might work with a second derivative
+			tip.textRoot.y = tgtY;
+			dot2Pos.copy(tip.textRoot).unproject(camera);
 
-			tipLayouts.push(tipLayout);
-			res.domEle.style.display = 'block';
-			if (tipLayout.dir === 'L') {
-				res.domEle.style.right = ((0.5 - 0.5 * textRoot.x) * renderer.domElement.clientWidth + 10)+'px';
-				res.domEle.style.removeProperty('left');
+			visibleTips.push(tip);
+			tip.domEle.style.display = 'block';
+			if (tip.dir === 'L') {
+				tip.domEle.style.right = ((0.5 - 0.5 * tip.textRoot.x) * renderer.domElement.clientWidth + 10)+'px';
+				tip.domEle.style.removeProperty('left');
 			} else {
-				res.domEle.style.left = ((0.5 * textRoot.x + 0.5) * renderer.domElement.clientWidth + 10)+'px';
-				res.domEle.style.removeProperty('right');
+				tip.domEle.style.left = ((0.5 * tip.textRoot.x + 0.5) * renderer.domElement.clientWidth + 10)+'px';
+				tip.domEle.style.removeProperty('right');
 			}
-			res.domEle.style.top = ((-0.5 * textRoot.y + 0.5) * renderer.domElement.clientHeight)+'px';
+			tip.domEle.style.top = ((-0.5 * tip.textRoot.y + 0.5) * renderer.domElement.clientHeight)+'px';
+			// send dot positions to buffer used by THREE for lines and dots
 			dot1Pos.toArray(dotPositions, (tipIdx * 2) * 3);
 			dot2Pos.toArray(dotPositions, (tipIdx * 2 + 1) * 3);
 			if (2 * tipIdx++ >= maxDotCount) break;
