@@ -1,4 +1,4 @@
-import * as THREE from './lib/three.module.js'
+import * as THREE from './lib/three.module.js';
 import { getMeta } from './beacons.js';
 import { clock } from './world.js';
 
@@ -18,10 +18,10 @@ const addWave = grp => {
 		// use stencil to keep waves under beacon's LeafMaterial
 		stencilWrite: true,
 		stencilFunc: THREE.EqualStencilFunc,
-		stencilRef: 0
+		stencilRef: 0,
 	});
 	const wave = new THREE.Mesh(planeGeo, waveMat);
-	wave.rotation.x = Math.PI * -.5;
+	wave.rotation.x = Math.PI * -0.5;
 	wave.renderOrder = 3;
 	grp.add(wave);
 	return wave;
@@ -38,29 +38,36 @@ export const startGlow = record => {
 	getMeta(record).startTime = clock.worldTime;
 	activeGlows.add(record);
 };
+
 /** @param {import('./beaconRecords.js').BeaconRecord} record */
 export const stopGlow = record => {
-	getMeta(record).glow.forEach(w => { w.material.opacity = 0; });
+	getMeta(record).glow.forEach(w => {
+		w.material.opacity = 0;
+	});
 	activeGlows.delete(record);
 };
-const fade = (t, speed) => 1-1/(t*t*speed+1);
+
+const fade = (t, speed) => 1 - 1 / (t * t * speed + 1);
 const period = 6;
 const maxScale = 15;
+
 const waveSize = (x, phase) => {
 	x = ((x - period * phase) / period) % 1;
 	x = x * x;
 	return x * maxScale + 0.1;
 };
+
 const waveOpacity = (x, phase) => {
 	x = ((x - period * phase) / period) % 1;
 	x = Math.max(0, x);
 	return x < 0.1 ? x / 0.1 : 1.1 - x * 1.1;
 };
+
 /** @param {THREE.Object3D} obj */
 export const updateGlows = () => {
 	for (let rec of activeGlows) {
 		const age = clock.worldTime - getMeta(rec).startTime;
-		const birthAmt = fade(age, (rec.glowCurve === 'slow') ? 0.5 : 100);
+		const birthAmt = fade(age, rec.glowCurve === 'slow' ? 0.5 : 100);
 		const deathAmt = fade(getMeta(rec).track?.lastAmp ?? 0, 400);
 		const groupOpacity = birthAmt * deathAmt;
 		const [wave1, wave2, wave3] = getMeta(rec).glow;

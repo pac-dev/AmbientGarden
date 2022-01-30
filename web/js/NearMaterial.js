@@ -1,7 +1,7 @@
-import * as THREE from './lib/three.module.js'
-import { mapcnv, terrainGlsl } from './world.js'
+import * as THREE from './lib/three.module.js';
+import { mapcnv, terrainGlsl } from './world.js';
 
-const nearVert = /*glsl*/`
+const nearVert = /*glsl*/ `
 #include <common>
 #include <normal_pars_vertex>
 #include <packing>
@@ -24,9 +24,9 @@ void main() {
 	vCamDist = distance(worldPosition.xz, cameraPosition.xz);
 	vAlpha = 1.0 - smoothstep(192.0*3.0, 192.0*5.0, vCamDist);
 }
-`
+`;
 
-const nearFrag = /*glsl*/`
+const nearFrag = /*glsl*/ `
 #include <common>
 #include <normal_pars_fragment>
 #include <packing>
@@ -231,26 +231,26 @@ void main() {
 	// }
 	// gl_FragColor.gb *= 0.2;
 }
-`
+`;
 
 export const mkNearMaterial = () => {
-	const maptex = new THREE.CanvasTexture(mapcnv)
-	maptex.wrapS = THREE.MirroredRepeatWrapping
-	maptex.wrapT = THREE.MirroredRepeatWrapping
+	const maptex = new THREE.CanvasTexture(mapcnv);
+	maptex.wrapS = THREE.MirroredRepeatWrapping;
+	maptex.wrapT = THREE.MirroredRepeatWrapping;
 	const ret = new THREE.ShaderMaterial({
 		uniforms: THREE.UniformsUtils.merge([
 			{
 				maptex: { type: 't', value: maptex },
-				mapsz: { type: 'f', value: mapcnv.width }
+				mapsz: { type: 'f', value: mapcnv.width },
 			},
 			THREE.UniformsLib.lights,
-			THREE.UniformsLib.fog
+			THREE.UniformsLib.fog,
 		]),
 		vertexShader: nearVert,
 		fragmentShader: nearFrag,
 		lights: true,
 		// transparent: for near-terrain to fade onto far-terrain
 		transparent: true,
-	})
-	return ret
-}
+	});
+	return ret;
+};

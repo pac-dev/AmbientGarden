@@ -37,15 +37,15 @@ form(i) = fi.resonbp(linterp(fs1, fs2, i), linterp(qs1, qs2, i), linterp(as1, as
 forms(amp) = par(i, 5, form(i)*amp);
 
 ctrlforms(amt) = * (0.5*amt) : fi.lowpass(1, 15000) <:
-    (fi.resonbp(f2, 5, 1) : fi.resonbp(f2, 5, 1)), 
-    (fi.resonbp(f2*2, 7, 1) : fi.resonbp(f2*2, 7, 1))*0.4,
-    fi.highpass(1, 1600);
+	(fi.resonbp(f2, 5, 1) : fi.resonbp(f2, 5, 1)), 
+	(fi.resonbp(f2*2, 7, 1) : fi.resonbp(f2*2, 7, 1))*0.4,
+	fi.highpass(1, 1600);
 
 tuner(i) = fi.resonlp(f1*ba.take(i+1, tfs), ba.take(i+1, tqs), 1)*ba.take(i+1, tas);
 tuners(amp) = par(i, 4, tuner(i)*amp);
 
 ctrlend(amp) = _ <: fi.resonbp(f2, 9, 1)*amp, fi.resonbp(f2*2, 6, 1)*amp,
-    fi.highpass(1, 1600) :> _;
+	fi.highpass(1, 1600) :> _;
 
 om = fi.lowpass(3, 15000*atk1*atk1 + 50);
 

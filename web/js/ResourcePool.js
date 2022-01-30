@@ -38,14 +38,12 @@ export const addResourcePool = pool => {
 export const getResourcePool = name => {
 	for (let pool of resourcePools) if (pool.name === name) return pool;
 };
-window.getResourcePool = getResourcePool;
 
 export const removeResourcePool = name => {
 	const pool = getResourcePool(name);
 	for (let res of pool.loaded) pool.remove(res);
 	resourcePools.delete(pool);
 };
-
 
 /** @param {ResourcePool} pool */
 export const matchResource = (pool, match) => {
@@ -58,8 +56,8 @@ export const matchResource = (pool, match) => {
 };
 
 /**
- * @param {ResourcePool} pool 
- * @param {Resource} newRes 
+ * @param {ResourcePool} pool
+ * @param {Resource} newRes
  */
 const mark = (pool, newRes) => {
 	for (let oldRes of pool.loaded) {
@@ -89,7 +87,7 @@ const updatePool = (pool, camX, camZ) => {
 	}
 	pool.loaded = pool.loaded.filter(res => res.wanted);
 	for (let res of missing) {
-		Object.assign(res, {recycling: pool.dead.pop()})
+		Object.assign(res, { recycling: pool.dead.pop() });
 		pool.add(res, camX, camZ);
 		pool.loaded.push(res);
 	}

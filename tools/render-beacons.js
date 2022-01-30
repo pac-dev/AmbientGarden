@@ -9,18 +9,18 @@ const webDir = './web/';
 
 /** @param {import('../web/js/beaconRecords.js').BeaconRecord} beacon */
 const renderBeacon = async beacon => {
-	if (existsSync(webDir+beacon.introUrl) && existsSync(webDir+beacon.loopUrl)) {
-		console.log('skipping existing: '+beacon.desc);
+	if (existsSync(webDir + beacon.introUrl) && existsSync(webDir + beacon.loopUrl)) {
+		console.log('skipping existing: ' + beacon.desc);
 		return;
 	}
-	console.log('rendering: '+beacon.desc);
+	console.log('rendering: ' + beacon.desc);
 	let inDur = args.intro ?? 12;
 	let loopDur = args.loop ?? 18;
 	const xfDur = args.xf ?? 2;
-	const track = await loadTrack(tracksDir+beacon.trackName+'/main.js');
+	const track = await loadTrack(tracksDir + beacon.trackName + '/main.js');
 	track.setParams(beacon.trackParams);
 	const r = createRenderer(track);
-	const inPipe = await r.addOutput(webDir+beacon.introUrl);
+	const inPipe = await r.addOutput(webDir + beacon.introUrl);
 	if (track.host.willInterupt) {
 		delete track.host.willInterupt;
 		inDur = 666;
@@ -28,7 +28,7 @@ const renderBeacon = async beacon => {
 	}
 	await r.render(inDur);
 	r.fadeOut(inPipe, xfDur);
-	const loopPipe = await r.addOutput(webDir+beacon.loopUrl);
+	const loopPipe = await r.addOutput(webDir + beacon.loopUrl);
 	r.fadeIn(loopPipe, xfDur);
 	await r.render(xfDur);
 	await r.removeOutput(inPipe);

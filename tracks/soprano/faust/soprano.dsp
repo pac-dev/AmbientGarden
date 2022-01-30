@@ -29,9 +29,9 @@ exc = saw + noise;
 vowel = os.osc(0.3)*0.12+0.18;//0.3;//os.osc(4)*0.7+0.71;
 linterp(lst1, lst2, i) = ba.take(i+1, lst1), ba.take(i+1, lst2) : si.interpolate(vowel);
 form(i) = fi.resonbp(f, q, a) with {
-    f = linterp(sop_a_freq, sop_o_freq, i);
-    q = linterp(sop_a_q,    sop_o_q, i);
-    a = linterp(sop_a_amp,  sop_o_amp, i);
+	f = linterp(sop_a_freq, sop_o_freq, i);
+	q = linterp(sop_a_q, sop_o_q, i);
+	a = linterp(sop_a_amp, sop_o_amp, i);
 };
 hform = fi.resonbp(5500, 10, 0.2);
 anti = fi.notchw(300, 2000) : fi.notchw(600, 3500);

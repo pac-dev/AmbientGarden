@@ -1,5 +1,7 @@
 import { runMode, toggleAutopilot } from './runMode.js';
-const modalKeyListener = e => { if (e.key === 'Enter') onModalOK() };
+const modalKeyListener = e => {
+	if (e.key === 'Enter') onModalOK();
+};
 
 // startMonolith().then(() => {
 export const initUI = () => {

@@ -9,7 +9,7 @@ import { genFarMap } from './genFarMap.js';
 initWorld({
 	trackLoader: new LiveTrackLoader(),
 	nearMap: genNearMap,
-	farMap: genFarMap
+	farMap: genFarMap,
 });
 startStats(Stats);
 editMode.init();

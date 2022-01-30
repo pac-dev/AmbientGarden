@@ -5,7 +5,7 @@ import { noise1D } from './noise.js';
  * which the other properties are generated. This is for easy editing from the
  * browser console.
  * @typedef {Object} BeaconRecord
- * @property {string} desc - short form description. 
+ * @property {string} desc - short form description.
  * Contains the following space-sparated elements:
  * - track name
  * - harmonic track parameters in units of 100Hz
@@ -27,46 +27,46 @@ import { noise1D } from './noise.js';
 
 /** @type {Array.<BeaconRecord>} */
 export const beaconRecords = [
-	{desc: 'vib 2 3 + 1', x: 17, z: 667},
-	{desc: 'vib 8 9 + 1', x: 17, z: 500},
-	{desc: 'vib 8/3 16/3 + 1', x: 231, z: 239},
-	{desc: 'vib 16/3 20/3 + 1', x: -103, z: -207},
-	{desc: 'vib 7 20/3*4/3 + 1', x: -163, z: -260},
-	{desc: 'hseri 2/3', x: 1297, z: 155},
-	{desc: 'cbass 2/3', x: 120, z: -499},
-	{desc: 'cbass 1/3', x: 159, z: -806},
-	{desc: 'hseri 1', x: -77, z: -1858},
-	{desc: 'cbass 1/2', x: -240, z: -1503},
-	{desc: 'rdrone 1 1 7/4', x: -150, z: -1785},
-	{desc: 'cbass 1', x: -32, z: -1009},
-	{desc: 'vib 8/3 10/3', x: 124, z: -646},
-	{desc: 'vib 2 3', x: -44, z: -1120},
-	{desc: 'vib 1 3/2', x: -66, z: -1488},
-	{desc: 'sdrone 4*3/4 6*3/4', x: 839, z: -1560},
-	{desc: 'sdrone 6*3/4 9*3/4', x: 1080, z: -1771},
-	{desc: 'hseri 3/4', x: 1550, z: -1690},
-	{desc: 'sdrone 3*3/4 4*3/4', x: 1537, z: -1559},
-	{desc: 'sdrone 2 4*3/4', x: 325, z: -1872},
-	{desc: 'cbass 1/2 + 0.5 600', x: 233, z: -1795},
-	{desc: 'cbass 3/4 + 0.5 600', x: 522, z: -1713},
-	{desc: 'cbass 3/2*3/4 + 0.5 600', x: 780, z: -1794},
-	{desc: 'cbass 3/4 + 0.5 600', x: 1177, z: -1579},
-	{desc: 'cbass 1/2*3/4 + 0.5 600', x: 1398, z: -1776},
-	{desc: 'sdrone 4*3/4 3*8/5*3/4', x: 1548, z: -943},
-	{desc: 'hbottl 4*3/4 3*8/5*3/4', x: 1354, z: -1024},
-	{desc: 'rdrone 1 4/3 5/3 + 1', x: 17, z: 583},
-	{desc: 'rdrone 2/3 2/3 7/6 + 1', x: 152, z: 237},
-	{desc: 'rdrone 4/3 16/9 20/9 + 1', x: -72, z: -43},
-	{desc: 'rdrone 3/2 3/4 9/4', x: 1529, z: -1273},
-	{desc: 'rdrone 1 1/2 3/2', x: 484, z: 73},
-	{desc: 'vib 6 19/4', x: 481, z: -56},
-	{desc: 'cbass 3/5 + 0.7', x: 702, z: -85},
-	{desc: 'cbass 1 + 0.5', x: 751, z: -368},
-	{desc: 'rdrone 1 7/6 1/2', x: 1260, z: -234},
-	{desc: 'cbass 7/6 + 1 360', x: 1336, z: -749},
-	{desc: 'cbass 1 + 0.6', x: 1111, z: -295},
-	{desc: 'sdrone 4*3/4 3*8/5*3/4', x: 1158, z: -908},
-	{desc: 'sdrone 4 6', x: 1162, z: -619},
+	{ desc: 'vib 2 3 + 1', x: 17, z: 667 },
+	{ desc: 'vib 8 9 + 1', x: 17, z: 500 },
+	{ desc: 'vib 8/3 16/3 + 1', x: 231, z: 239 },
+	{ desc: 'vib 16/3 20/3 + 1', x: -103, z: -207 },
+	{ desc: 'vib 7 20/3*4/3 + 1', x: -163, z: -260 },
+	{ desc: 'hseri 2/3', x: 1297, z: 155 },
+	{ desc: 'cbass 2/3', x: 120, z: -499 },
+	{ desc: 'cbass 1/3', x: 159, z: -806 },
+	{ desc: 'hseri 1', x: -77, z: -1858 },
+	{ desc: 'cbass 1/2', x: -240, z: -1503 },
+	{ desc: 'rdrone 1 1 7/4', x: -150, z: -1785 },
+	{ desc: 'cbass 1', x: -32, z: -1009 },
+	{ desc: 'vib 8/3 10/3', x: 124, z: -646 },
+	{ desc: 'vib 2 3', x: -44, z: -1120 },
+	{ desc: 'vib 1 3/2', x: -66, z: -1488 },
+	{ desc: 'sdrone 4*3/4 6*3/4', x: 839, z: -1560 },
+	{ desc: 'sdrone 6*3/4 9*3/4', x: 1080, z: -1771 },
+	{ desc: 'hseri 3/4', x: 1550, z: -1690 },
+	{ desc: 'sdrone 3*3/4 4*3/4', x: 1537, z: -1559 },
+	{ desc: 'sdrone 2 4*3/4', x: 325, z: -1872 },
+	{ desc: 'cbass 1/2 + 0.5 600', x: 233, z: -1795 },
+	{ desc: 'cbass 3/4 + 0.5 600', x: 522, z: -1713 },
+	{ desc: 'cbass 3/2*3/4 + 0.5 600', x: 780, z: -1794 },
+	{ desc: 'cbass 3/4 + 0.5 600', x: 1177, z: -1579 },
+	{ desc: 'cbass 1/2*3/4 + 0.5 600', x: 1398, z: -1776 },
+	{ desc: 'sdrone 4*3/4 3*8/5*3/4', x: 1548, z: -943 },
+	{ desc: 'hbottl 4*3/4 3*8/5*3/4', x: 1354, z: -1024 },
+	{ desc: 'rdrone 1 4/3 5/3 + 1', x: 17, z: 583 },
+	{ desc: 'rdrone 2/3 2/3 7/6 + 1', x: 152, z: 237 },
+	{ desc: 'rdrone 4/3 16/9 20/9 + 1', x: -72, z: -43 },
+	{ desc: 'rdrone 3/2 3/4 9/4', x: 1529, z: -1273 },
+	{ desc: 'rdrone 1 1/2 3/2', x: 484, z: 73 },
+	{ desc: 'vib 6 19/4', x: 481, z: -56 },
+	{ desc: 'cbass 3/5 + 0.7', x: 702, z: -85 },
+	{ desc: 'cbass 1 + 0.5', x: 751, z: -368 },
+	{ desc: 'rdrone 1 7/6 1/2', x: 1260, z: -234 },
+	{ desc: 'cbass 7/6 + 1 360', x: 1336, z: -749 },
+	{ desc: 'cbass 1 + 0.6', x: 1111, z: -295 },
+	{ desc: 'sdrone 4*3/4 3*8/5*3/4', x: 1158, z: -908 },
+	{ desc: 'sdrone 4 6', x: 1162, z: -619 },
 ];
 
 const parseToken = (tok, isExtra) => {
@@ -82,12 +82,12 @@ const parseDesc = (rec, ...paramNames) => {
 	if (extraIdx !== -1) tokens.splice(extraIdx, 1);
 	else extraIdx = 999;
 	if (tokens.length > paramNames.length + 1) {
-		throw new Error('Invalid desc: '+rec.desc);
+		throw new Error('Invalid desc: ' + rec.desc);
 	}
 	rec.trackParams = {};
-	for (let i=1; i<tokens.length; i++) {
-		const isExtra = (i >= extraIdx);
-		rec.trackParams[paramNames[i-1]] = parseToken(tokens[i], isExtra);
+	for (let i = 1; i < tokens.length; i++) {
+		const isExtra = i >= extraIdx;
+		rec.trackParams[paramNames[i - 1]] = parseToken(tokens[i], isExtra);
 	}
 	return rec.trackParams;
 };
@@ -96,113 +96,160 @@ const parseDesc = (rec, ...paramNames) => {
 const tall = (rec, x) => {
 	rec.formName = 'tree';
 	rec.formParams = {
-		height: 90, numCoreSegs: 10,
-		colorFn: 'pick', colorParams: [
-			[0.4 + x*0.1, 0.6, 0.4], // hsl(148.7deg, 60.4%, 39.9%)
-			[0.15 + x*0.2, 0.7, 0.35], // hsl(142.3deg, 69.4%, 35%)
-	]};
+		height: 90,
+		numCoreSegs: 10,
+		colorFn: 'pick',
+		colorParams: [
+			[0.4 + x * 0.1, 0.6, 0.4], // hsl(148.7deg, 60.4%, 39.9%)
+			[0.15 + x * 0.2, 0.7, 0.35], // hsl(142.3deg, 69.4%, 35%)
+		],
+	};
 };
 const stout = (rec, x) => {
 	rec.formName = 'tree';
 	rec.formParams = {
-		colorFn: 'pick', colorParams: [
+		colorFn: 'pick',
+		colorParams: [
 			[0.35, 0.48, 0.45], // hsl(119.9deg, 48.3%, 46.8%)
-			[(0.9 + 0.35*x) % 1, 0.48 + 0.2*x, 0.45]
-	]};
+			[(0.9 + 0.35 * x) % 1, 0.48 + 0.2 * x, 0.45],
+		],
+	};
 };
-const stoutEh = (rec, x) => { // stout but kinda blue i guess
+const stoutEh = (rec, x) => {
+	// stout but kinda blue i guess
 	rec.formName = 'tree';
 	rec.formParams = {
-		colorFn: 'pick', colorParams: [
+		colorFn: 'pick',
+		colorParams: [
 			[0.26, 0.6, 0.4], // c`hsl(76.2deg, 60.4%, 39.2%)`,
-			[0.7 + 0.2*x, 0.2, 0.53], // c`hsl(299.8deg, 20.8%, 52.6%)`,
-	]};
+			[0.7 + 0.2 * x, 0.2, 0.53], // c`hsl(299.8deg, 20.8%, 52.6%)`,
+		],
+	};
 };
 const sparseTwist = (rec, x) => {
 	rec.formName = 'tree';
 	rec.formParams = {
-		height: 65, numBranches: 12, numCoreSegs: 6, segPts: 22, open: 17, twist: 1,
-		colorFn: 'grad', colorParams: [
+		height: 65,
+		numBranches: 12,
+		numCoreSegs: 6,
+		segPts: 22,
+		open: 17,
+		twist: 1,
+		colorFn: 'grad',
+		colorParams: [
 			[0.1, 0.1, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
-			[0.2*x, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
-	]};
+			[0.2 * x, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
+		],
+	};
 };
 const magicTwist = (rec, x) => {
 	rec.formName = 'tree';
 	rec.formParams = {
-		height: 70, numBranches: 10, numCoreSegs: 2, segPts: 32, open: 15, twist: -2, 
-		colorFn: 'grad', colorParams: [
-			[0.4, 0.1, 0.4], [0.3+0.2*x, 0.6, 0.33],
-	]};
+		height: 70,
+		numBranches: 10,
+		numCoreSegs: 2,
+		segPts: 32,
+		open: 15,
+		twist: -2,
+		colorFn: 'grad',
+		colorParams: [
+			[0.4, 0.1, 0.4],
+			[0.3 + 0.2 * x, 0.6, 0.33],
+		],
+	};
 };
 // forms: treball
 const cactus = (rec, x) => {
 	rec.formName = 'treball';
 	rec.formParams = {
-		colorFn: 'pick', colorParams: [
+		colorFn: 'pick',
+		colorParams: [
 			[0.26, 0.6, 0.4], // c`hsl(90.3deg, 60.4%, 39.2%)`,
-			[(0.86 + 0.3*x) % 1, 0.55, 0.6] // c`hsl(27deg, 40.3%, 50.8%)`,
-	]};
+			[(0.86 + 0.3 * x) % 1, 0.55, 0.6], // c`hsl(27deg, 40.3%, 50.8%)`,
+		],
+	};
 };
 const hand = (rec, x) => {
 	rec.formName = 'treball';
 	rec.formParams = {
-		height: 80, numBranches: 5, minHang: 0.2, outShrink: 0.02, twist: 2.5, cup: 1.4,
-		colorFn: 'grad', colorParams: [
+		height: 80,
+		numBranches: 5,
+		minHang: 0.2,
+		outShrink: 0.02,
+		twist: 2.5,
+		cup: 1.4,
+		colorFn: 'grad',
+		colorParams: [
 			[0.2, 0.6, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
-			[0.2*x, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
-	]};
+			[0.2 * x, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
+		],
+	};
 };
 const rxSpiral = (rec, x) => {
 	rec.formName = 'treball';
 	rec.formParams = {
-		height: 80, numBranches: 2, minHang: 0.5, outShrink: 0, twist: 18.5, cup: 1.66,
-		colorFn: 'grad', colorParams: [
-			[0, 0.1, 0.4], [0.3+0.3*x, 0.6, 0.33],
-	]};
+		height: 80,
+		numBranches: 2,
+		minHang: 0.5,
+		outShrink: 0,
+		twist: 18.5,
+		cup: 1.66,
+		colorFn: 'grad',
+		colorParams: [
+			[0, 0.1, 0.4],
+			[0.3 + 0.3 * x, 0.6, 0.33],
+		],
+	};
 };
 // forms: lsys
 const windy = (rec, x) => {
 	rec.formName = 'trelsys';
 	rec.formParams = {
 		height: 80,
-		branching: lev => 3-Math.max(0, lev-3),
-		branchPts: lev => 2+lev*3,
-		twist: lev => 0.05+lev*0.02,
-		bias: lev => -0.6+lev*0.25,
-		pull: lev => Math.max(0, lev-3)*0.05,
-		pullDir: () => [-1,0,-1],
-		colorFn: 'grad', colorParams: [
-			[0, 0.1, 0.4], [0.3+0.3*x, 0.6, 0.33],
-	]};
+		branching: lev => 3 - Math.max(0, lev - 3),
+		branchPts: lev => 2 + lev * 3,
+		twist: lev => 0.05 + lev * 0.02,
+		bias: lev => -0.6 + lev * 0.25,
+		pull: lev => Math.max(0, lev - 3) * 0.05,
+		pullDir: () => [-1, 0, -1],
+		colorFn: 'grad',
+		colorParams: [
+			[0, 0.1, 0.4],
+			[0.3 + 0.3 * x, 0.6, 0.33],
+		],
+	};
 };
 const willow = (rec, x) => {
 	rec.formName = 'trelsys';
 	rec.formParams = {
 		height: 80,
-		branching: lev => 3-Math.max(0, lev-3),
-		branchPts: (lev, id) => lev*4+lev*(id%4)+Math.max(0, 2-lev),
-		twist: lev => 0.01+lev*0.02,
-		pull: lev => Math.max(0, lev-3)*0.2,
-		colorFn: 'grad', colorParams: [
+		branching: lev => 3 - Math.max(0, lev - 3),
+		branchPts: (lev, id) => lev * 4 + lev * (id % 4) + Math.max(0, 2 - lev),
+		twist: lev => 0.01 + lev * 0.02,
+		pull: lev => Math.max(0, lev - 3) * 0.2,
+		colorFn: 'grad',
+		colorParams: [
 			[0.1, 0.27, 0.5], // c`hsl(0.1turn, 27.5%, 52.5%)`
-			[0.3+0.3*x, 0.6, 0.33],
-	]};
+			[0.3 + 0.3 * x, 0.6, 0.33],
+		],
+	};
 };
 const reachy = (rec, x) => {
 	rec.formName = 'trelsys';
 	rec.formParams = {
 		height: 80,
-		branching: lev => 3-Math.max(0, lev-3),
-		branchPts: (lev, id) => 2+lev+lev*(id%4),//+Math.max(0, 2-lev),
-		twist: lev => 0.02+Math.min(2, lev)*0.03,
-		pull: lev => Math.max(0, lev-3)*0.2,
+		branching: lev => 3 - Math.max(0, lev - 3),
+		branchPts: (lev, id) => 2 + lev + lev * (id % 4), //+Math.max(0, 2-lev),
+		twist: lev => 0.02 + Math.min(2, lev) * 0.03,
+		pull: lev => Math.max(0, lev - 3) * 0.2,
 		pullDir: () => [0, 1, 0],
-		colorFn: 'pick', colorParams: [
-			[0.3 + x*0.1, 0.55, 0.4], // hsl(0.4turn, 60%, 40%)
-			[0.2 + x*0.2, 0.6, 0.35], // hsl(0.1turn, 70%, 35%)
-			[0.1 + x*0.1, 0.55, 0.44], // hsl(0.4turn, 60%, 40%)
-	]};
+		colorFn: 'pick',
+		colorParams: [
+			[0.3 + x * 0.1, 0.55, 0.4], // hsl(0.4turn, 60%, 40%)
+			[0.2 + x * 0.2, 0.6, 0.35], // hsl(0.1turn, 70%, 35%)
+			[0.1 + x * 0.1, 0.55, 0.44], // hsl(0.4turn, 60%, 40%)
+		],
+	};
 };
 
 /** @type {Object.<string, function(BeaconRecord)>} */
@@ -262,16 +309,21 @@ const trackParsers = {
 export const parseTrack = rec => {
 	const shortName = rec.desc.split(' ')[0];
 	if (!(shortName in trackParsers)) {
-		throw new Error('could not parse '+rec.desc);
+		throw new Error('could not parse ' + rec.desc);
 	}
 	trackParsers[shortName](rec);
 	let urlBase = rec.desc;
-	for (let [a, b] of [['/','o'],['+','p'],['*','x'],[/[^a-z0-9]/gi, '_']]) {
+	for (let [a, b] of [
+		['/', 'o'],
+		['+', 'p'],
+		['*', 'x'],
+		[/[^a-z0-9]/gi, '_'],
+	]) {
 		urlBase = urlBase.replaceAll(a, b);
 	}
-	rec.introUrl = 'generated/audio/'+urlBase+'_intro.ogg';
-	rec.loopUrl = 'generated/audio/'+urlBase+'_loop.ogg';
-}
+	rec.introUrl = 'generated/audio/' + urlBase + '_intro.ogg';
+	rec.loopUrl = 'generated/audio/' + urlBase + '_loop.ogg';
+};
 
 for (let r of beaconRecords) {
 	parseTrack(r);

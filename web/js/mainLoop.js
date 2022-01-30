@@ -12,9 +12,10 @@ import { enableTips } from './tips.js';
 const shadowDim = 1024;
 const container = document.getElementById('gl_container');
 const dLight = new THREE.DirectionalLight(0xffffff, 0.5);
+const getAspect = () => window.innerWidth / window.innerHeight;
 
 export const renderer = new THREE.WebGLRenderer({ antialias: true });
-export const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
+export const camera = new THREE.PerspectiveCamera(70, getAspect(), 1, 10000);
 export const scene = new THREE.Scene();
 export const initGfx = () => {
 	container.style.touchAction = 'none';
@@ -31,30 +32,31 @@ export const initGfx = () => {
 	dLight.position.set(9, 20, 13);
 	dLight.castShadow = true;
 	Object.assign(dLight.shadow.camera, {
-		near: 1, far: 1400, left: -1024, right: 1024, bottom: -1024, top: 1024
+		near: 1,
+		far: 1400,
+		left: -1024,
+		right: 1024,
+		bottom: -1024,
+		top: 1024,
 	});
 	dLight.shadow.mapSize.width = shadowDim;
 	dLight.shadow.mapSize.height = shadowDim;
 	dLight.shadow.bias = 0;
 	scene.add(dLight);
 	scene.add(dLight.target);
-	// const dHelper = new THREE.DirectionalLightHelper(dLight, 2048);
-	// scene.add(dHelper);
-	// const shadowMapHelper = new ShadowMapViewer(dLight);
-	// shadowMapHelper.size.set( shadowDim, shadowDim );
 	updateLeafSize(dLight, window);
 };
 
-const teleport = (x, z) => camera.position.set(x, 50, z+200);
+const teleport = (x, z) => camera.position.set(x, 50, z + 200);
 const initPos = () => {
-	const aspect = window.innerWidth / window.innerHeight;
+	const aspect = getAspect();
 	const x = (aspect - 0.83) * ((50 - 100) / (2.5 - 0.83)) - 50; // 2.5 -> -100 ; 0.83 -> -50
 	const z = (aspect - 0.83) * ((580 - 620) / (2.5 - 0.83)) + 620; // 2.5 -> 580 ; 0.83 -> 620
 	teleport(x, z);
 };
 
 let terrainReady = false;
-export const initWorld = async ({trackLoader, nearMap, farMap}) => {
+export const initWorld = async ({ trackLoader, nearMap, farMap }) => {
 	await loadNearMap(nearMap);
 	await loadFarMap(farMap);
 	scene.add(beaconGroup);
@@ -83,24 +85,21 @@ export const intersectMouse = () => {
 	return mouseHits[0];
 };
 
-const stepWorld = (gfx=true) => {
+const stepWorld = (gfx = true) => {
 	clock.advance(gfx);
-	if (clock.diff < 1/80) return;
-	
-	// camera.position.add(cameraDeriv);
+	if (clock.diff < 1 / 80) return;
 	if (runMode.enabled) {
 		if (runMode.stepFn) runMode.stepFn();
-		let smoothing = (clock.worldTime - runMode.dragTime > 2) ? 0.005 : 0.1;
+		let smoothing = clock.worldTime - runMode.dragTime > 2 ? 0.005 : 0.1;
 		camera.rotation.y += (runMode.tgtYaw - camera.rotation.y) * smoothing;
 		const newPos = xz(camera.position).lerp(runMode.tgtXz, clock.diff * 0.01 * 60);
 		camera.position.x = newPos.x;
 		camera.position.z = newPos.y;
 	}
-
 	const dropMe = editMode.enabled ? editMode.orbiter.target : camera.position;
 	if (terrainReady) {
 		walkCaster.set(new THREE.Vector3().copy(dropMe).setY(1000), new THREE.Vector3(0, -1, 0));
-		const inter = (walkCaster.intersectObject(farGroup, true))[0];
+		const inter = walkCaster.intersectObject(farGroup, true)[0];
 		let iy;
 		if (inter) {
 			iy = inter.point.y + 50;
@@ -114,8 +113,12 @@ const stepWorld = (gfx=true) => {
 	/** @type { THREE.Vector3 } */
 	const zax = new THREE.Vector3(0, 0, 1);
 	const tgt = dLight.target.position;
-	tgt.copy(camera.position).applyAxisAngle(zax, 0.7).multiplyScalar(0.25).round().multiplyScalar(4).applyAxisAngle(zax, -0.7);
-	// console.log(tgt.x, tgt.y, tgt.z)
+	tgt.copy(camera.position)
+		.applyAxisAngle(zax, 0.7)
+		.multiplyScalar(0.25)
+		.round()
+		.multiplyScalar(4)
+		.applyAxisAngle(zax, -0.7);
 	dLight.position.copy(tgt).add(new THREE.Vector3(0, 700, 0).applyAxisAngle(zax, -0.7));
 	updateLeafTime();
 	updateGlows();
@@ -140,19 +143,26 @@ export const startMainLoop = () => {
 export const addMainListeners = () => {
 	window.addEventListener('resize', () => {
 		if (document.getElementById('welcome_modal')) initPos();
-		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.aspect = getAspect();
 		camera.updateProjectionMatrix();
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		// shadowMapHelper.updateForWindowResize();
 		updateLeafSize(dLight, window);
 	});
-	renderer.domElement.addEventListener('mousemove', event => {
-		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-	}, false);
-
-	renderer.domElement.addEventListener('mouseleave', () => {
-		mouse.x = 0;
-		mouse.y = 0;
-	}, false);
+	renderer.domElement.addEventListener(
+		'mousemove',
+		event => {
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+		},
+		false
+	);
+	renderer.domElement.addEventListener(
+		'mouseleave',
+		() => {
+			mouse.x = 0;
+			mouse.y = 0;
+		},
+		false
+	);
 };

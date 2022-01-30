@@ -1,6 +1,6 @@
-import * as THREE from './lib/three.module.js'
+import * as THREE from './lib/three.module.js';
 
-const subVert = /*glsl*/`
+const subVert = /*glsl*/ `
 #include <common>
 #include <packing>
 #include <lights_pars_begin>
@@ -15,9 +15,9 @@ void main() {
 	vec4 worldPosition = modelMatrix * vec4(position, 1.0);
 	vFirstShadowCoord = directionalShadowMatrix[0] * worldPosition;
 }
-`
+`;
 
-const subFrag = /*glsl*/`
+const subFrag = /*glsl*/ `
 #include <common>
 #include <packing>
 #include <lights_pars_begin>
@@ -52,22 +52,19 @@ void main() {
 	}
 	gl_FragColor.rgb *= shadow;
 }
-`
+`;
 
 const mkSubMaterial = () => {
 	const ret = new THREE.ShaderMaterial({
-		uniforms: THREE.UniformsUtils.merge([
-			THREE.UniformsLib.lights,
-			THREE.UniformsLib.fog
-		]),
+		uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.lights, THREE.UniformsLib.fog]),
 		vertexShader: subVert,
 		fragmentShader: subFrag,
 		lights: true,
 		polygonOffset: true,
 		polygonOffsetFactor: 400.0,
-		polygonOffsetUnits: 400.0
-	})
-	return ret
-}
+		polygonOffsetUnits: 400.0,
+	});
+	return ret;
+};
 
-export const subMaterial = mkSubMaterial()
+export const subMaterial = mkSubMaterial();

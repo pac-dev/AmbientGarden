@@ -28,7 +28,7 @@ const addAudio = (() => {
 		};
 		au.loaded = new Promise(resolve => au.addEventListener('canplaythrough', resolve));
 		return au;
-	}
+	};
 })();
 
 class FrozenTrack extends Track {
@@ -54,7 +54,6 @@ class FrozenTrack extends Track {
 			part.au.currentTime = 0;
 			part.au.play();
 			part.au.addEventListener('timeupdate', listener);
-
 		};
 		beginPart(introPart);
 	}

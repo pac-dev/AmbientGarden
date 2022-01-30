@@ -1,7 +1,7 @@
-import * as THREE from './lib/three.module.js'
-import { ratio, clock, pointHiDist } from './world.js'
+import * as THREE from './lib/three.module.js';
+import { ratio, clock, pointHiDist } from './world.js';
 
-const ptEyeVert = /*glsl*/`
+const ptEyeVert = /*glsl*/ `
 #include <common>
 #include <packing>
 #include <lights_pars_begin>
@@ -46,7 +46,7 @@ void main() {
 	float d = distance(worldPosition.xz, cameraPosition.xz);
 	float shade = smoothstep(1152.0*0.5, 1152.0*1.5, d);
 	vColor = mix(shaded, vColor, shade);
-	float fog = smoothstep(${(pointHiDist*0.5).toFixed(1)}, ${pointHiDist.toFixed(1)}, d);
+	float fog = smoothstep(${(pointHiDist * 0.5).toFixed(1)}, ${pointHiDist.toFixed(1)}, d);
 	vColor = mix(vColor, vec3(0.61, 0.73, 0.86)*0.9, fog);
 
 	float unitSz = 1.1;
@@ -60,9 +60,9 @@ void main() {
 	float edgeness = gl_Position.x / gl_Position.w;
 	gl_PointSize *= edgeness*edgeness*0.5 + 1.0;
 }
-`
+`;
 
-const ptEyeFrag = /*glsl*/`
+const ptEyeFrag = /*glsl*/ `
 varying vec3 vColor;
 void main() {
 	if (length(gl_PointCoord.xy - 0.5) > 0.5) {
@@ -70,9 +70,9 @@ void main() {
 	}
 	gl_FragColor = vec4(vColor, 1);
 }
-`
+`;
 
-const ptSunVert = /*glsl*/`
+const ptSunVert = /*glsl*/ `
 // using RawShaderMaterial so we define everything
 precision mediump float;
 precision mediump int;
@@ -96,9 +96,9 @@ void main() {
 	float unitSz = 1.4;
 	gl_PointSize = smSize.y * projectionMatrix[1][1] * unitSz / gl_Position.w;
 }
-`
+`;
 
-const ptSunFrag = /*glsl*/`
+const ptSunFrag = /*glsl*/ `
 precision mediump float;
 precision mediump int;
 
@@ -110,9 +110,9 @@ void main() {
 	}
 	gl_FragColor = vColor;
 }
-`
+`;
 
-export let leafMaterial, leafDepth
+export let leafMaterial, leafDepth;
 
 const initLeafMaterials = () => {
 	leafMaterial = new THREE.ShaderMaterial({
@@ -121,8 +121,8 @@ const initLeafMaterials = () => {
 			THREE.UniformsLib.fog,
 			{
 				vpSize: new THREE.Vector2(),
-				time: { value: 1.0 }
-			}
+				time: { value: 1.0 },
+			},
 		]),
 		vertexShader: ptEyeVert,
 		fragmentShader: ptEyeFrag,
@@ -131,29 +131,30 @@ const initLeafMaterials = () => {
 		// use stencil to stay on top of Glow waves
 		stencilWrite: true,
 		stencilRef: 1,
-		stencilZPass: THREE.ReplaceStencilOp
-	})
+		stencilZPass: THREE.ReplaceStencilOp,
+	});
 	leafDepth = new THREE.RawShaderMaterial({
 		uniforms: THREE.UniformsUtils.merge([
 			{
-				smSize: new THREE.Vector2()
-			}
-		] ),
+				smSize: new THREE.Vector2(),
+			},
+		]),
 		vertexShader: ptSunVert,
 		fragmentShader: ptSunFrag,
-	})
-}
+	});
+};
 
 export const updateLeafSize = (dLight, container) => {
-	if (!leafMaterial) initLeafMaterials()
+	if (!leafMaterial) initLeafMaterials();
 	leafMaterial.uniforms.vpSize.value = new THREE.Vector2(
-		container.innerWidth*ratio,
-		container.innerHeight*ratio)
-	const dim = dLight.shadow.mapSize.width
-	leafDepth.uniforms.smSize.value = new THREE.Vector2(dim, dim)
-}
+		container.innerWidth * ratio,
+		container.innerHeight * ratio
+	);
+	const dim = dLight.shadow.mapSize.width;
+	leafDepth.uniforms.smSize.value = new THREE.Vector2(dim, dim);
+};
 
 export const updateLeafTime = () => {
-	if (!leafMaterial) initLeafMaterials()
+	if (!leafMaterial) initLeafMaterials();
 	leafMaterial.uniforms.time.value = clock.gfxTime;
-}
+};

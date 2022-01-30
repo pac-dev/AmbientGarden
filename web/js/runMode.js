@@ -6,7 +6,7 @@ import { setAutopilotUi } from './ui.js';
 import { disableTips, enableTips, tipsEnabled } from './tips.js';
 
 let lastMouseX, lastMouseY, totalMovement;
-const yawAccel = x => Math.tanh(x*6-2.5)*0.5+1.5;
+const yawAccel = x => Math.tanh(x * 6 - 2.5) * 0.5 + 1.5;
 
 const onPointerDown = event => {
 	lastMouseX = event.clientX;
@@ -20,12 +20,12 @@ const onPointerDown = event => {
 };
 
 const onCapturedMove = event => {
-	const diffX = (event.clientX - lastMouseX)/renderer.domElement.clientWidth;
-	const diffY = (event.clientY - lastMouseY)/renderer.domElement.clientHeight;
+	const diffX = (event.clientX - lastMouseX) / renderer.domElement.clientWidth;
+	const diffY = (event.clientY - lastMouseY) / renderer.domElement.clientHeight;
 	totalMovement += new THREE.Vector2(diffX, diffY).length();
 
 	let yawAmp = yawAccel(Math.abs(camera.rotation.y - runMode.tgtYaw));
-	runMode.tgtYaw += 2*diffX*yawAmp;
+	runMode.tgtYaw += 2 * diffX * yawAmp;
 
 	lastMouseX = event.clientX;
 	lastMouseY = event.clientY;
@@ -48,22 +48,25 @@ const onCapturedUp = event => {
 	tgtLockMesh.position.copy(mouseHit.point);
 	if (!mouseHit.object.layers.isEnabled(0)) {
 		// keep some distance to beacon
-		tgtLockMesh.position.add(camera.position.clone().sub(mouseHit.point).normalize().multiplyScalar(100));
+		tgtLockMesh.position.add(
+			camera.position.clone().sub(mouseHit.point).normalize().multiplyScalar(100)
+		);
 	}
 	tgtLockMesh.position.y += 2;
 	tgtLockMesh.visible = true;
 	const startPos = runMode.tgtXz.clone();
 	const endPos = xz(tgtLockMesh.position);
 	const startTime = clock.worldTime;
-	const endTime = clock.worldTime + startPos.distanceTo(endPos)*0.06;
+	const endTime = clock.worldTime + startPos.distanceTo(endPos) * 0.06;
 	runMode.stepFn = () => {
 		if (clock.worldTime > endTime) {
 			runMode.stepFn = undefined;
 			tgtLockMesh.visible = false;
 		}
-		runMode.tgtXz = startPos.clone().lerp(endPos, (clock.worldTime - startTime)/(endTime - startTime));
+		runMode.tgtXz = startPos.clone();
+		runMode.tgtXz.lerp(endPos, (clock.worldTime - startTime) / (endTime - startTime));
 		const d = xz(camera.position).distanceTo(endPos);
-		tgtLockMesh.material.opacity = 1 - 1/(d*d*0.00002+1);
+		tgtLockMesh.material.opacity = 1 - 1 / (d * d * 0.00002 + 1);
 	};
 };
 
@@ -95,7 +98,7 @@ window.document.addEventListener('keydown', event => {
 	const step = {
 		x: Math.round(camera.position.x * 10) / 10,
 		z: Math.round(camera.position.z * 10) / 10,
-		yaw: Math.round(camera.rotation.y*100)/100,
+		yaw: Math.round(camera.rotation.y * 100) / 100,
 	};
 	window.recSteps.push(step);
 	console.log(step);
@@ -129,7 +132,7 @@ const waypoints = [
 	{ x: 1410.8, z: -1135, yaw: 3.61 },
 	{ x: 1410.8, z: -1135, yaw: 3.4 },
 	// --
-	{ x: 1309.8, z: -408.7, yaw: 2.47 }
+	{ x: 1309.8, z: -408.7, yaw: 2.47 },
 ];
 
 const closestWaypoint = refXz => {
@@ -154,11 +157,11 @@ export const toggleAutopilot = toggle => {
 		tgtLockMesh.visible = false;
 		let startPos, endPos, posTime, endTime, startYaw, endYaw, yawTime;
 		const setWaypoint = waypoint => {
-			console.log('moving to: ', waypointId, waypoint)
+			console.log('moving to: ', waypointId, waypoint);
 			startPos = runMode.tgtXz.clone();
 			endPos = xz(waypoint);
 			posTime = clock.worldTime;
-			const dur = Math.max(4, startPos.distanceTo(endPos)*0.06);
+			const dur = Math.max(4, startPos.distanceTo(endPos) * 0.06);
 			endTime = clock.worldTime + dur;
 			yawTime = clock.worldTime;
 			startYaw = runMode.tgtYaw;
@@ -171,11 +174,11 @@ export const toggleAutopilot = toggle => {
 				waypointId = (waypointId + 1) % waypoints.length;
 				setWaypoint(waypoints[waypointId]);
 			}
-			const progress = (clock.worldTime - posTime)/(endTime - posTime);
+			const progress = (clock.worldTime - posTime) / (endTime - posTime);
 			runMode.tgtXz = startPos.clone().lerp(endPos, progress);
 			if (clock.worldTime - runMode.dragTime > 2) {
 				const yawNo360 = endYaw + Math.round((startYaw - endYaw) / tau) * tau;
-				const yawProg = (clock.worldTime - yawTime)/(endTime - yawTime);
+				const yawProg = (clock.worldTime - yawTime) / (endTime - yawTime);
 				runMode.tgtYaw = (1 - yawProg) * startYaw + yawProg * yawNo360;
 			} else {
 				yawTime = clock.worldTime;
@@ -193,7 +196,11 @@ const update = () => {
 	if (!tgtDiskMesh) {
 		const tgtDiskMap = new THREE.TextureLoader().load('img/tgtdisk.png');
 		const tgtDiskGeo = new THREE.PlaneGeometry(30, 30);
-		const tgtDiskMat = new THREE.MeshBasicMaterial({ map: tgtDiskMap, transparent: true, depthWrite: false });
+		const tgtDiskMat = new THREE.MeshBasicMaterial({
+			map: tgtDiskMap,
+			transparent: true,
+			depthWrite: false,
+		});
 		tgtDiskMesh = new THREE.Mesh(tgtDiskGeo, tgtDiskMat);
 		tgtDiskMesh.renderOrder = 1;
 		scene.add(tgtDiskMesh);
@@ -201,7 +208,11 @@ const update = () => {
 	if (!tgtLockMesh) {
 		const tgtLockMap = new THREE.TextureLoader().load('img/tgtlock.png');
 		const tgtLockGeo = new THREE.PlaneGeometry(30, 30);
-		const tgtLockMat = new THREE.MeshBasicMaterial({ map: tgtLockMap, transparent: true, depthWrite: false });
+		const tgtLockMat = new THREE.MeshBasicMaterial({
+			map: tgtLockMap,
+			transparent: true,
+			depthWrite: false,
+		});
 		tgtLockMesh = new THREE.Mesh(tgtLockGeo, tgtLockMat);
 		tgtLockMesh.renderOrder = 2;
 		tgtLockMesh.visible = false;
@@ -218,6 +229,12 @@ const update = () => {
 };
 
 export const runMode = {
-	enable, disable, update,
-	enabled: false, tgtPos: undefined, tgtYaw: undefined, stepFn: undefined, dragTime: 0
+	enable,
+	disable,
+	update,
+	enabled: false,
+	tgtPos: undefined,
+	tgtYaw: undefined,
+	stepFn: undefined,
+	dragTime: 0,
 };
