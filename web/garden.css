@@ -75,17 +75,20 @@ button:disabled {
 .tip {
 	position: absolute;
 	transform: translateY(-50%);
-	color: #fff;
 	font-family: sans-serif;
 	font-size: 14px;
 	padding: 2px;
 	user-select: none;
 	cursor: pointer;
+	mix-blend-mode: screen;
 }
 .tip i {
 	display: none;
-	color: #eee;
 }
 .tip:hover i {
 	display: inline;
+}
+.tip.playing {
+	color: #eff;
+	text-decoration: underline;
 }

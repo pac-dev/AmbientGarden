@@ -1,9 +1,12 @@
+import { getMeta } from './beacons.js';
 import * as THREE from './lib/three.module.js';
 import { renderer, camera, scene } from './mainLoop.js';
 import { addResourcePool, getResourcePool, removeResourcePool } from './ResourcePool.js';
+import { clock } from './World.js';
 
 const dotMaterial = new THREE.PointsMaterial({
-	color: 0xeeeeee,
+	// color: 0xeeeeee,
+	vertexColors: true,
 	size: 4,
 	blending: THREE.AdditiveBlending,
 	sizeAttenuation: false,
@@ -12,19 +15,28 @@ const dotMaterial = new THREE.PointsMaterial({
 });
 
 const segMaterial = new THREE.LineBasicMaterial({
-	color: 0xeeeeee,
+	// color: 0xeeeeee,
+	vertexColors: true,
 	blending: THREE.AdditiveBlending,
 	depthWrite: false,
 	depthTest: false
 });
 
+const defaultColor = new THREE.Color(0.1, 0.1, 0.1);
+const defaultTextColor = new THREE.Color(0.5, 0.5, 0.5);
+const playingColor = new THREE.Color(0.5, 1, 1);
+
 const maxDotCount = 50;
 const dotPositions = new Float32Array(maxDotCount * 3);
+const dotColors = new Float32Array(maxDotCount * 3);
 const dotGeometry = new THREE.BufferGeometry();
 const segGeometry = new THREE.BufferGeometry();
 const posAttribute = new THREE.BufferAttribute(dotPositions, 3).setUsage(THREE.DynamicDrawUsage);
+const colAttribute = new THREE.BufferAttribute(dotColors, 3).setUsage(THREE.DynamicDrawUsage);
 dotGeometry.setAttribute('position', posAttribute);
 segGeometry.setAttribute('position', posAttribute);
+dotGeometry.setAttribute('color', colAttribute);
+segGeometry.setAttribute('color', colAttribute);
 const dots = new THREE.Points(dotGeometry, dotMaterial);
 const segs = new THREE.LineSegments(segGeometry, segMaterial);
 dots.frustumCulled = false;
@@ -52,6 +64,7 @@ export const disableTips = () => {
  * @typedef {Object} _TipResource
  * @property {import('./beacons.js').BeaconResource} beacon
  * @property {number} dSquare
+ * @property {number} spawnTime
  * @property {HTMLDivElement} [domEle]
  * @property {THREE.Vector3} [textRoot]
  * @property {string} [dir]
@@ -83,6 +96,7 @@ const addTipsPool = () => addResourcePool({
 		res.domEle.className = 'tip';
 		document.body.appendChild(res.domEle);
 		res.textRoot = new THREE.Vector3();
+		res.spawnTime = clock.worldTime;
 	},
 	/** @param {TipResource} res */
 	remove(res) {
@@ -100,7 +114,8 @@ const addTipsPool = () => addResourcePool({
 		const xTouch = 200 * 2 / renderer.domElement.clientWidth;
 		// preallocate some, since we're looping in every frame
 		const formPos = new THREE.Vector3(), formDir = new THREE.Vector3(),
-			dot1Pos = new THREE.Vector3(), dot2Pos = new THREE.Vector3();
+			dot1Pos = new THREE.Vector3(), dot2Pos = new THREE.Vector3(),
+			col = new THREE.Color();
 		// sort so that front tips push back tips around
 		pool.loaded.sort((a, b) => a.dSquare - b.dSquare);
 		for (let tip of pool.loaded) {
@@ -173,10 +188,25 @@ const addTipsPool = () => addResourcePool({
 			// send dot positions to buffer used by THREE for lines and dots
 			dot1Pos.toArray(dotPositions, (tipIdx * 2) * 3);
 			dot2Pos.toArray(dotPositions, (tipIdx * 2 + 1) * 3);
+			if (getMeta(tip.beacon.record).track) {
+				playingColor.toArray(dotColors, (tipIdx * 2) * 3);
+				playingColor.toArray(dotColors, (tipIdx * 2 + 1) * 3);
+				tip.domEle.style.removeProperty('color');
+				tip.domEle.classList.add('playing');
+			} else {
+				const age = Math.min(1, (clock.worldTime - tip.spawnTime)*0.5);
+				col.copy(defaultColor).multiplyScalar(age);
+				col.toArray(dotColors, (tipIdx * 2) * 3);
+				col.toArray(dotColors, (tipIdx * 2 + 1) * 3);
+				col.copy(defaultTextColor).multiplyScalar(age);
+				tip.domEle.style.color = col.getStyle();
+				tip.domEle.classList.remove('playing');
+			}
 			if (2 * tipIdx++ >= maxDotCount) break;
 		}
 		dotGeometry.setDrawRange(0, tipIdx * 2);
 		segGeometry.setDrawRange(0, tipIdx * 2);
 		posAttribute.needsUpdate = true;
+		colAttribute.needsUpdate = true;
 	}
 });
