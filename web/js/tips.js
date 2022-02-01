@@ -171,7 +171,7 @@ const layoutTips = pool => {
 		// send dot positions to buffer used by THREE for lines and dots
 		dot1Pos.toArray(dotPositions, tipIdx * 2 * 3);
 		dot2Pos.toArray(dotPositions, (tipIdx * 2 + 1) * 3);
-		if (getMeta(tip.beacon.record).track) {
+		if (getMeta(tip.beacon.record).track?.status === 'playing') {
 			playingColor.toArray(dotColors, tipIdx * 2 * 3);
 			playingColor.toArray(dotColors, (tipIdx * 2 + 1) * 3);
 			tip.domEle.style.removeProperty('color');

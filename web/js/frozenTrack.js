@@ -10,6 +10,7 @@ const addAudio = (() => {
 	let preAmp;
 	/** @type {AudioContext} */
 	let context;
+	/** @param {string} url */
 	return url => {
 		if (!context) {
 			context = new AudioContext();
@@ -20,28 +21,44 @@ const addAudio = (() => {
 			preAmp.gain.value = 1.75;
 		}
 		const au = new Audio(url);
-		const source = context.createMediaElementSource(au);
-		source.connect(compressor);
 		au.cleanup = () => {
-			au.pause();
-			source.disconnect();
+			au.canceled = true;
 		};
-		au.loaded = new Promise(resolve => au.addEventListener('canplaythrough', resolve));
+		let source;
+		au.loaded = new Promise((resolve, reject) => {
+			au.addEventListener('canplaythrough', () => {
+				if (source) return;
+				source = context.createMediaElementSource(au);
+				source.connect(compressor);
+				au.cleanup = () => {
+					au.pause();
+					source.disconnect();
+					au.cleanup = () => {};
+				};
+				resolve();
+			});
+			au.addEventListener('error', reject);
+			au.addEventListener('abort', reject);
+		});
 		return au;
 	};
 })();
 
 class FrozenTrack extends Track {
-	constructor(introAu, loop1Au, loop2Au, amp) {
-		super(amp);
+	constructor(proximity) {
+		super(proximity);
 		/** @type {HTMLAudioElement} */
-		this.introAu = introAu;
+		this.introAu;
 		/** @type {HTMLAudioElement} */
-		this.loop1Au = loop1Au;
+		this.loop1Au;
 		/** @type {HTMLAudioElement} */
-		this.loop2Au = loop2Au;
-		this.setAmp(amp);
-		const loop2Part = { au: loop2Au, dur: loop1Au.duration - xfDur };
+		this.loop2Au;
+	}
+	start() {
+		this.setAmp(this.lastAmp);
+		const loop1Au = this.loop1Au;
+		const introAu = this.introAu;
+		const loop2Part = { au: this.loop2Au, dur: loop1Au.duration - xfDur };
 		const loop1Part = { au: loop1Au, dur: loop1Au.duration - xfDur, next: loop2Part };
 		const introPart = { au: introAu, dur: introAu.duration - xfDur, next: loop1Part };
 		loop2Part.next = loop1Part;
@@ -56,6 +73,7 @@ class FrozenTrack extends Track {
 			part.au.addEventListener('timeupdate', listener);
 		};
 		beginPart(introPart);
+		this.status = 'playing';
 	}
 	setAmp(x) {
 		this.introAu.volume = x;
@@ -75,13 +93,20 @@ class FrozenTrack extends Track {
 export class FrozenTrackLoader extends TrackLoader {
 	/** @param {import('./beacons.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
-		const introAu = addAudio(resource.record.introUrl);
-		const loop1Au = addAudio(resource.record.loopUrl);
-		const loop2Au = addAudio(resource.record.loopUrl);
-		await Promise.all([introAu.loaded, loop1Au.loaded, loop2Au.loaded]);
-		const track = new FrozenTrack(introAu, loop1Au, loop2Au, proximity);
+		const track = new FrozenTrack(proximity);
 		resource.track = track;
 		getMeta(resource.record).track = track;
+		track.introAu = addAudio(resource.record.introUrl);
+		track.loop1Au = addAudio(resource.record.loopUrl);
+		track.loop2Au = addAudio(resource.record.loopUrl);
+		try {
+			await Promise.all([track.introAu.loaded, track.loop1Au.loaded, track.loop2Au.loaded]);
+		} catch (error) {
+			console.log(`error loading ${resource.trackName}`);
+			return;
+		}
+		if (track.status === 'canceling') return console.log(`canceled ${resource.trackName}`);
+		track.start();
 		console.log(`playing track ${resource.trackName}`);
 	}
 }

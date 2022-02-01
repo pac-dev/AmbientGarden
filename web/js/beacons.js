@@ -144,8 +144,10 @@ export const initTrackPool = loader =>
 				if (!('x' in record)) continue;
 				const [x, z, track] = [record.x, record.z, getMeta(record).track];
 				const dSquare = sq(camX - x) + sq(camZ - z);
-				if (dSquare > trackWakeSquare && !track) continue;
-				if (dSquare > trackWakeSquare && track.isDone()) continue;
+				if (dSquare > trackWakeSquare) {
+					if (track?.status !== 'playing') continue;
+					if (track.isDone()) continue;
+				}
 				yield { x, z, record };
 			}
 		},
@@ -155,6 +157,7 @@ export const initTrackPool = loader =>
 			res.trackId = trackId();
 			(async () => {
 				await loader.startTrack(res, proximity(res, camX, camZ));
+				if (res.track.status !== 'playing') return;
 				startGlow(res.record);
 			})();
 		},
@@ -168,7 +171,7 @@ export const initTrackPool = loader =>
 			updateWake();
 			if (clock.worldTime - lastProxSetTime > 0.1) {
 				for (let resource of pool.loaded) {
-					if (!resource.track) continue;
+					if (resource.track?.status !== 'playing') continue;
 					resource.track.setProximity(proximity(resource, camX, camZ));
 				}
 				lastProxSetTime = clock.worldTime;

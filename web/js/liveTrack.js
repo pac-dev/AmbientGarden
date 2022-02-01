@@ -60,6 +60,7 @@ class TeasynthTrack extends Track {
 			node.port.postMessage({ type: 'init main', initParams: this.initParams });
 		});
 		this.node.connect(this.audioContext.destination);
+		this.status = 'playing';
 	}
 	setParam(name, val) {
 		this.node.port.postMessage({ type: 'set param', name, val });
@@ -119,12 +120,12 @@ export class LiveTrackLoader extends TrackLoader {
 			callbacks,
 			initParams,
 		});
+		resource.track = track;
+		getMeta(resource.record).track = track;
 		await track.init();
 		if (track.playResult.type !== 'main ready') {
 			throw new Error('Error adding node: ' + processorName);
 		}
-		resource.track = track;
-		getMeta(resource.record).track = track;
 		console.log(`playing track ${resource.trackName}`);
 	}
 }

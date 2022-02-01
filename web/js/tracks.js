@@ -6,6 +6,7 @@ export class Track {
 		this.lastAmp = proximity * 0.3 + 0.7;
 		this.lastAmpTime = clock.worldTime;
 		this.lastLivingTime = clock.worldTime;
+		this.status = 'loading';
 	}
 	setAmp(val) {
 		throw new Error('Override Track.setAmp!');
