@@ -6,6 +6,7 @@ import { setAutopilotUi } from './ui.js';
 import { disableTips, enableTips, tipsEnabled } from './tips.js';
 
 let lastMouseX, lastMouseY, totalMovement;
+let tgtDiskMesh, tgtLockMesh;
 const yawAccel = x => Math.tanh(x * 6 - 2.5) * 0.5 + 1.5;
 
 const onPointerDown = event => {
@@ -80,6 +81,27 @@ const enable = () => {
 	renderer.domElement.addEventListener('pointerdown', onPointerDown);
 	// renderer.domElement.addEventListener('pointercancel', onPointerCancel);
 	if (!tipsEnabled) enableTips();
+	const tgtDiskMap = new THREE.TextureLoader().load('img/tgtdisk.png');
+	const tgtDiskGeo = new THREE.PlaneGeometry(30, 30);
+	const tgtDiskMat = new THREE.MeshBasicMaterial({
+		map: tgtDiskMap,
+		transparent: true,
+		depthWrite: false,
+	});
+	tgtDiskMesh = new THREE.Mesh(tgtDiskGeo, tgtDiskMat);
+	tgtDiskMesh.renderOrder = 1;
+	scene.add(tgtDiskMesh);
+	const tgtLockMap = new THREE.TextureLoader().load('img/tgtlock.png');
+	const tgtLockGeo = new THREE.PlaneGeometry(30, 30);
+	const tgtLockMat = new THREE.MeshBasicMaterial({
+		map: tgtLockMap,
+		transparent: true,
+		depthWrite: false,
+	});
+	tgtLockMesh = new THREE.Mesh(tgtLockGeo, tgtLockMat);
+	tgtLockMesh.renderOrder = 2;
+	tgtLockMesh.visible = false;
+	scene.add(tgtLockMesh);
 	runMode.enabled = true;
 };
 
@@ -106,7 +128,7 @@ window.document.addEventListener('keydown', event => {
 
 let waypointId = 1;
 const waypoints = [
-	{ x: -64.8, z: 808.2, yaw: 0 },
+	{ x: -64.8, z: 900, yaw: 0 },
 	{ x: -49.6, z: 511.8, yaw: -0.31 },
 	{ x: 100.9, z: 339.3, yaw: -0.14 },
 	{ x: -27.2, z: -97.2, yaw: 0.09 },
@@ -152,29 +174,33 @@ const closestWaypoint = refXz => {
 };
 
 const tau = Math.PI * 2;
-export const toggleAutopilot = toggle => {
+export const toggleAutopilot = (toggle, isIntro) => {
+	if (!runMode.enabled) return;
 	if (toggle) {
 		tgtLockMesh.visible = false;
-		let startPos, endPos, posTime, endTime, startYaw, endYaw, yawTime;
+		let startPos, endPos, startTime, endTime, startYaw, endYaw, yawTime;
 		const setWaypoint = waypoint => {
 			console.log('moving to: ', waypointId, waypoint);
 			startPos = runMode.tgtXz.clone();
 			endPos = xz(waypoint);
-			posTime = clock.worldTime;
+			startTime = clock.worldTime;
+			if (isIntro) startTime += 1.5;
 			const dur = Math.max(4, startPos.distanceTo(endPos) * 0.06);
 			endTime = clock.worldTime + dur;
 			yawTime = clock.worldTime;
 			startYaw = runMode.tgtYaw;
 			endYaw = waypoint.yaw;
+			isIntro = false;
 		};
 		waypointId = closestWaypoint(runMode.tgtXz);
 		setWaypoint(waypoints[waypointId]);
 		runMode.stepFn = () => {
+			if (clock.worldTime < startTime) return;
 			if (clock.worldTime > endTime) {
 				waypointId = (waypointId + 1) % waypoints.length;
 				setWaypoint(waypoints[waypointId]);
 			}
-			const progress = (clock.worldTime - posTime) / (endTime - posTime);
+			const progress = (clock.worldTime - startTime) / (endTime - startTime);
 			runMode.tgtXz = startPos.clone().lerp(endPos, progress);
 			if (clock.worldTime - runMode.dragTime > 2) {
 				const yawNo360 = endYaw + Math.round((startYaw - endYaw) / tau) * tau;
@@ -190,34 +216,8 @@ export const toggleAutopilot = toggle => {
 	}
 };
 
-let tgtDiskMesh, tgtLockMesh;
 const update = () => {
 	if (!runMode.enabled) return;
-	if (!tgtDiskMesh) {
-		const tgtDiskMap = new THREE.TextureLoader().load('img/tgtdisk.png');
-		const tgtDiskGeo = new THREE.PlaneGeometry(30, 30);
-		const tgtDiskMat = new THREE.MeshBasicMaterial({
-			map: tgtDiskMap,
-			transparent: true,
-			depthWrite: false,
-		});
-		tgtDiskMesh = new THREE.Mesh(tgtDiskGeo, tgtDiskMat);
-		tgtDiskMesh.renderOrder = 1;
-		scene.add(tgtDiskMesh);
-	}
-	if (!tgtLockMesh) {
-		const tgtLockMap = new THREE.TextureLoader().load('img/tgtlock.png');
-		const tgtLockGeo = new THREE.PlaneGeometry(30, 30);
-		const tgtLockMat = new THREE.MeshBasicMaterial({
-			map: tgtLockMap,
-			transparent: true,
-			depthWrite: false,
-		});
-		tgtLockMesh = new THREE.Mesh(tgtLockGeo, tgtLockMat);
-		tgtLockMesh.renderOrder = 2;
-		tgtLockMesh.visible = false;
-		scene.add(tgtLockMesh);
-	}
 	tgtDiskMesh.visible = false;
 	const mouseHit = intersectMouse();
 	if (!mouseHit) return;
