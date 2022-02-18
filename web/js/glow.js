@@ -2,6 +2,7 @@ import * as THREE from './lib/three.module.js';
 import { getMeta } from './beacons.js';
 import { clock } from './world.js';
 
+const flareMap = new THREE.TextureLoader().load('img/glow.png');
 const waveMap = new THREE.TextureLoader().load('img/wave512.png');
 const planeGeo = new THREE.PlaneGeometry(20, 20);
 
@@ -28,8 +29,34 @@ const addWave = grp => {
 };
 
 /** @param {THREE.Group} grp */
-export const addGlow = grp => {
-	return [addWave(grp), addWave(grp), addWave(grp)];
+const addFlare = (grp, height) => {
+	// material per object required for individual opacities
+	const flareMat = new THREE.SpriteMaterial({
+		map: flareMap,
+		depthWrite: false,
+		depthTest: false,
+		blending: THREE.AdditiveBlending,
+		opacity: 0,
+		// use stencil to only show flare on beacons
+		stencilWrite: true,
+		stencilFunc: THREE.NotEqualStencilFunc,
+		stencilRef: 0,
+	});
+	const flare = new THREE.Sprite(flareMat);
+	flare.position.y = height*0.5;
+	flare.scale.set(height*0.66, height*3, 1);
+	grp.add(flare);
+	return flare;
+};
+
+/** @param {THREE.Group} grp */
+export const addGlow = (grp, height) => {
+	return {
+		wave1: addWave(grp), 
+		wave2: addWave(grp), 
+		wave3: addWave(grp),
+		flare: addFlare(grp, height)
+	};
 };
 
 /** @type {Set.<import('./beaconRecords.js').BeaconRecord>} */
@@ -41,9 +68,9 @@ export const startGlow = record => {
 
 /** @param {import('./beaconRecords.js').BeaconRecord} record */
 export const stopGlow = record => {
-	getMeta(record).glow.forEach(w => {
-		w.material.opacity = 0;
-	});
+	for (let obj3d of Object.values(getMeta(record).glow)) {
+		obj3d.material.opacity = 0;
+	}
 	activeGlows.delete(record);
 };
 
@@ -63,6 +90,16 @@ const waveOpacity = (x, phase) => {
 	return x < 0.1 ? x / 0.1 : 1.1 - x * 1.1;
 };
 
+const defaultCurve = t => {
+	t *= 6;
+	return 0.4+1.87*t/(1+Math.pow(t, 1.8))-0.4/(t*t*0.1+1);
+};
+
+const slowCurve = t => {
+    t *= 2;
+    return 0.4-0.4/(t*t*0.4+1);
+};
+
 /** @param {THREE.Object3D} obj */
 export const updateGlows = () => {
 	for (let rec of activeGlows) {
@@ -70,7 +107,7 @@ export const updateGlows = () => {
 		const birthAmt = fade(age, rec.glowCurve === 'slow' ? 0.5 : 100);
 		const deathAmt = fade(getMeta(rec).track?.lastAmp ?? 0, 400);
 		const groupOpacity = birthAmt * deathAmt;
-		const [wave1, wave2, wave3] = getMeta(rec).glow;
+		const {wave1, wave2, wave3, flare} = getMeta(rec).glow;
 		const waveAge = age + 1.3;
 		wave1.scale.setScalar(waveSize(waveAge, 0));
 		wave2.scale.setScalar(waveSize(waveAge, 0.33));
@@ -78,5 +115,9 @@ export const updateGlows = () => {
 		wave1.material.opacity = waveOpacity(waveAge, 0) * groupOpacity;
 		wave2.material.opacity = waveOpacity(waveAge, 0.33) * groupOpacity;
 		wave3.material.opacity = waveOpacity(waveAge, 0.66) * groupOpacity;
+		let ageFactor;
+		if (rec.glowCurve === 'slow') ageFactor = slowCurve(age);
+		else ageFactor = defaultCurve(age);
+		flare.material.opacity = ageFactor * Math.sqrt(getMeta(rec).track?.lastAmp ?? 0) * 0.5;
 	}
 };
