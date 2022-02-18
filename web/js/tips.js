@@ -2,6 +2,7 @@ import { getMeta } from './beacons.js';
 import * as THREE from './lib/three.module.js';
 import { renderer, camera, scene } from './mainLoop.js';
 import { addResourcePool, getResourcePool, removeResourcePool } from './resourcePool.js';
+import { showDetail } from './ui.js';
 import { clock } from './world.js';
 
 const dotMaterial = new THREE.PointsMaterial({
@@ -208,10 +209,8 @@ const addTipsPool = () =>
 		add(res) {
 			res.domEle = document.createElement('div');
 			const rec = res.beacon.record;
-			res.domEle.innerHTML = rec.trackName.replace(/\-/g, ' ') + ' <i>(edit)</i>';
-			res.domEle.onclick = () => {
-				console.log(rec.desc);
-			};
+			res.domEle.innerHTML = rec.trackName.replace(/\-/g, ' ');
+			res.domEle.onclick = () => showDetail(res.beacon);
 			res.domEle.className = 'tip';
 			document.body.appendChild(res.domEle);
 			res.textRoot = new THREE.Vector3();

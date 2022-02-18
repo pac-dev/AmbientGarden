@@ -76,6 +76,7 @@ const loadBeacon = resource => {
 	const bbox = new THREE.Mesh(bboxGeom);
 	bbox.position.y = formParams.height / 2;
 	bbox.layers.set(1);
+	bbox.userData.beaconRes = resource;
 	resource.form.add(bbox);
 	beaconGroup.add(resource.form);
 };

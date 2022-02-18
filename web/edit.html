@@ -9,10 +9,13 @@
 	<body>
 		<div id=gl_container></div>
 		<div id=ctrls>
-			<span id=autopilot_label>Autopilot:</span>
-			<span id=autopilot_status>Off</span>
-			<button id=autopilot_on disabled>Turn On</button>
-			<button id=autopilot_off class=hidden>Turn Off</button>
+			<label class=switch>
+				<input id=autopilot type=checkbox checked>
+				<span class=slider></span>
+			</label>
+			<label for=autopilot>
+				Autopilot
+			</label>
 		</div>
 		<div id=welcome_modal>
 			<figure>

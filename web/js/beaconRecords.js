@@ -20,6 +20,7 @@ import { noise1D } from './noise.js';
  * @property {string} [glowCurve]
  * @property {string} [introUrl]
  * @property {string} [loopUrl]
+ * @property {string} [sourceUrl]
  */
 
 // postition to test forms:
@@ -323,6 +324,7 @@ export const parseTrack = rec => {
 	}
 	rec.introUrl = 'generated/audio/' + urlBase + '_intro.ogg';
 	rec.loopUrl = 'generated/audio/' + urlBase + '_loop.ogg';
+	rec.sourceUrl = 'http://localhost:8000/ag#' + rec.trackName;
 };
 
 for (let r of beaconRecords) {

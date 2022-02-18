@@ -1,4 +1,4 @@
-import { runMode, toggleAutopilot } from './runMode.js';
+import { runMode, toggleAutopilot, goTo } from './runMode.js';
 
 /** @type {HTMLButtonElement} */
 const ok = document.getElementById('welcome_ok');
@@ -35,3 +35,43 @@ const onModalOK = () => {
 export const setAutopilotUi = on => {
 	autoBox.checked = on;
 };
+
+/** @type {HTMLDivElement} */
+let detailEle;
+
+/** @param {import('./beacons.js').BeaconResource} beacon */
+export const showDetail = beacon => {
+	if (detailEle) detailEle.remove();
+	const rec = beacon.record;
+	let desc = rec.trackName.replace(/\-/g, ' ');
+	if (rec.trackParams.freq1) {
+		desc += ' (' + (Math.round(rec.trackParams.freq1)) + 'Hz';
+		if (rec.trackParams.freq2) {
+			desc += ', ' + (Math.round(rec.trackParams.freq2)) + 'Hz';
+		}
+		desc += ')';
+	}
+	detailEle = document.createElement('div');
+	detailEle.className = 'detail';
+	detailEle.innerHTML = `
+		<div>Selected: ${desc}</div><br><br>
+		<a id=detail_goto>Go To</a> | 
+		<a href="${rec.sourceUrl}" target="_blank">View Source</a>
+		<a id=detail_close>X</a>
+	`;
+	document.body.appendChild(detailEle);
+	document.getElementById('detail_goto').onclick = () => {
+		goTo({x: beacon.x, z: beacon.z, spectate: true});
+	};
+	document.getElementById('detail_close').onclick = () => {
+		detailEle.remove();
+		detailEle = undefined;
+	};
+	detailEle.addEventListener('mousedown', event => {
+		event.stopPropagation();
+	});
+};
+
+document.body.addEventListener('mousedown', () => {
+	if (detailEle) detailEle.remove();
+});

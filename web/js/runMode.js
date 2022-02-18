@@ -1,13 +1,14 @@
 import * as THREE from './lib/three.module.js';
 import { intersectMouse, renderer, camera, scene } from './mainLoop.js';
 import { beginWakeIntro } from './beacons.js';
-import { clock } from './world.js';
-import { setAutopilotUi } from './ui.js';
+import { clock, heightAt } from './world.js';
+import { setAutopilotUi, showDetail } from './ui.js';
 import { disableTips, enableTips, tipsEnabled } from './tips.js';
 
 let lastMouseX, lastMouseY, totalMovement;
 let tgtDiskMesh, tgtLockMesh;
 const yawAccel = x => Math.tanh(x * 6 - 2.5) * 0.5 + 1.5;
+const up = new THREE.Vector3(0, 1, 0);
 
 const onPointerDown = event => {
 	lastMouseX = event.clientX;
@@ -35,6 +36,54 @@ const onCapturedMove = event => {
 
 export const xz = inVec3 => new THREE.Vector2(inVec3.x, inVec3.z);
 
+export const goTo = ({hit, x, z, spectate}) => {
+	let normal, tgtPos;
+	if (hit) {
+		normal = hit.face.normal;
+		tgtPos = hit.point;
+	} else {
+		normal = up;
+		tgtPos = new THREE.Vector3(x, heightAt(x, z), z);
+	}
+	setAutopilotUi(false);
+	tgtLockMesh.position.set(0, 0, 0);
+	tgtLockMesh.lookAt(normal);
+	tgtLockMesh.position.copy(tgtPos);
+	if (spectate) {
+		// keep some distance to the target
+		tgtLockMesh.position.add(
+			camera.position.clone().sub(tgtPos).normalize().multiplyScalar(100)
+		);
+	}
+	tgtLockMesh.position.y += 2;
+	tgtLockMesh.visible = true;
+	const startPos = runMode.tgtXz.clone();
+	const endPos = xz(tgtLockMesh.position);
+	const startTime = clock.worldTime;
+	const endTime = clock.worldTime + Math.max(5, startPos.distanceTo(endPos) * 0.06);
+	const endYawTime = clock.worldTime + 5;
+	const startYaw = runMode.tgtYaw;
+	const relPos = xz(tgtPos).sub(endPos).normalize();
+	const endYaw = Math.PI * -0.5 - Math.atan2(relPos.y, relPos.x);
+	runMode.dragTime = clock.worldTime - 2;
+	runMode.stepFn = () => {
+		if (runMode.dragTime > startTime) spectate = false;
+		if (clock.worldTime > endTime) {
+			runMode.stepFn = undefined;
+			tgtLockMesh.visible = false;
+		}
+		runMode.tgtXz = startPos.clone();
+		runMode.tgtXz.lerp(endPos, (clock.worldTime - startTime) / (endTime - startTime));
+		if (spectate) {
+			const yawNo360 = endYaw + Math.round((startYaw - endYaw) / tau) * tau;
+			const yawProg = (clock.worldTime - startTime) / (endYawTime - startTime);
+			if (yawProg < 1) runMode.tgtYaw = (1 - yawProg) * startYaw + yawProg * yawNo360;
+		}
+		const d = xz(camera.position).distanceTo(endPos);
+		tgtLockMesh.material.opacity = 1 - 1 / (d * d * 0.00002 + 1);
+	};
+};
+
 const onCapturedUp = event => {
 	runMode.dragging = false;
 	renderer.domElement.releasePointerCapture(event.pointerId);
@@ -43,32 +92,13 @@ const onCapturedUp = event => {
 	if (totalMovement > 0.01 || clock.worldTime - runMode.dragTime > 2) return;
 	const mouseHit = intersectMouse();
 	if (!mouseHit) return;
-	setAutopilotUi(false);
-	tgtLockMesh.position.set(0, 0, 0);
-	tgtLockMesh.lookAt(mouseHit.face.normal);
-	tgtLockMesh.position.copy(mouseHit.point);
-	if (!mouseHit.object.layers.isEnabled(0)) {
-		// keep some distance to beacon
-		tgtLockMesh.position.add(
-			camera.position.clone().sub(mouseHit.point).normalize().multiplyScalar(100)
-		);
+	if (mouseHit.object.layers.isEnabled(0)) {
+		// terrain
+		goTo({hit: mouseHit});
+	} else if (mouseHit.object.userData?.beaconRes) {
+		// beacon
+		showDetail(mouseHit.object.userData.beaconRes);
 	}
-	tgtLockMesh.position.y += 2;
-	tgtLockMesh.visible = true;
-	const startPos = runMode.tgtXz.clone();
-	const endPos = xz(tgtLockMesh.position);
-	const startTime = clock.worldTime;
-	const endTime = clock.worldTime + startPos.distanceTo(endPos) * 0.06;
-	runMode.stepFn = () => {
-		if (clock.worldTime > endTime) {
-			runMode.stepFn = undefined;
-			tgtLockMesh.visible = false;
-		}
-		runMode.tgtXz = startPos.clone();
-		runMode.tgtXz.lerp(endPos, (clock.worldTime - startTime) / (endTime - startTime));
-		const d = xz(camera.position).distanceTo(endPos);
-		tgtLockMesh.material.opacity = 1 - 1 / (d * d * 0.00002 + 1);
-	};
 };
 
 const enable = () => {
@@ -184,7 +214,7 @@ export const toggleAutopilot = (toggle, isIntro) => {
 			startPos = runMode.tgtXz.clone();
 			endPos = xz(waypoint);
 			startTime = clock.worldTime;
-			if (isIntro) startTime += 1.5;
+			if (isIntro) startTime += 3;
 			const dur = Math.max(4, startPos.distanceTo(endPos) * 0.06);
 			endTime = clock.worldTime + dur;
 			yawTime = clock.worldTime;
@@ -221,9 +251,16 @@ const update = () => {
 	tgtDiskMesh.visible = false;
 	const mouseHit = intersectMouse();
 	if (!mouseHit) return;
-	tgtDiskMesh.position.set(0, 0, 0);
-	tgtDiskMesh.lookAt(mouseHit.face.normal);
-	tgtDiskMesh.position.copy(mouseHit.point);
+	if (mouseHit.object.layers.isEnabled(0)) {
+		// terrain
+		tgtDiskMesh.position.set(0, 0, 0);
+		tgtDiskMesh.lookAt(mouseHit.face.normal);
+		tgtDiskMesh.position.copy(mouseHit.point);
+	} else {
+		// beacon
+		tgtDiskMesh.position.copy(mouseHit.object.parent.position);
+		tgtDiskMesh.rotation.set(Math.PI * -0.5, 0, 0);
+	}
 	tgtDiskMesh.position.y += 2;
 	tgtDiskMesh.visible = true;
 };

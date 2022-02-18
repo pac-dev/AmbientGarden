@@ -1,6 +1,6 @@
 import { parse } from 'https://deno.land/std@0.118.0/flags/mod.ts';
 import { existsSync } from 'https://deno.land/std/fs/mod.ts';
-import { loadTrack, createRenderer } from '../../Teasynth/tools/renderlib.js';
+import { loadTrack, createRenderer } from '../../Teasynth/teasynth.js';
 import { beaconRecords } from '../web/js/beaconRecords.js';
 
 const args = parse(Deno.args);
