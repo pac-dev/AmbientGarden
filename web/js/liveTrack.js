@@ -1,4 +1,5 @@
 import { getMeta } from './beacons.js';
+import { events } from './events.js';
 import { Track, TrackLoader } from './tracks.js';
 
 const defaultParamSpec = {
@@ -17,6 +18,10 @@ class TeasynthTrack extends Track {
 		this.processorName = processorName;
 		this.callbacks = callbacks;
 		this.audioContext = new AudioContext({ sampleRate: 44100, latencyHint: 'playback' });
+		this.pauseListener = () => { this.audioContext.suspend(); };
+		this.resumeListener = () => { this.audioContext.resume(); };
+		events.on('pause', this.pauseListener);
+		events.on('resume', this.resumeListener);
 	}
 	async init() {
 		await this.audioContext.audioWorklet.addModule(this.url);
@@ -71,6 +76,8 @@ class TeasynthTrack extends Track {
 	stop() {
 		// this.node.disconnect();
 		this.audioContext.close();
+		events.off('pause', this.pauseListener);
+		events.off('resume', this.resumeListener);
 	}
 }
 

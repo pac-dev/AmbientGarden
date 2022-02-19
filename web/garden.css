@@ -72,17 +72,24 @@ figcaption { margin-left: 100px; }
 	right: 0;
 	height: 50px;
 	background-color: #222;
-	color: #aaa;
+	color: #555;
 	font-family: sans-serif;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 #ctrls > * {
-	margin: 0 7px;
+	color: #aaa;
+	margin: 0 10px;
+}
+#ctrls button {
+	font: inherit;
+	background: none;
+	border: none;
+	padding: 0;
 }
 #ctrls > label {
-	margin-left: 0;
+	margin-left: -3px;
 }
 .switch {
 	position: relative;

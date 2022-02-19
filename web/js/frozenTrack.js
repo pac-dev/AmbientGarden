@@ -1,4 +1,5 @@
 import { getMeta } from './beacons.js';
+import { events } from './events.js';
 import { Track, TrackLoader } from './tracks.js';
 
 const xfDur = 2;
@@ -19,6 +20,8 @@ const addAudio = (() => {
 			preAmp.connect(compressor);
 			compressor.connect(context.destination);
 			preAmp.gain.value = 1.75;
+			events.on('pause', () => { context.suspend(); });
+			events.on('resume', () => { context.resume(); });
 		}
 		const au = new Audio(url);
 		au.cleanup = () => {

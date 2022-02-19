@@ -1,7 +1,12 @@
+import { events } from './events.js';
 import { runMode, toggleAutopilot, goTo } from './runMode.js';
+import { clock } from './world.js';
 
 /** @type {HTMLButtonElement} */
 const ok = document.getElementById('welcome_ok');
+
+/** @type {HTMLButtonElement} */
+const pauseButton = document.getElementById('pause');
 
 /** @type {HTMLInputElement} */
 const autoBox = document.getElementById('autopilot');
@@ -17,6 +22,14 @@ export const initUI = () => {
 	ok.addEventListener('click', onModalOK);
 	autoBox.disabled = false;
 	autoBox.onchange = () => toggleAutopilot(autoBox.checked);
+	events.on('pause', () => { pauseButton.innerText = 'Resume'; });
+	events.on('resume', () => { pauseButton.innerText = 'Pause'; });
+	pauseButton.addEventListener('click', () => {
+		events.trigger(clock.paused ? 'resume' : 'pause')
+	});
+	document.body.addEventListener('mousedown', () => {
+		if (detailEle) detailEle.remove();
+	});
 };
 
 export const closeModal = () => {
@@ -30,6 +43,7 @@ const onModalOK = () => {
 	closeModal();
 	runMode.enable();
 	toggleAutopilot(autoBox.checked, true);
+	pauseButton.disabled = false;
 };
 
 export const setAutopilotUi = on => {
@@ -71,7 +85,3 @@ export const showDetail = beacon => {
 		event.stopPropagation();
 	});
 };
-
-document.body.addEventListener('mousedown', () => {
-	if (detailEle) detailEle.remove();
-});

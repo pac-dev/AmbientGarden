@@ -1,20 +1,29 @@
+import { events } from './events.js';
 import * as THREE from './lib/three.module.js';
 import { noise2D } from './noise.js';
 
-export let clock = {
+export const clock = {
 	lastTime: Date.now(),
 	diff: 0,
 	gfxTime: 0,
 	worldTime: 0,
+	paused: false,
 	advance(gfx = true) {
+		if (this.paused) return;
 		const now = Date.now();
 		this.diff = (now - this.lastTime) / 1000;
 		if (this.diff > 1) this.diff = 1;
 		this.worldTime += this.diff;
-		if (gfx) this.gfxTime += Math.min(this.diff, 1);
+		if (gfx) this.gfxTime += this.diff;
 		this.lastTime = now;
 	},
 };
+
+events.on('pause', () => { clock.paused = true; });
+events.on('resume', () => {
+	clock.paused = false;
+	clock.lastTime = Date.now();
+});
 
 export const beaconLoadDist = 2000,
 	pointHiDist = 1950,

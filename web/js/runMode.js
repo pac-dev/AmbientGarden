@@ -4,6 +4,7 @@ import { beginWakeIntro } from './beacons.js';
 import { clock, heightAt } from './world.js';
 import { setAutopilotUi, showDetail } from './ui.js';
 import { disableTips, enableTips, tipsEnabled } from './tips.js';
+import { events } from './events.js';
 
 let lastMouseX, lastMouseY, totalMovement;
 let tgtDiskMesh, tgtLockMesh;
@@ -37,6 +38,7 @@ const onCapturedMove = event => {
 export const xz = inVec3 => new THREE.Vector2(inVec3.x, inVec3.z);
 
 export const goTo = ({hit, x, z, spectate}) => {
+	if (clock.paused) events.trigger('resume');
 	let normal, tgtPos;
 	if (hit) {
 		normal = hit.face.normal;
