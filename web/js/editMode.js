@@ -250,6 +250,10 @@ const addTransformerPool = () =>
 		},
 	});
 
+const rounded = params => Object.fromEntries(
+	Object.entries(params).map(([k, v]) => [k, Math.round(v * 10) / 10])
+);
+
 /**
  * @typedef {Object} _EditorTipResource
  * @property {import('./beacons.js').BeaconResource} [beacon]
@@ -281,9 +285,9 @@ const addEditorTipsPool = () =>
 				res.domEle.innerText = res.beacon.record.desc;
 				res.domEle.onclick = () => {
 					console.log(
-						res.beacon.record.trackParams,
-						`add('${res.beacon.record.desc}')`,
-						`replace('${res.beacon.record.desc}')`
+						rounded(res.beacon.record.trackParams),
+						`add/replace('${res.beacon.record.desc}')`,
+						res.beacon.record.sourceUrl
 					);
 					window.focusRecord = res.beacon.record;
 				};

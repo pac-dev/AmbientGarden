@@ -70,29 +70,6 @@ export const beaconRecords = [
 	{ desc: 'sdrone 4 6', x: 1162, z: -619 },
 ];
 
-const parseToken = (tok, isExtra) => {
-	if (tok.match(/[a-zA-Z]/)) return tok;
-	if (isExtra) return Function(`"use strict"; return parseFloat(${tok})`)();
-	else return Function(`"use strict"; return 100*(${tok})`)();
-};
-
-const parseDesc = (rec, ...paramNames) => {
-	/** @type {Array.<string>} */
-	const tokens = rec.desc.split(' ');
-	let extraIdx = tokens.indexOf('+');
-	if (extraIdx !== -1) tokens.splice(extraIdx, 1);
-	else extraIdx = 999;
-	if (tokens.length > paramNames.length + 1) {
-		throw new Error('Invalid desc: ' + rec.desc);
-	}
-	rec.trackParams = {};
-	for (let i = 1; i < tokens.length; i++) {
-		const isExtra = i >= extraIdx;
-		rec.trackParams[paramNames[i - 1]] = parseToken(tokens[i], isExtra);
-	}
-	return rec.trackParams;
-};
-
 // forms: tree
 const tall = (rec, x) => {
 	rec.formName = 'tree';
@@ -253,6 +230,33 @@ const reachy = (rec, x) => {
 	};
 };
 
+const parseToken = (tok, isExtra) => {
+	if (tok.match(/[a-zA-Z]/)) return tok;
+	if (isExtra) return Function(`"use strict"; return parseFloat(${tok})`)();
+	else return Function(`"use strict"; return 100*(${tok})`)();
+};
+
+const parseDesc = (rec, ...paramNames) => {
+	const fragments = [];
+	/** @type {Array.<string>} */
+	const tokens = rec.desc.split(' ');
+	let extraIdx = tokens.indexOf('+');
+	if (extraIdx !== -1) tokens.splice(extraIdx, 1);
+	else extraIdx = 999;
+	if (tokens.length > paramNames.length + 1) {
+		throw new Error('Invalid desc: ' + rec.desc);
+	}
+	rec.trackParams = {};
+	for (let i = 1; i < tokens.length; i++) {
+		const paramName = paramNames[i - 1];
+		const isExtra = i >= extraIdx;
+		rec.trackParams[paramName] = parseToken(tokens[i], isExtra);
+		fragments.push(paramName + '=' + (isExtra ? '' : '100*') + tokens[i]);
+	}
+	rec.paramFragment = fragments.join('&');
+	return rec.trackParams;
+};
+
 /** @type {Object.<string, function(BeaconRecord)>} */
 const trackParsers = {
 	vib(rec) {
@@ -324,7 +328,7 @@ export const parseTrack = rec => {
 	}
 	rec.introUrl = 'generated/audio/' + urlBase + '_intro.ogg';
 	rec.loopUrl = 'generated/audio/' + urlBase + '_loop.ogg';
-	rec.sourceUrl = 'http://localhost:8000/ag#' + rec.trackName;
+	rec.sourceUrl = 'http://localhost:8000/ag#' + rec.trackName + '?' + rec.paramFragment;
 };
 
 for (let r of beaconRecords) {
