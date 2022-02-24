@@ -81,6 +81,7 @@ const teleport = (x, z) => {
  * @property {import('./beacons.js').BeaconResource} beacon2
  * @property {number} distance
  * @property {number} [dissonance]
+ * @property {import('./lib/three.module.js').Color} [color]
  * @property {import('./lib/three.module.js').Mesh} [mesh]
  *
  * @typedef {import('./resourcePool.js').Resource & _HarmolineResource} HarmolineResource
@@ -111,13 +112,12 @@ const addHarmolinePool = () =>
 			const normDist = res.distance / (trackHush * 1.2);
 			res.dissonance = multiDissonance(getBeaconFreqs(rec1), getBeaconFreqs(rec2));
 			const normDiss = res.dissonance / 9;
-			let color;
 			if (normDiss <= 1) {
-				color = new THREE.Color()
+				res.color = new THREE.Color()
 					.setHSL(0.26, 0.7, 0.54) // hsl(93.1deg, 70.3%, 53.8%)
 					.lerpHSL(new THREE.Color().setHSL(0.03, 0.9, 0.54), normDiss); // hsl(9.6deg, 89.7%, 53.8%)
 			} else {
-				color = new THREE.Color().setHSL(0.81, 0.93, 0.43); // hsl(292.8deg, 93.1%, 42.9%)
+				res.color = new THREE.Color().setHSL(0.81, 0.93, 0.43); // hsl(292.8deg, 93.1%, 42.9%)
 			}
 			const formPos = pos1.clone().lerp(pos2, 0.5);
 			const curve = new THREE.LineCurve3(
@@ -125,7 +125,7 @@ const addHarmolinePool = () =>
 				pos2.clone().sub(formPos)
 			);
 			const geometry = new THREE.TubeGeometry(curve, 3, 4, 6, false);
-			const material = new THREE.MeshBasicMaterial({ color });
+			const material = new THREE.MeshBasicMaterial({ color: res.color });
 			res.mesh = new THREE.Mesh(geometry, material);
 			res.mesh.position.copy(formPos);
 			res.mesh.translateY((1 - normDist) * 60 + 20);
@@ -293,6 +293,8 @@ const addEditorTipsPool = () =>
 				};
 			} else {
 				res.domEle.innerText = res.line.dissonance;
+				res.domEle.style.color = res.line.color.getStyle();
+				res.domEle.style.zIndex = 1;
 			}
 			res.domEle.className = 'editor_tip';
 			document.body.appendChild(res.domEle);
