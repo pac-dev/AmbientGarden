@@ -16,7 +16,7 @@ let init = () => {
 	const mfs = mixFreqs(fParam1.value, fParam2.value, 3);
 	if (mfs.length < 10) throw new Error("fracsin can't intersect freqs");
 	sines.forEach((sine, i) => {
-		sine.baseAmp = baseAmp(mfs[i], i) * 0.4;
+		sine.baseAmp = baseAmp(mfs[i], i) * 0.3;
 		sine.baseFreq = mfs[i];
 		sine.lfRate = 1 / (2 + ((i * 79.6789) % 3));
 		sine.lfPhase = i;

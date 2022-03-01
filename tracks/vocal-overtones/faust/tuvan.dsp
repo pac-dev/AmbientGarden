@@ -29,7 +29,7 @@ f1vib = f1 * (1 + atk1*0.01*os.osc(5+os.osc(0.5))) * (0.5 + 0.5*atk2);
 // exciter: saw + noise
 saw = os.sawtooth(f1vib)*0.5;
 noise = no.noise * (0.2 - 0.2*f2amt) : fi.lowpass(1, 1500);
-exc = (saw + noise) * 0.1;
+exc = (saw + noise) * 0.2;
 
 // body: formants, tuned filters, controlled harmonic bands
 linterp(lst1, lst2, i) = ba.take(i+1, lst1), ba.take(i+1, lst2) : si.interpolate(vowel);

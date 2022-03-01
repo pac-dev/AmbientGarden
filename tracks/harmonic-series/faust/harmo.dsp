@@ -14,6 +14,6 @@ body = _ <: de.fdelay2(9000, sdelay1), de.fdelay2(9000, sdelay2)
 loop = + ~ body;
 
 rev_st = re.zita_rev1_stereo(0, 200, 6000, 10, 20, 44100);
-post = _ <: rev_st : co.limiter_1176_R4_stereo;
+post = _ <: rev_st : co.limiter_1176_R4_stereo : *(0.7), *(0.7);
 
 process = exc : loop : *(amp) : post;

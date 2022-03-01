@@ -40,7 +40,7 @@ syn = exc : forms;
 
 // post
 timbre = fi.highpass(1, 3000) : fi.high_shelf(8, 2500) : fi.notchw(150, 720);
-limiter = *(12) : co.limiter_1176_R4_mono : *(1.2);
+limiter = *(10) : co.limiter_1176_R4_mono;
 fl = _ <: _*0.9, de.fdelay2(200, 45+30*os.osc(0.7))*0.2 :> _;
 post = timbre : limiter : fl;
 

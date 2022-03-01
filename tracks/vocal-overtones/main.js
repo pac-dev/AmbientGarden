@@ -20,6 +20,7 @@ graph.ctrl(t => {
 		graph.getConnection(fau, post).gain.value = 0.8 - 0.2 * Math.cos(t * 0.5);
 		graph.getConnection(fau2, post).gain.value = 0.75 + 0.25 * Math.cos(t * 0.5);
 	} else {
+		graph.getConnection(fau, post).gain.value = 1;
 		fau.f2amt.value = 0.33;
 		fau2.muted = true;
 	}

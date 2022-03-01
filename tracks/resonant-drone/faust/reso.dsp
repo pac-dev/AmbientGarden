@@ -14,6 +14,6 @@ srcs = noise + pulse;
 exc = srcs : fi.highpass(1, 300) : fi.bandstop(1, 2500, 9000) : fi.lowpass(2, 11000);
 loop(f) = + ~ (de.fdelay2(9000, freq2len(f)) : _*0.8);
 res = loop(f1 - 1 + 2*no.lfnoise0(1)) : loop(f2) : loop(f3);
-comp = *(5) : co.limiter_1176_R4_mono : *(0.5);
+comp = *(5) : co.limiter_1176_R4_mono : *(0.35);
 
 process = exc : res : comp;
