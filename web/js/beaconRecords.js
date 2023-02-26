@@ -48,7 +48,7 @@ export const beaconRecords = [
 	{desc: 'cbass 3/4 + 0.5 600', x: 1177, z: -1579},
 	{desc: 'cbass 1/2*3/4 + 0.5 600', x: 1398, z: -1776},
 	{desc: 'sdrone 4*3/4 3*8/5*3/4', x: 1461, z: -925},
-	{desc: 'hbottl 4*3/4 3*8/5*3/4', x: 1270, z: -1009},
+	{desc: 'mbottl 4*3/4 3*8/5*3/4', x: 1270, z: -1009},
 	{desc: 'rdrone 1 4/3 5/3 + 1', x: 17, z: 583},
 	{desc: 'rdrone 2/3 2/3 7/6 + 1', x: -189, z: 255},
 	{desc: 'rdrone 4/3 16/9 20/9 + 1', x: -63, z: -599},
@@ -82,7 +82,7 @@ export const beaconRecords = [
 	{desc: 'vtone 1 3/4', x: 1492, z: 960},
 	{desc: 'sdrone 4 6', x: 1197, z: 1155},
 	{desc: 'cbass 1 + 0.5', x: 1279, z: 965},
-	{desc: 'sop 6 8', x: 1036, z: 966},
+	{desc: 'msop 6 8', x: 1036, z: 966},
 	{desc: 'vib 5/2 8/3', x: 630, z: 829},
 	{desc: 'cbass 9/16 + 0.5', x: 452, z: 905},
 	{desc: 'cbass 1/2 + 0.5', x: 798, z: 961},
@@ -279,19 +279,12 @@ const parseDesc = (rec, ...paramNames) => {
 
 /** @type {Object.<string, function(BeaconRecord)>} */
 const trackParsers = {
-	vib(rec) {
-		rec.trackName = 'vibraphones';
-		// 50 - 2000
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2', 'impact');
-		if (!rec.trackParams.impact) rec.glowCurve = 'slow';
-		stout(rec, noise1D(freq1 + freq2));
-	},
-	rdrone(rec) {
-		rec.trackName = 'resonant-drone';
-		// 50 - 200
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2', 'freq3', 'impact');
-		if (!rec.trackParams.impact) rec.glowCurve = 'slow';
-		tall(rec, noise1D(freq1 + freq2));
+	cbass(rec) {
+		rec.trackName = 'contrabass';
+		// 20 - 200
+		const { freq1 } = parseDesc(rec, 'freq1', 'flatten', 'lp1');
+		rec.glowCurve = 'slow';
+		reachy(rec, noise1D(freq1 + 50));
 	},
 	hseri(rec) {
 		rec.trackName = 'harmonic-series';
@@ -300,12 +293,22 @@ const trackParsers = {
 		rec.glowCurve = 'slow';
 		magicTwist(rec, noise1D(freq1 + 123));
 	},
-	cbass(rec) {
-		rec.trackName = 'contrabass';
-		// 20 - 200
-		const { freq1 } = parseDesc(rec, 'freq1', 'flatten', 'lp1');
-		rec.glowCurve = 'slow';
-		reachy(rec, noise1D(freq1 + 50));
+	mbottl(rec) {
+		rec.trackName = 'melodic-bottle';
+		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
+		hand(rec, noise1D(freq1 + freq2 + 50));
+	},
+	msop(rec) {
+		rec.trackName = 'melodic-soprano';
+		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
+		rxSpiral(rec, noise1D(freq1 + freq2 + 50));
+	},
+	rdrone(rec) {
+		rec.trackName = 'resonant-drone';
+		// 50 - 200
+		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2', 'freq3', 'impact');
+		if (!rec.trackParams.impact) rec.glowCurve = 'slow';
+		tall(rec, noise1D(freq1 + freq2));
 	},
 	sdrone(rec) {
 		rec.trackName = 'sine-drone';
@@ -313,15 +316,12 @@ const trackParsers = {
 		rec.glowCurve = 'slow';
 		willow(rec, noise1D(freq1 + freq2 + 50));
 	},
-	hbottl(rec) {
-		rec.trackName = 'harmonic-bottle';
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
-		hand(rec, noise1D(freq1 + freq2 + 50));
-	},
-	sop(rec) {
-		rec.trackName = 'soprano';
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
-		rxSpiral(rec, noise1D(freq1 + freq2 + 50));
+	vib(rec) {
+		rec.trackName = 'vibraphones';
+		// 50 - 2000
+		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2', 'impact');
+		if (!rec.trackParams.impact) rec.glowCurve = 'slow';
+		stout(rec, noise1D(freq1 + freq2));
 	},
 	vtone(rec) {
 		rec.trackName = 'vocal-overtones';

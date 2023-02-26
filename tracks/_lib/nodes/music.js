@@ -50,9 +50,9 @@ export class Poly {
 		this.voices.forEach(v => v.connect(out));
 		this.order = [...Array(n).keys()];
 	}
-	note(freq, amp = 1) {
+	note(freq, ...args) {
 		const vn = this.order.pop();
-		this.voices[vn].note(freq, amp);
+		this.voices[vn].note(freq, ...args);
 		this.voices[vn].polyFreq = freq;
 		this.order.unshift(vn);
 	}

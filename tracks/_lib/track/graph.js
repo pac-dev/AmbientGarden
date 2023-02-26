@@ -142,10 +142,11 @@ export class Graph {
 	}
 	ctrl(fn, rate = 128) {
 		let sample = 0;
+		const delta = rate / this.sampleRate;
 		this.eventProcessors.add(() => {
 			if (sample++ % rate) return;
 			const sec = sample / this.sampleRate;
-			fn(sec);
+			fn(sec, delta);
 		});
 	}
 	ctrlDuration(dur, fn) {

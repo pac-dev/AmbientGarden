@@ -20,8 +20,8 @@ const getBeaconFreqs = beacon => {
 	switch (beacon.trackName) {
 		case 'vibraphones':
 		case 'sine-drone':
-		case 'harmonic-bottle':
-		case 'soprano':
+		case 'melodic-bottle':
+		case 'melodic-soprano':
 			return [p.freq1, p.freq2];
 		case 'resonant-drone':
 			return [p.freq1, p.freq2, p.freq3];
