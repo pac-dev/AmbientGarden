@@ -60,7 +60,7 @@ const updateFarZone = (mesh, x, z) => {
 	for (let i = 0; i < planeVerts.length / 3; i++) {
 		const worldX = planeVerts[i * 3] + x;
 		const worldZ = planeVerts[i * 3 + 2] + z;
-		planeVerts[i * 3 + 1] = heightAt(worldX, worldZ) - 8;
+		planeVerts[i * 3 + 1] = heightAt(worldX, worldZ) - 10;
 	}
 	mesh.geometry.attributes.position.needsUpdate = true;
 	mesh.geometry.computeBoundingBox();

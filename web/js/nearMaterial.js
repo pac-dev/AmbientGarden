@@ -1,6 +1,21 @@
 import * as THREE from './lib/three.module.js';
 import { mapcnv, terrainGlsl } from './world.js';
 
+/**
+ * "Impressionist" terrain material.
+ * 
+ * This material is used on the nearby terrain layer only. Dots are drawn in the
+ * fragment shader, using voxel traversal to simulate depth. Each dot is drawn
+ * roughly in screen space, which reduces perspective distortion, and makes the
+ * terrain look more like individual dots and less like a stretched-out texture.
+ * 
+ * I tried to integrate as well as possible with THREE.js features. This mostly
+ * involves using the THREE.js shader sources as reference. They're
+ * undocumented, so debugging and source-digging is the best way of figuring
+ * things out.
+ * 
+ */
+
 const nearVert = /*glsl*/ `
 #include <common>
 #include <normal_pars_vertex>
@@ -8,10 +23,12 @@ const nearVert = /*glsl*/ `
 #include <lights_pars_begin>
 #include <shadowmap_pars_vertex>
 
-varying vec3 wPos;
+uniform float aspect;
+
+varying vec3 vWorldPos;
+varying vec3 vWorldNormal;
 varying vec4 vFirstShadowCoord;
-varying float vCamDist;
-varying float vAlpha;
+varying vec2 vScreenPos;
 
 void main() {
 	#include <beginnormal_vertex>
@@ -19,32 +36,29 @@ void main() {
 	#include <normal_vertex>
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 	vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-	wPos = worldPosition.xyz;
+	vWorldPos = worldPosition.xyz;
+	vScreenPos = gl_Position.xy / gl_Position.w;
+	vScreenPos.x *= aspect;
+	vWorldNormal = inverseTransformDirection(normal, viewMatrix);
 	vFirstShadowCoord = directionalShadowMatrix[0] * worldPosition;
-	vCamDist = distance(worldPosition.xz, cameraPosition.xz);
-	vAlpha = 1.0 - smoothstep(192.0*3.0, 192.0*5.0, vCamDist);
 }
 `;
 
 const nearFrag = /*glsl*/ `
 #include <common>
-#include <normal_pars_fragment>
 #include <packing>
 #include <lights_pars_begin>
 #include <shadowmap_pars_fragment>
 
 uniform sampler2D maptex;
 uniform float mapsz;
-varying vec3 wPos;
-varying vec4 vFirstShadowCoord;
-varying float vCamDist;
-varying float vAlpha;
+uniform float aspect;
+uniform mat4 projectionMatrix;
 
-float linePointDistance(vec3 a, vec3 b, vec3 v) {
-	vec3 ab  = b - a;
-	vec3 av  = v - a;
-	return length(cross(ab, av)) / length(ab);
-}
+varying vec3 vWorldPos;
+varying vec3 vWorldNormal;
+varying vec4 vFirstShadowCoord;
+varying vec2 vScreenPos;
 
 // https://gist.github.com/mairod/a75e7b44f68110e1576d77419d608786
 vec3 badShift(vec3 color, float hue) {
@@ -53,7 +67,7 @@ vec3 badShift(vec3 color, float hue) {
 	return vec3(color * cosAngle + cross(k, color) * sin(hue) + k * dot(k, color) * (1.0 - cosAngle));
 }
 
-
+// Hash function by Dave_Hoskins on Shadertoy
 float hash2d(vec2 v) {
 	return fract(sin(dot(
 		v.xy*0.1,
@@ -63,149 +77,88 @@ float hash2d(vec2 v) {
 
 ${terrainGlsl}
 
-vec3 cell2col(vec3 c, float ofs) {
-	vec2 mapPos = world2mapPos(c.xz);
-	vec3 ret = texture2D(maptex, mapPos).rgb;
-	ret = badShift(ret, hash2d(c.xz+ofs)*0.5-0.25);
-	return ret*(1.0+hash2d(c.xz-99.0+ofs)*0.4-0.2);
-}
-
-mat3 calcLookAtMatrix(vec3 target, float roll) {
-  vec3 rr = vec3(sin(roll), cos(roll), 0.0);
-  vec3 ww = normalize(target);
-  vec3 uu = normalize(cross(ww, rr));
-  vec3 vv = normalize(cross(uu, ww));
-
-  return mat3(uu, vv, ww);
-}
-
-vec2 safeNormalize(vec2 v) {
-	float len = length(v);
-	return (len == 0.0) ? vec2(1.0, 0.0) : v / len;
-}
-
-float yangle(vec2 v) {
-	return acos(dot(vec2(0.0,1.0), safeNormalize(v)));
-}
-
-void pR(inout vec2 p, float a) {
-	p = cos(a)*p + sin(a)*vec2(p.y, -p.x);
-}
-
-const float csz = 3.0;
-const float hsz = csz * 0.5;
-const float psz = csz * 0.45;
+const float dotSize = 0.5;
+const float cellScale = 0.3;
+const float iCellScale = 1./cellScale;
 
 vec3 cell2jitter(vec3 c) {
 	vec3 ret = vec3(hash2d(c.xz), 0.5, hash2d(c.xz+113.0));
-	return (ret - 0.5) * csz * 0.45;
+	return (ret - 0.5) * 0.5;
 }
 
-void pretrav(vec3 normal, out vec3 rd, out vec3 rStep, out vec3 delta) {
-
-	// float a1 = yangle(normal.xy);
-	// float a2 = yangle(normal.zy);
-	// vec3 rotcam = cameraPosition - wPos;
-	// pR(rotcam.xy, -a1);
-	// pR(rotcam.zy, -a2);
-	// rotcam += wPos;
-
-	// prevent up/downhill stretch
-	// horribly inefficient
-	// also not working, seems orientation-dependent
-	vec3 relcam = cameraPosition - wPos;
-	float no = yangle(normal.xz);
-	vec3 n2 = normal;
-	pR(n2.xz, -no);
-	float na = yangle(n2.zy);
-	// na = max(0.05, na);
-	// dbg = dot(vec2(0.0,1.0), safeNormalize(normal.xz));
-	pR(relcam.xz, -no);
-	pR(relcam.zy, -na);
-	pR(relcam.xz, no);
-	relcam = normalize(relcam);
-
-	// prevent <= 0 ray/plane angle
-	relcam.y = sqrt(relcam.y*relcam.y+0.05);
-	vec3 rotcam = relcam + wPos;
-	
-	// vec3 tgt = normal.xzy;
-	// mat3 rot = calcLookAtMatrix(tgt, 0.0);
-	// vec3 rotcam = cameraPosition - wPos;
-	// rotcam = rotcam.xzy * rot;
-	// rotcam = rotcam.xzy + wPos;
-	
-	
-	rd = normalize(wPos - rotcam);
-
-	rStep = sign(rd)*csz;
-	delta = abs(1.0/rd)/csz;
+vec3 cell2col(vec2 mapPos, float ofs) {
+	vec3 ret = texture2D(maptex, mapPos).rgb;
+	ret = badShift(ret, hash2d(mapPos+ofs)*0.5-0.25);
+	return ret*(1.0+hash2d(mapPos-99.0+ofs)*0.4-0.2);
 }
 
-void traverse(vec3 ro, vec3 rd, vec3 rStep, vec3 delta, out vec3 cell1, out float dist1, out int iter1) {
+vec2 world2screen(vec3 pos, mat4 worldToClip) {
+	// reminder that the '*' is not commutative here
+	vec4 clipPos =  worldToClip * vec4(pos, 1.);
+	vec2 screenPos = clipPos.xy / clipPos.w;
+	screenPos.x *= aspect;
+	return screenPos;
+}
 
-	vec3 cell = vec3(floor(ro.x/csz)*csz, ro.y - csz*0.75, floor(ro.z/csz)*csz);
-	vec3 cellmid = cell + hsz + cell2jitter(cell);
-	float y0 = cell.y;
+// parts of this function come from Shane's "Voxel Corridor"
+vec4 voxelTrace(vec3 hit, vec3 rd, float camDist) {
+	// anti-aliasing heuristic: how much distance is covered over 1 pixel?
+	float dvCamDist = dFdy(camDist);
+	float camAA = abs(dvCamDist)*0.8;
+	mat4 worldToClip = projectionMatrix * viewMatrix;
 
-	vec3 r2 = ro + rd;
-	float dist = linePointDistance(ro, r2, cellmid);
-	vec2 mapPos = world2mapPos(cellmid.xz);
-	float rdist = mapPos2roadDist(miwrap(mapPos)*mapsz);
-	if (dist < psz && rdist > rthreshin) {
-		cell1 = cell;
-		dist1 = dist;
-		iter1 = -1;
-		return;
-	}
-	vec3 sideDist = sign(rd)*((cell - ro) + sign(rd)*hsz+hsz)*delta/csz;
-	bvec3 mask = lessThanEqual(sideDist.xyz, min(sideDist.yxx, sideDist.zzy));
-
-	for (int i=0; i<4; i++) {
-		cell += vec3(mask) * rStep;
-		if (cell.y < y0 - hsz) {
-			break;
-		}
-		cellmid = cell + hsz + cell2jitter(cell);
-		dist = linePointDistance(ro, r2, cellmid);
-		vec2 mapPos = world2mapPos(cellmid.xz);
+	hit *= cellScale;
+	// align vertically with zero-level (eg. for road transition)
+	hit -= rd;
+	// stick the top layer to the terrain
+	vec3 pos = vec3(hit.x, -0.01, hit.z);
+	// is the terrain facing us?
+	vec3 azimuth = normalize(vec3(rd.x, 0., rd.z));
+	float faceness = 1.-clamp(-dot(vWorldNormal, azimuth)*2., 0., 0.2);
+	// fix(ish) the perspective on angled terrain
+	rd = refract(rd, vWorldNormal, 0.9);
+	// voxel traversal
+	vec4 col = vec4(0.);
+	vec3 cell = floor(pos) + .5;
+	vec3 dRd = 1./abs(rd);
+	vec3 sRd = sign(rd);
+	vec3 side = dRd*(sRd*(cell - pos) + .5);
+	vec3 mask = vec3(0);
+	for (int i = 0; i < 5; i++) {
+		vec2 mapPos = world2mapPos(cell.xz*iCellScale);
 		float rdist = mapPos2roadDist(miwrap(mapPos)*mapsz);
-		if (dist < psz && rdist > rthreshin) {
-			cell1 = cell;
-			dist1 = dist;
-			iter1 = i;
-			break;
+		// hide lower layers near the road
+		float rthresh = rthreshin - cell.y*0.1 - 0.05;
+		// start converting back to screen coordinates
+		vec3 backtrack = cell + cell2jitter(cell);
+		backtrack += vec3(0.,hit.y,0.)-rd*distance(pos, cell)*.5;
+		vec2 screenPoint = world2screen(backtrack*iCellScale, worldToClip);
+		vec2 dif = vScreenPos - screenPoint;
+		// fix stretching when facing angled terrain
+		dif.y /= faceness;
+		float dist = length(dif);
+		float psz2 = (1.+0.4*abs(vScreenPos.x))*dotSize*5./camDist;
+		if (dist < psz2 && rdist > rthresh) {
+			float dens = 1.-smoothstep(psz2 - camAA*0.005, psz2, dist);
+			float a2 = (1.-col.a)*dens;
+			col += vec4(cell2col(mapPos, 0.)*a2, a2);
+			if (col.a > 0.9) break;
 		}
-	    sideDist += vec3(mask) * delta;
-	    mask = lessThanEqual(sideDist.xyz, min(sideDist.yxx, sideDist.zzy));
+		mask = step(side, side.yzx)*(1. - step(side.zxy, side));
+		side += mask*dRd;
+		cell += mask*sRd;
 	}
+	return col;
 }
 
 void main() {
-	#include <normal_fragment_begin>
-	float camVar = abs(dFdy(vCamDist))*0.8;
-
-	gl_FragColor = terrain(wPos.xz);
-	gl_FragColor.a = vAlpha;
-
-	vec3 worldNormal = inverseTransformDirection(normal, viewMatrix);
-	vec3 rd;
-	vec3 rStep;
-	vec3 delta;
-	pretrav(worldNormal, rd, rStep, delta);
-	
-	vec3 cellA1 = vec3(1.0, 0.0, 0.0);
-	float distA1 = 12.0;
-	int iterA1 = 100;
-	traverse(wPos, rd, rStep, delta, cellA1, distA1, iterA1);
-	
-	vec3 cellB1 = vec3(1.0, 0.0, 0.0);
-	float distB1 = 12.0;
-	int iterB1 = 100;
-	traverse(wPos + vec3(0.5, 0.0, 0.5)*csz, rd, rStep, delta, cellB1, distB1, iterB1);
-	
-	gl_FragColor.rgb = mix(cell2col(cellA1, 0.0), gl_FragColor.rgb, smoothstep(psz - camVar*0.5, psz, distA1));
-	gl_FragColor.rgb = mix(cell2col(cellB1, 66.0), gl_FragColor.rgb, smoothstep(psz - camVar*1.33, psz, distB1));
+	vec4 ter = terrain(vWorldPos.xz);
+	vec3 rd = normalize(vWorldPos - cameraPosition);
+	float camDist = distance(vWorldPos, cameraPosition.xyz);
+	vec4 col = voxelTrace(vWorldPos, rd, camDist);
+	col.xyz += ter.xyz * (1.-col.a);
+	gl_FragColor.rgb = col.xyz;
+	gl_FragColor.a = 1.0 - smoothstep(192.0*3.0, 192.0*5.0, camDist);
 
 	DirectionalLight directionalLight = directionalLights[0];
 	DirectionalLightShadow directionalLightShadow = directionalLightShadows[0];
@@ -221,15 +174,6 @@ void main() {
 		shadow = texture2DCompare(directionalShadowMap[0], sCoord.xy, sCoord.z);
 	}
 	gl_FragColor.rgb *= 0.8 + 0.2 * shadow;
-	// gl_FragColor.rgb = worldNormal*0.5+0.5;
-
-	// gl_FragColor.r = step(0.0, dbg);
-
-	// gl_FragColor.r = 0.0;
-	// if (isnan(dbg)) {
-	// 	gl_FragColor.r = 1.0;
-	// }
-	// gl_FragColor.gb *= 0.2;
 }
 `;
 
@@ -242,6 +186,7 @@ export const mkNearMaterial = () => {
 			{
 				maptex: { type: 't', value: maptex },
 				mapsz: { type: 'f', value: mapcnv.width },
+				aspect: { type: 'f', value: window.innerWidth / window.innerHeight },
 			},
 			THREE.UniformsLib.lights,
 			THREE.UniformsLib.fog,

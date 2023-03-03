@@ -68,10 +68,13 @@ export const initWorld = async ({ trackLoader, nearMap, farMap }) => {
 	terrainReady = true;
 };
 
-let stats;
-export const startStats = Stats => {
+let stats, gpuPanel;
+export const startStats = (Stats, GPUStatsPanel) => {
 	stats = new Stats();
 	container.appendChild(stats.dom);
+	gpuPanel = new GPUStatsPanel(renderer.getContext());
+	stats.addPanel( gpuPanel );
+	stats.showPanel(0);
 };
 
 const walkCaster = new THREE.Raycaster();
@@ -130,8 +133,10 @@ const stepWorld = (gfx = true) => {
 const animate = () => {
 	requestAnimationFrame(animate);
 	stepWorld(true);
+	if (gpuPanel) gpuPanel.startQuery();
 	renderer.render(scene, camera);
 	// shadowMapHelper.render(renderer);
+	if (gpuPanel) gpuPanel.endQuery();
 	if (stats) stats.update();
 };
 

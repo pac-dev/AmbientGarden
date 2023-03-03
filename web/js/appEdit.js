@@ -1,4 +1,5 @@
 import Stats from './lib/stats.module.js';
+import { GPUStatsPanel } from './lib/GPUStatsPanel.js';
 import { addMainListeners, initGfx, initWorld, startMainLoop, startStats } from './mainLoop.js';
 import { editMode } from './editMode.js';
 import { LiveTrackLoader } from './liveTrack.js';
@@ -11,7 +12,7 @@ initWorld({
 	nearMap: genNearMap,
 	farMap: genFarMap,
 });
-startStats(Stats);
+startStats(Stats, GPUStatsPanel);
 editMode.init();
 initGfx();
 addMainListeners();
