@@ -1,7 +1,9 @@
 /**
  * @typedef {
  * 'pause'
- * | 'resume' } EventType
+ * | 'resume'
+ * | 'resize'
+ * | 'timestep' } EventType
  */
 
 

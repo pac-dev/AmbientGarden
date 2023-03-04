@@ -1,4 +1,5 @@
 import * as THREE from './lib/three.module.js';
+import { events } from './events.js';
 import { ratio, clock, pointHiDist } from './world.js';
 
 const ptEyeVert = /*glsl*/ `
@@ -114,7 +115,7 @@ void main() {
 
 export let leafMaterial, leafDepth;
 
-const initLeafMaterials = () => {
+export const initLeafMaterials = (width, height, shadowWidth) => {
 	leafMaterial = new THREE.ShaderMaterial({
 		uniforms: THREE.UniformsUtils.merge([
 			THREE.UniformsLib.lights,
@@ -142,19 +143,16 @@ const initLeafMaterials = () => {
 		vertexShader: ptSunVert,
 		fragmentShader: ptSunFrag,
 	});
-};
-
-export const updateLeafSize = (dLight, container) => {
-	if (!leafMaterial) initLeafMaterials();
-	leafMaterial.uniforms.vpSize.value = new THREE.Vector2(
-		container.innerWidth * ratio,
-		container.innerHeight * ratio
-	);
-	const dim = dLight.shadow.mapSize.width;
-	leafDepth.uniforms.smSize.value = new THREE.Vector2(dim, dim);
-};
-
-export const updateLeafTime = () => {
-	if (!leafMaterial) initLeafMaterials();
-	leafMaterial.uniforms.time.value = clock.gfxTime;
+	const resize = ({width, height, shadowWidth}) => {
+		leafMaterial.uniforms.vpSize.value = new THREE.Vector2(
+			width * ratio,
+			height * ratio
+		);
+		leafDepth.uniforms.smSize.value = new THREE.Vector2(shadowWidth, shadowWidth);
+	};
+	resize({width, height, shadowWidth});
+	events.on('resize', resize);
+	events.on('timestep', () => {
+		leafMaterial.uniforms.time.value = clock.gfxTime;
+	});
 };

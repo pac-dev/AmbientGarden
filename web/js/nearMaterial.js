@@ -1,4 +1,5 @@
 import * as THREE from './lib/three.module.js';
+import { events } from './events.js';
 import { mapcnv, terrainGlsl } from './world.js';
 
 /**
@@ -196,6 +197,9 @@ export const mkNearMaterial = () => {
 		lights: true,
 		// transparent: for near-terrain to fade onto far-terrain
 		transparent: true,
+	});
+	events.on('resize', ({width, height, shadowWidth}) => {
+		ret.uniforms.aspect.value = width / height;
 	});
 	return ret;
 };

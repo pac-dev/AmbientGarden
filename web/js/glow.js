@@ -1,6 +1,7 @@
 import * as THREE from './lib/three.module.js';
 import { getMeta } from './beacons.js';
 import { clock } from './world.js';
+import { events } from './events.js';
 
 const flareMap = new THREE.TextureLoader().load('img/glow.png');
 const waveMap = new THREE.TextureLoader().load('img/wave512.png');
@@ -100,8 +101,7 @@ const slowCurve = t => {
     return 0.4-0.4/(t*t*0.4+1);
 };
 
-/** @param {THREE.Object3D} obj */
-export const updateGlows = () => {
+events.on('timestep', () => {
 	for (let rec of activeGlows) {
 		const age = clock.worldTime - getMeta(rec).startTime;
 		const birthAmt = fade(age, rec.glowCurve === 'slow' ? 0.5 : 100);
@@ -120,4 +120,4 @@ export const updateGlows = () => {
 		else ageFactor = defaultCurve(age);
 		flare.material.opacity = ageFactor * Math.sqrt(getMeta(rec).track?.lastAmp ?? 0) * 0.5;
 	}
-};
+});

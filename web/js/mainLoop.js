@@ -1,15 +1,15 @@
 import * as THREE from './lib/three.module.js';
-import { updateLeafSize, updateLeafTime } from './leafMaterial.js';
+import { events } from './events.js';
 import { initTerrain, nearGroup, farGroup } from './terrain.js';
 import { heightAt, ratio, clock, loadNearMap, loadFarMap } from './world.js';
 import { beaconGroup, initBeaconPool, initTrackPool } from './beacons.js';
 import { updateResources } from './resourcePool.js';
-import { updateGlows } from './glow.js';
 import { runMode, xz } from './runMode.js';
 import { editMode } from './editMode.js';
 import { enableTips } from './tips.js';
+import { initLeafMaterials } from './leafMaterial.js';
 
-const shadowDim = 1024;
+const shadowWidth = 1024;
 const container = document.getElementById('gl_container');
 const dLight = new THREE.DirectionalLight(0xffffff, 0.5);
 const getAspect = () => window.innerWidth / window.innerHeight;
@@ -39,12 +39,12 @@ export const initGfx = () => {
 		bottom: -1024,
 		top: 1024,
 	});
-	dLight.shadow.mapSize.width = shadowDim;
-	dLight.shadow.mapSize.height = shadowDim;
+	dLight.shadow.mapSize.width = shadowWidth;
+	dLight.shadow.mapSize.height = shadowWidth;
 	dLight.shadow.bias = 0;
 	scene.add(dLight);
 	scene.add(dLight.target);
-	updateLeafSize(dLight, window);
+	initLeafMaterials(window.innerWidth, window.innerHeight, shadowWidth);
 };
 
 const teleport = (x, z) => camera.position.set(x, 50, z + 200);
@@ -123,8 +123,7 @@ const stepWorld = (gfx = true) => {
 		.multiplyScalar(4)
 		.applyAxisAngle(zax, -0.7);
 	dLight.position.copy(tgt).add(new THREE.Vector3(0, 700, 0).applyAxisAngle(zax, -0.7));
-	updateLeafTime();
-	updateGlows();
+	events.trigger('timestep');
 	editMode.update();
 	runMode.update();
 	if (terrainReady) updateResources(camera.position.x, camera.position.z);
@@ -152,7 +151,11 @@ export const addMainListeners = () => {
 		camera.updateProjectionMatrix();
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		// shadowMapHelper.updateForWindowResize();
-		updateLeafSize(dLight, window);
+		events.trigger('resize', {
+			width: window.innerWidth,
+			height: window.innerHeight,
+			shadowWidth: dLight.shadow.mapSize.width
+		});
 	});
 	renderer.domElement.addEventListener(
 		'mousemove',
