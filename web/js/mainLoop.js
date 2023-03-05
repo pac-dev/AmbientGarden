@@ -49,7 +49,7 @@ export const initGfx = () => {
 
 const teleport = (x, z) => camera.position.set(x, 50, z + 200);
 const initPos = () => {
-	const aspect = getAspect();
+	const aspect = Math.max(0.85, Math.min(2, getAspect()));
 	const x = (aspect - 0.83) * ((50 - 100) / (2.5 - 0.83)) - 50; // 2.5 -> -100 ; 0.83 -> -50
 	const z = (aspect - 0.83) * ((580 - 620) / (2.5 - 0.83)) + 620; // 2.5 -> 580 ; 0.83 -> 620
 	teleport(x, z);

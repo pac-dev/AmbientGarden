@@ -158,23 +158,24 @@ window.document.addEventListener('keydown', event => {
 	console.log(step);
 });
 
-let waypointId = 1;
+let waypointId;
 const waypoints = [
-	// { x: -95, z: 784, yaw: 0 },
 	{ x: -87, z: 595.8, yaw: 0 },
-	{ x: -175.7, z: 435.8, yaw: 0 },
-	{ x: -16.6, z: 207.4, yaw: 0 },
-	{ x: -14.5, z: 162.9, yaw: 0 },
-	{ x: 97.1, z: -78, yaw: -0.22 },
+	{ x: -160, z: 435.8, yaw: 0 },
+	{ x: -50, z: 207.4, yaw: 0 },
+	{ x: -40, z: 150, yaw: 0 },
+	{ x: 80, z: -78, yaw: -0.22 },
 	{ x: 104.8, z: -339.8, yaw: 0.26 },
-	{ x: 54.6, z: -401.3, yaw: 0.21 },
+	{ x: 30, z: -401.3, yaw: 0.21 },
 	{ x: -15, z: -479, yaw: 0.21 },
-	{ x: 48.2, z: -1004.1, yaw: 0.21 },
+	{ x: 15, z: -1004.1, yaw: 0.21 },
 	{ x: -23.6, z: -1285, yaw: 0.42 },
 	{ x: -132.6, z: -1527.9, yaw: -0.26 },
 	// bus stop 1:
 	{ x: 32, z: -1726.6, yaw: 1.12 },
+	{ x: 32, z: -1726.6, yaw: 1.3 },
 	{ x: 32, z: -1726.6, yaw: 2 },
+	{ x: 32, z: -1726.6, yaw: 2.5 },
 	{ x: 32, z: -1726.6, yaw: 3 },
 	{ x: 32, z: -1726.6, yaw: 4 },
 	// --
@@ -187,11 +188,14 @@ const waypoints = [
 	// --
 	{ x: 1443.5, z: -1546.8, yaw: 2.88 },
 	{ x: 1437.6, z: -1403.3, yaw: 2.6 },
-	{ x: 1361.7, z: -1211.5, yaw: 2.61 },
-	{ x: 1330, z: -1143.5, yaw: 2.9 },
-	{ x: 1370.5, z: -963, yaw: 2.16 },
-	{ x: 1277.1, z: -863.9, yaw: 2.96 },
-	{ x: 1269.1, z: -807.5, yaw: 2.97 },
+	{ x: 1283.8, z: -1248.9, yaw: 3.03 },
+	{ x: 1280.7, z: -1208.5, yaw: 3.03 },
+	{ x: 1316.7, z: -1114.8, yaw: 2.85 },
+	{ x: 1388.9, z: -1040.6, yaw: 2.28 },
+	{ x: 1342.4, z: -939.9, yaw: 0.99 },
+	{ x: 1342.1, z: -938.6, yaw: 1.8 },
+	{ x: 1341.1, z: -937.1, yaw: 2.35 },
+	{ x: 1328.5, z: -919.4, yaw: 2.73 },
 	{ x: 1248, z: -481.2, yaw: 2.68 },
 	{ x: 1166.4, z: -289, yaw: 3.22 },
 	{ x: 1389.8, z: 204.3, yaw: 2.94 },
@@ -204,11 +208,16 @@ const waypoints = [
 	{ x: 1208.7, z: 948.4, yaw: 2.15 },
 	{ x: 1150.5, z: 1062.6, yaw: 1.37 },
 	{ x: 1057.1, z: 1112.3, yaw: 0.78 },
-	{ x: 921.7, z: 1025.3, yaw: 1.1 },
-	{ x: 744.6, z: 911.2, yaw: 1.14 },
-	{ x: 408.8, z: 939.2, yaw: 0.88 },
-	{ x: 150.9, z: 921.2, yaw: 0.48 },
-	{ x: -53.9, z: 742.3, yaw: -0.05 }
+	{ x: 1010.9, z: 1065.8, yaw: 6.68 },
+	{ x: 990.1, z: 1043.4, yaw: 6.96 },
+	{ x: 909.8, z: 1030.1, yaw: 7.27 },
+	{ x: 817.5, z: 1037.3, yaw: 7.21 },
+	{ x: 681.2, z: 1000.9, yaw: 7.14 },
+	{ x: 449.4, z: 989.2, yaw: 7.06 },
+	{ x: 279.2, z: 956.3, yaw: 6.92 },
+	{ x: 157.2, z: 928.9, yaw: 6.7 },
+	{ x: -53.9, z: 742.3, yaw: -0.05 },
+
 ];
 
 const closestWaypoint = refXz => {
@@ -238,15 +247,18 @@ export const toggleAutopilot = (toggle, isIntro) => {
 			startPos = runMode.tgtXz.clone();
 			endPos = xz(waypoint);
 			startTime = clock.worldTime;
-			if (isIntro) startTime += 3;
-			const dur = Math.max(4, startPos.distanceTo(endPos) * 0.06);
-			endTime = clock.worldTime + dur;
+			endTime = startTime + Math.max(4, startPos.distanceTo(endPos) * 0.06);;
+			if (isIntro) {
+				startTime += 3;
+				endTime += 5;
+			}
 			yawTime = clock.worldTime;
 			startYaw = runMode.tgtYaw;
 			endYaw = waypoint.yaw;
 			isIntro = false;
 		};
-		waypointId = closestWaypoint(runMode.tgtXz);
+		if (isIntro) waypointId = 0;
+		else waypointId = closestWaypoint(runMode.tgtXz);
 		setWaypoint(waypoints[waypointId]);
 		runMode.stepFn = () => {
 			if (clock.worldTime < startTime) return;
