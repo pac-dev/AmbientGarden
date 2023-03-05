@@ -18,7 +18,7 @@ const modalKeyListener = e => {
 export const initUI = () => {
 	window.document.addEventListener('keydown', modalKeyListener);
 	ok.disabled = false;
-	ok.innerText = 'Begin';
+	ok.innerText = 'Start';
 	ok.addEventListener('click', onModalOK);
 	autoBox.disabled = false;
 	autoBox.onchange = () => toggleAutopilot(autoBox.checked);
