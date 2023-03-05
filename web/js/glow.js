@@ -3,8 +3,8 @@ import { getMeta } from './beacons.js';
 import { clock } from './world.js';
 import { events } from './events.js';
 
-const flareMap = new THREE.TextureLoader().load('img/glow.png');
-const waveMap = new THREE.TextureLoader().load('img/wave512.png');
+const flareMap = new THREE.TextureLoader().load(window.agStaticPath+'img/glow.png');
+const waveMap = new THREE.TextureLoader().load(window.agStaticPath+'img/wave512.png');
 const planeGeo = new THREE.PlaneGeometry(20, 20);
 
 /** @param {THREE.Group} grp */

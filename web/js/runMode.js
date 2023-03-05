@@ -113,7 +113,7 @@ const enable = () => {
 	renderer.domElement.addEventListener('pointerdown', onPointerDown);
 	// renderer.domElement.addEventListener('pointercancel', onPointerCancel);
 	if (!tipsEnabled) enableTips();
-	const tgtDiskMap = new THREE.TextureLoader().load('img/tgtdisk.png');
+	const tgtDiskMap = new THREE.TextureLoader().load(window.agStaticPath+'img/tgtdisk.png');
 	const tgtDiskGeo = new THREE.PlaneGeometry(30, 30);
 	const tgtDiskMat = new THREE.MeshBasicMaterial({
 		map: tgtDiskMap,
@@ -123,7 +123,7 @@ const enable = () => {
 	tgtDiskMesh = new THREE.Mesh(tgtDiskGeo, tgtDiskMat);
 	tgtDiskMesh.renderOrder = 1;
 	scene.add(tgtDiskMesh);
-	const tgtLockMap = new THREE.TextureLoader().load('img/tgtlock.png');
+	const tgtLockMap = new THREE.TextureLoader().load(window.agStaticPath+'img/tgtlock.png');
 	const tgtLockGeo = new THREE.PlaneGeometry(30, 30);
 	const tgtLockMat = new THREE.MeshBasicMaterial({
 		map: tgtLockMap,

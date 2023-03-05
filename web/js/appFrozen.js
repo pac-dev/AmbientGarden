@@ -4,8 +4,8 @@ import { initUI } from './ui.js';
 
 initWorld({
 	trackLoader: new FrozenTrackLoader(),
-	nearMap: 'img/nearmap.png',
-	farMap: 'img/farmap.png',
+	nearMap: window.agStaticPath+'img/nearmap.png',
+	farMap: window.agStaticPath+'img/farmap.png',
 });
 initGfx();
 addMainListeners();

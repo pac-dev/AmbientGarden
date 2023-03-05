@@ -346,9 +346,9 @@ export const parseTrack = rec => {
 	]) {
 		urlBase = urlBase.replaceAll(a, b);
 	}
-	rec.introUrl = 'generated/audio/' + urlBase + '_intro.ogg';
-	rec.loopUrl = 'generated/audio/' + urlBase + '_loop.ogg';
-	rec.sourceUrl = 'http://localhost:8000/ag#' + rec.trackName + '?' + rec.paramFragment;
+	rec.introUrl = window.agStaticPath+'generated/audio/' + urlBase + '_intro.ogg';
+	rec.loopUrl = window.agStaticPath+'generated/audio/' + urlBase + '_loop.ogg';
+	rec.sourceUrl = 'https://ambient.garden/tracks#' + rec.trackName + '?' + rec.paramFragment;
 };
 
 for (let r of beaconRecords) {

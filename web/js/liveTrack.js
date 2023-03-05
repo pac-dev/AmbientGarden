@@ -106,9 +106,9 @@ const cachedFetch = async (url, format) => {
 export class LiveTrackLoader extends TrackLoader {
 	/** @param {import('./beacons.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
-		const workletRoot = `generated/worklets/${resource.trackName}/`;
+		const workletRoot = `${window.agStaticPath}generated/worklets/${resource.trackName}/`;
 		const processorName = `worklet_${resource.trackName}`;
-		const sourceRoot = `generated/tracks/${resource.trackName}/`;
+		const sourceRoot = `${window.agStaticPath}generated/tracks/${resource.trackName}/`;
 		const callbacks = {
 			async fetchMainRelative(path) {
 				return await cachedFetch(sourceRoot + path, 'txt');
