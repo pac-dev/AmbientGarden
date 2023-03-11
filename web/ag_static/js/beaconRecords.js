@@ -346,8 +346,9 @@ export const parseTrack = rec => {
 	]) {
 		urlBase = urlBase.replaceAll(a, b);
 	}
-	rec.introUrl = window.agStaticPath+'generated/audio/' + urlBase + '_intro.ogg';
-	rec.loopUrl = window.agStaticPath+'generated/audio/' + urlBase + '_loop.ogg';
+	const staticPath = window.agStaticPath ?? 'ag_static/';
+	rec.introUrl = staticPath+'generated/audio/' + urlBase + '_intro.mp3';
+	rec.loopUrl = staticPath+'generated/audio/' + urlBase + '_loop.mp3';
 	rec.sourceUrl = 'https://ambient.garden/tracks#' + rec.trackName + '?' + rec.paramFragment;
 };
 
