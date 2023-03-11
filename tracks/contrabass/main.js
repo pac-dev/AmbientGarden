@@ -1,3 +1,16 @@
+/**
+ * Ambient contrabass.
+ * 
+ * The core of this patch is a waveguide-inspired bowed string algorithm. It
+ * makes deliberate use of (what I believe to be) aliasing artifacts, and has an
+ * additional layer of ambient noise.
+ * 
+ * As with other patches, the low-level instrument code is in
+ * faust/contrabass.dsp
+ * 
+ * This file contains sequencing, envelope, and other control code.
+ */
+
 import { Graph, Seq, FaustNode } from '../_lib/tealib.js';
 
 export const sampleRate = 44100;

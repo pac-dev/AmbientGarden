@@ -3,7 +3,8 @@
  * 'pause'
  * | 'resume'
  * | 'resize'
- * | 'timestep' } EventType
+ * | 'timestep'
+ * | 'doneWelcome' } EventType
  */
 
 

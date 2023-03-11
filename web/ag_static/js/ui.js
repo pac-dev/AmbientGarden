@@ -1,9 +1,13 @@
+import { aboutContent } from './about.js';
 import { events } from './events.js';
 import { runMode, toggleAutopilot, goTo } from './runMode.js';
 import { clock } from './world.js';
 
+/** @type {HTMLDivElement} */
+const modal = document.getElementById('modal');
+
 /** @type {HTMLButtonElement} */
-const ok = document.getElementById('welcome_ok');
+const ok = document.getElementById('modal_ok');
 
 /** @type {HTMLButtonElement} */
 const pauseButton = document.getElementById('pause');
@@ -13,6 +17,30 @@ const autoBox = document.getElementById('autopilot');
 
 const modalKeyListener = e => {
 	if (e.key === 'Enter') onModalOK();
+};
+
+export const closeModal = () => {
+	modal.style.display = 'none';
+	window.document.removeEventListener('keydown', modalKeyListener);
+	pauseButton.disabled = false;
+	events.trigger('doneWelcome');
+};
+
+const onModalOK = () => {
+	closeModal();
+	if (!runMode.enabled) {
+		runMode.enable();
+		toggleAutopilot(autoBox.checked, true);
+	}
+};
+
+const showAbout = () => {
+	if (modal.style.display === 'none') {
+		modal.style.display = 'block';
+		window.document.addEventListener('keydown', modalKeyListener);
+		ok.innerText = 'Close';
+	}
+	document.getElementById('modal_content').innerHTML = aboutContent;
 };
 
 export const initUI = () => {
@@ -27,23 +55,10 @@ export const initUI = () => {
 	pauseButton.addEventListener('click', () => {
 		events.trigger(clock.paused ? 'resume' : 'pause')
 	});
+	document.getElementById('question').onclick = showAbout;
 	document.body.addEventListener('mousedown', () => {
 		if (detailEle) detailEle.remove();
 	});
-};
-
-export const closeModal = () => {
-	const domEle = document.getElementById('welcome_modal');
-	if (!domEle) return;
-	domEle.remove();
-	window.document.removeEventListener('keydown', modalKeyListener);
-};
-
-const onModalOK = () => {
-	closeModal();
-	runMode.enable();
-	toggleAutopilot(autoBox.checked, true);
-	pauseButton.disabled = false;
 };
 
 export const setAutopilotUi = on => {

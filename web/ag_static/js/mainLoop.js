@@ -144,9 +144,11 @@ export const startMainLoop = () => {
 	animate();
 };
 
+let doneWelcome = false;
+events.on('doneWelcome', () => { doneWelcome = true });
 export const addMainListeners = () => {
 	window.addEventListener('resize', () => {
-		if (document.getElementById('welcome_modal')) initPos();
+		if (!doneWelcome) initPos();
 		camera.aspect = getAspect();
 		camera.updateProjectionMatrix();
 		renderer.setSize(window.innerWidth, window.innerHeight);

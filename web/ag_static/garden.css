@@ -1,9 +1,10 @@
 
 body { margin: 0; }
-#welcome_modal {
+#modal {
 	position: absolute;
-	top: 50%;
+	top: calc(50% - 25px);
 	left: 50%;
+	max-height: calc(100% - 130px);
 	transform: translate(-50%, -50%);
 	width: min(600px, 100% - 90px);
 	padding: 30px;
@@ -13,12 +14,22 @@ body { margin: 0; }
 	font-family: consolas, monaco, sans-serif;
 	font-size: 14px;
 	z-index: 4;
+	overflow-y: auto;
 }
-#welcome_modal h1 {
+#modal h1 {
 	font-size: 18px;
 	font-weight: 600;
 }
-#welcome_ok {
+#modal h2 {
+	font-size: 16px;
+	font-weight: 600;
+}
+#modal a {
+	color: #dea2f7;
+	text-decoration: none;
+}
+#modal a:hover { color: #edc2ff; }
+#modal_ok {
 	margin: 30px auto 0;
 	border: 3px solid #b3532e;
 	background-color: #333;
@@ -26,7 +37,7 @@ body { margin: 0; }
 	color: #eee;
 	padding: 8px 20px;
 }
-#welcome_ok:hover { background-color: #3a3a3a; }
+#modal_ok:hover { background-color: #3a3a3a; }
 .detail {
 	position: absolute;
 	bottom: 50px;
@@ -94,6 +105,21 @@ body { margin: 0; }
 }
 #ctrls > label {
 	margin-left: -3px;
+}
+#question {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 50px;
+	height: 50px;
+	padding: 11px;
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+#question img {
+	width: 100%;
+	height: 100%;
 }
 .switch {
 	position: relative;
