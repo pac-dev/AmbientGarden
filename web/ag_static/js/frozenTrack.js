@@ -4,48 +4,151 @@ import { Track, TrackLoader } from './tracks.js';
 
 const xfDur = 2;
 const margin = 0.1;
-const addAudio = (() => {
-	/** @type {DynamicsCompressorNode} */
-	let compressor;
-	/** @type {GainNode} */
-	let preAmp;
-	/** @type {AudioContext} */
-	let context;
-	/** @param {string} url */
-	return url => {
-		if (!context) {
-			context = new AudioContext();
-			preAmp = context.createGain();
-			compressor = context.createDynamicsCompressor();
-			preAmp.connect(compressor);
-			compressor.connect(context.destination);
-			preAmp.gain.value = 1.75;
-			events.on('pause', () => { context.suspend(); });
-			events.on('resume', () => { context.resume(); });
-		}
-		const au = new Audio(url);
-		au.cleanup = () => {
-			au.canceled = true;
-		};
-		let source;
-		au.loaded = new Promise((resolve, reject) => {
-			au.addEventListener('canplaythrough', () => {
-				if (source) return;
-				source = context.createMediaElementSource(au);
-				source.connect(compressor);
-				au.cleanup = () => {
-					au.pause();
-					source.disconnect();
-					au.cleanup = () => {};
-				};
-				resolve();
-			});
-			au.addEventListener('error', reject);
-			au.addEventListener('abort', reject);
+const context = new AudioContext();
+context.suspend();
+events.on('doneWelcome', () => context.resume());
+events.on('pause', () => context.suspend());
+events.on('resume', () => context.resume());
+const compressor = context.createDynamicsCompressor();
+compressor.connect(context.destination);
+
+/**
+ * In most browsers, HTMLAudioElement is the resource-efficient way of playing
+ * stuff. However, Apple Webkit (so, all of iOS) does not allow delayed starts
+ * on Audio elements, and forces us to use the Web Audio API instead, and hold
+ * the full decoded audio in memory. I'd rather not force this resource hogging
+ * onto everyone, so let's check capability.
+ */
+let canPlayAudioElements;
+// Do not call this from an event handler context
+const checkAudioCapability = async () => {
+	const testAudio = new Audio();
+	// silent mp3:
+	testAudio.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+	try {
+		await testAudio.play();
+		canPlayAudioElements = true;
+		console.log("Browser can play HTMLAudioElement asynchronously!");
+	} catch {
+		canPlayAudioElements = false;
+		setInterval(() => events.trigger('interval'), 200);
+		console.log("Browser can't play HTMLAudioElement asynchronously. Falling back to Web Audio.");
+	}
+};
+
+/**
+ * Using the Web Audio API, roughly simulate HTMLAudioElement with some
+ * customizations. Only use this if the browser refuses to play normal Audio
+ * elements.
+ */
+class WebAudioElement {
+	constructor(url, cloneSource) {
+		this.url = url;
+		this.gainNode = context.createGain();
+		this.gainNode.connect(compressor);
+		this.playing = false;
+		this.startTime = 0;
+		const self = this;
+		this.loaded = new Promise((resolve, reject) => {
+			self._resolveLoaded = resolve;
 		});
-		return au;
+		this.intervalCallback = () => {
+			if (this.onupdate && this.playing && context.state === 'running') {
+				this.onupdate();
+			}
+		};
+		events.on('interval', this.intervalCallback);
+		if (cloneSource) {
+			(async () => {
+				await cloneSource.loaded;
+				this.audioBuffer = cloneSource.audioBuffer;
+				this.duration = cloneSource.duration;
+				this._resolveLoaded();
+			})();
+		} else {
+			this.load();
+		}
+	}
+	async load() {
+		const response = await fetch(this.url);
+        const arrayBuffer = await response.arrayBuffer();
+        this.audioBuffer = await context.decodeAudioData(arrayBuffer);
+		this.duration = this.audioBuffer.duration;
+		this._resolveLoaded();
+	}
+	play() {
+		this.cleanupSourceNode();
+		this.sourceNode = context.createBufferSource();
+		this.sourceNode.buffer = this.audioBuffer;
+		this.sourceNode.connect(this.gainNode);
+		this.startTime = context.currentTime;
+		this.playing = true;
+		this.sourceNode.addEventListener('ended', () => {
+			this.playing = false;
+		});
+		this.sourceNode.start();
+	}
+	rewind() {
+		this.cleanupSourceNode();
+	}
+	get currentTime() {
+		if (this.playing) return context.currentTime - this.startTime;
+		else return 0;
+	}
+	set volume(x) {
+		this.gainNode.gain.value = x;
+	}
+	cleanupSourceNode() {
+		if (!this.sourceNode) return;
+		this.sourceNode.disconnect();
+		this.sourceNode.buffer = null;
+		delete this.sourceNode;
+	}
+	clone() {
+		return new WebAudioElement(this.url, this);
+	}
+	cleanup() {
+		this.cleanupSourceNode();
+		this.gainNode.disconnect();
+		events.off('interval', this.intervalCallback);
+	}
+}
+
+/** @param {string} url */
+const addAudio = url => {
+	if (!canPlayAudioElements) {
+		return new WebAudioElement(url);
+	}
+	const au = new Audio(url);
+	au.cleanup = () => {
+		au.canceled = true;
 	};
-})();
+	au.addEventListener('timeupdate', () => {
+		if (au.onupdate) au.onupdate();
+	});
+	au.rewind = () => {
+		au.pause();
+		au.currentTime = 0;
+	};
+	au.clone = () => addAudio(url);
+	let source;
+	au.loaded = new Promise((resolve, reject) => {
+		au.addEventListener('canplaythrough', () => {
+			if (source) return;
+			source = context.createMediaElementSource(au);
+			source.connect(compressor);
+			au.cleanup = () => {
+				au.pause();
+				source.disconnect();
+				au.cleanup = () => {};
+			};
+			resolve();
+		});
+		au.addEventListener('error', reject);
+		au.addEventListener('abort', reject);
+	});
+	return au;
+};
 
 class FrozenTrack extends Track {
 	constructor(proximity) {
@@ -66,14 +169,13 @@ class FrozenTrack extends Track {
 		const introPart = { au: introAu, dur: introAu.duration - xfDur, next: loop1Part };
 		loop2Part.next = loop1Part;
 		const beginPart = part => {
-			const listener = () => {
+			part.au.rewind();
+			part.au.play();
+			part.au.onupdate = () => {
 				if (part.au.currentTime < part.dur - margin) return;
 				beginPart(part.next);
-				part.au.removeEventListener('timeupdate', listener);
+				part.au.onupdate = undefined;
 			};
-			part.au.currentTime = 0;
-			part.au.play();
-			part.au.addEventListener('timeupdate', listener);
 		};
 		beginPart(introPart);
 		this.status = 'playing';
@@ -96,12 +198,15 @@ class FrozenTrack extends Track {
 export class FrozenTrackLoader extends TrackLoader {
 	/** @param {import('./beacons.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
+		if (canPlayAudioElements === undefined) {
+			await checkAudioCapability();
+		}
 		const track = new FrozenTrack(proximity);
 		resource.track = track;
 		getMeta(resource.record).track = track;
 		track.introAu = addAudio(resource.record.introUrl);
 		track.loop1Au = addAudio(resource.record.loopUrl);
-		track.loop2Au = addAudio(resource.record.loopUrl);
+		track.loop2Au = track.loop1Au.clone();
 		try {
 			await Promise.all([track.introAu.loaded, track.loop1Au.loaded, track.loop2Au.loaded]);
 		} catch (error) {

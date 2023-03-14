@@ -4,7 +4,8 @@
  * | 'resume'
  * | 'resize'
  * | 'timestep'
- * | 'doneWelcome' } EventType
+ * | 'doneWelcome'
+ * | 'interval' } EventType
  */
 
 
