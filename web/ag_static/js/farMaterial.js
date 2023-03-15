@@ -1,20 +1,22 @@
 import * as THREE from './lib/three.module.js';
+import { skyFrag } from './sky.js';
 import { mapcnv, terrainGlsl } from './world.js';
 
 const farVert = /*glsl*/ `
 #include <common>
 
-varying vec2 vCoord;
+varying vec3 vWorldPos;
 varying float vFog;
-varying float vAlpha;
+varying float vSkyAmount;
+varying float vScreenX;
 
 void main() {
 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-	vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-	vCoord = worldPosition.xz;
-	float d = distance(worldPosition.xz, cameraPosition.xz);
+	vScreenX = gl_Position.x / gl_Position.w;
+	vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+	float d = distance(vWorldPos.xz, cameraPosition.xz);
 	vFog = smoothstep(1152.0*0.5, 1152.0*2.5, d);
-	vAlpha = 1.0 - smoothstep(1152.0*2.0, 1152.0*5.0, d);
+	vSkyAmount = smoothstep(1152.0*2.0, 1152.0*5.0, d);
 }
 `;
 
@@ -23,16 +25,23 @@ const farFrag = /*glsl*/ `
 
 uniform sampler2D maptex;
 uniform float mapsz;
-varying vec2 vCoord;
+varying vec3 vWorldPos;
 varying float vFog;
-varying float vAlpha;
+varying float vSkyAmount;
+varying float vScreenX;
+
+${skyFrag}
 
 ${terrainGlsl}
 
 void main() {
-	gl_FragColor = terrain(vCoord);
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.61, 0.73, 0.86)*0.9, vFog);
-	gl_FragColor.a = vAlpha;
+	vec3 rd = normalize(vWorldPos - cameraPosition);
+
+	gl_FragColor = terrain(vWorldPos.xz);
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.53, 0.47, 0.54), vFog);
+
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, getSkyColor(rd, vScreenX), vSkyAmount);
+	gl_FragColor.a = 1.;
 }
 `;
 
@@ -50,8 +59,6 @@ export const mkFarMaterial = () => {
 		]),
 		vertexShader: farVert,
 		fragmentShader: farFrag,
-		// transparent: for the mountains to fade intead of popping in
-		transparent: true,
 	});
 	return ret;
 };

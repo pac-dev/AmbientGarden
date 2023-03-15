@@ -174,7 +174,7 @@ void main() {
 	if (frustumTest) {
 		shadow = texture2DCompare(directionalShadowMap[0], sCoord.xy, sCoord.z);
 	}
-	gl_FragColor.rgb *= 0.8 + 0.2 * shadow;
+	gl_FragColor.rgb *= 0.9 + 0.1 * shadow;
 }
 `;
 
@@ -182,6 +182,8 @@ export const mkNearMaterial = () => {
 	const maptex = new THREE.CanvasTexture(mapcnv);
 	maptex.wrapS = THREE.MirroredRepeatWrapping;
 	maptex.wrapT = THREE.MirroredRepeatWrapping;
+	maptex.magFilter = THREE.NearestFilter;
+	maptex.minFilter = THREE.NearestFilter;
 	const ret = new THREE.ShaderMaterial({
 		uniforms: THREE.UniformsUtils.merge([
 			{

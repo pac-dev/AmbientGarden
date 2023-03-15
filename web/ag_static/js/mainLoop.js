@@ -8,6 +8,7 @@ import { runMode, xz } from './runMode.js';
 import { editMode } from './editMode.js';
 import { enableTips } from './tips.js';
 import { initLeafMaterials } from './leafMaterial.js';
+import { addSky } from './sky.js';
 
 const shadowWidth = 1024;
 const container = document.getElementById('gl_container');
@@ -26,7 +27,8 @@ export const initGfx = () => {
 	renderer.shadowMap.type = THREE.PCFShadowMap;
 	container.appendChild(renderer.domElement);
 	initPos();
-	scene.background = new THREE.Color(0xcdb1d7);
+	scene.add(camera);
+	addSky();
 	const aLight = new THREE.AmbientLight(0x333333);
 	scene.add(aLight);
 	dLight.position.set(9, 20, 13);

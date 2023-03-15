@@ -48,7 +48,7 @@ void main() {
 	float shade = smoothstep(1152.0*0.5, 1152.0*1.5, d);
 	vColor = mix(shaded, vColor, shade);
 	float fog = smoothstep(${(pointHiDist * 0.5).toFixed(1)}, ${pointHiDist.toFixed(1)}, d);
-	vColor = mix(vColor, vec3(0.61, 0.73, 0.86)*0.9, fog);
+	vColor = mix(vColor, vec3(0.53, 0.47, 0.54), fog);
 
 	float unitSz = 1.1;
 	gl_PointSize = vpSize.y * (projectionMatrix[1][1] * unitSz / gl_Position.w + 0.003);
