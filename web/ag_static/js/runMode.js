@@ -1,20 +1,22 @@
 import * as THREE from './lib/three.module.js';
-import { intersectMouse, renderer, camera, scene } from './mainLoop.js';
+import { renderer, camera, scene, intersectPointer, updatePointer } from './mainLoop.js';
 import { beginWakeIntro } from './beacons.js';
 import { clock, heightAt } from './world.js';
 import { setAutopilotUi, showDetail } from './ui.js';
 import { disableTips, enableTips, tipsEnabled } from './tips.js';
 import { events } from './events.js';
 
-let lastMouseX, lastMouseY, totalMovement;
+let lastMouseX, lastMouseY, totalDrag;
 let tgtDiskMesh, tgtLockMesh;
 const yawAccel = x => Math.tanh(x * 6 - 2.5) * 0.5 + 1.5;
 const up = new THREE.Vector3(0, 1, 0);
 
 const onPointerDown = event => {
+	// preventDefault avoids additional "mouse" events on touchscreens
+	event.preventDefault();
 	lastMouseX = event.clientX;
 	lastMouseY = event.clientY;
-	totalMovement = 0;
+	totalDrag = 0;
 	renderer.domElement.setPointerCapture(event.pointerId);
 	renderer.domElement.addEventListener('pointermove', onCapturedMove);
 	renderer.domElement.addEventListener('pointerup', onCapturedUp);
@@ -23,9 +25,11 @@ const onPointerDown = event => {
 };
 
 const onCapturedMove = event => {
+	event.preventDefault();
+	updatePointer(event);
 	const diffX = (event.clientX - lastMouseX) / renderer.domElement.clientWidth;
 	const diffY = (event.clientY - lastMouseY) / renderer.domElement.clientHeight;
-	totalMovement += new THREE.Vector2(diffX, diffY).length();
+	totalDrag += new THREE.Vector2(diffX, diffY).length();
 
 	let yawAmp = yawAccel(Math.abs(camera.rotation.y - runMode.tgtYaw));
 	runMode.tgtYaw += 2 * diffX * yawAmp;
@@ -87,12 +91,12 @@ export const goTo = ({hit, x, z, spectate}) => {
 };
 
 const onCapturedUp = event => {
-	runMode.dragging = false;
+	event.preventDefault();
 	renderer.domElement.releasePointerCapture(event.pointerId);
 	renderer.domElement.removeEventListener('pointermove', onCapturedMove);
 	renderer.domElement.removeEventListener('pointerup', onCapturedUp);
-	if (totalMovement > 0.01 || clock.worldTime - runMode.dragTime > 2) return;
-	const mouseHit = intersectMouse();
+	const mouseHit = intersectPointer(event);
+	if (totalDrag > 0.01 || clock.worldTime - runMode.dragTime > 2) return;
 	if (!mouseHit) return;
 	if (mouseHit.object.layers.isEnabled(0)) {
 		// terrain
@@ -111,7 +115,6 @@ const enable = () => {
 	runMode.stepFn = undefined;
 	beginWakeIntro();
 	renderer.domElement.addEventListener('pointerdown', onPointerDown);
-	// renderer.domElement.addEventListener('pointercancel', onPointerCancel);
 	if (!tipsEnabled) enableTips();
 	const tgtDiskMap = new THREE.TextureLoader().load(window.agStaticPath+'img/tgtdisk.png');
 	const tgtDiskGeo = new THREE.PlaneGeometry(30, 30);
@@ -285,7 +288,7 @@ export const toggleAutopilot = (toggle, isIntro) => {
 const update = () => {
 	if (!runMode.enabled) return;
 	tgtDiskMesh.visible = false;
-	const mouseHit = intersectMouse();
+	const mouseHit = intersectPointer();
 	if (!mouseHit) return;
 	if (mouseHit.object.layers.isEnabled(0)) {
 		// terrain

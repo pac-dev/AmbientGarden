@@ -1,7 +1,7 @@
 import * as THREE from './lib/three.module.js';
 import { OrbitControls } from './lib/OrbitControls.js';
 import { TransformControls } from './lib/TransformControls.js';
-import { intersectMouse, renderer, camera, scene } from './mainLoop.js';
+import { intersectPointer, renderer, camera, scene } from './mainLoop.js';
 import {
 	addResourcePool,
 	getResourcePool,
@@ -338,7 +338,7 @@ const addEditorTipsPool = () =>
 const addAtCursor = rec => {
 	if (!rec) rec = window.focusRecord;
 	if (!rec) return;
-	const mouseHit = intersectMouse();
+	const mouseHit = intersectPointer();
 	if (!mouseHit) return;
 	const ret = Object.assign({}, rec);
 	parseTrack(ret);

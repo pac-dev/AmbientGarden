@@ -50,9 +50,11 @@ export const initGfx = () => {
 };
 
 const teleport = (x, z) => camera.position.set(x, 50, z + 200);
+
+// the ideal start position depends on the screen dimensions
 const initPos = () => {
-	const aspect = Math.max(0.85, Math.min(2, getAspect()));
-	const x = (aspect - 0.83) * ((50 - 100) / (2.5 - 0.83)) - 50; // 2.5 -> -100 ; 0.83 -> -50
+	const aspect = Math.max(0.5, Math.min(2, getAspect()));
+	const x = (aspect - 0.83) * ((30 - 100) / (2.5 - 0.83)) - 30; // 2.5 -> -100 ; 0.83 -> -30
 	const z = (aspect - 0.83) * ((580 - 620) / (2.5 - 0.83)) + 620; // 2.5 -> 580 ; 0.83 -> 620
 	teleport(x, z);
 };
@@ -83,10 +85,21 @@ const walkCaster = new THREE.Raycaster();
 const mouseCaster = new THREE.Raycaster();
 mouseCaster.layers.set(1);
 const mouse = new THREE.Vector2();
-export const intersectMouse = () => {
+export const updatePointer = (event) => {
+	if (!event || event.type === 'mouseleave') {
+		mouse.x = 0;
+		mouse.y = 0;
+	} else {
+		mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+	}
+};
+export const intersectPointer = (event) => {
+	if (event) updatePointer(event);
 	if (!mouse.x && !mouse.y) return;
 	mouseCaster.setFromCamera(mouse, camera);
 	const mouseHits = mouseCaster.intersectObject(scene, true);
+	if (event) updatePointer();
 	return mouseHits[0];
 };
 
@@ -161,20 +174,6 @@ export const addMainListeners = () => {
 			shadowWidth: dLight.shadow.mapSize.width
 		});
 	});
-	renderer.domElement.addEventListener(
-		'mousemove',
-		event => {
-			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-		},
-		false
-	);
-	renderer.domElement.addEventListener(
-		'mouseleave',
-		() => {
-			mouse.x = 0;
-			mouse.y = 0;
-		},
-		false
-	);
+	renderer.domElement.addEventListener('mousemove', updatePointer, false);
+	renderer.domElement.addEventListener('mouseleave', updatePointer, false);
 };
