@@ -10,7 +10,7 @@ import {
 } from './resourcePool.js';
 import { heightAt } from './world.js';
 import { getMeta, trackHush } from './beacons.js';
-import { closeModal } from './ui.js';
+import { popUi } from './ui.js';
 import { runMode } from './runMode.js';
 import { beaconRecords, parseTrack } from './beaconRecords.js';
 
@@ -426,7 +426,7 @@ const update = () => {
 const init = () => {
 	window.document.addEventListener('keydown', event => {
 		if (event.key !== 'e') return;
-		closeModal();
+		popUi();
 		if (editMode.enabled) {
 			editMode.disable();
 			runMode.enable();

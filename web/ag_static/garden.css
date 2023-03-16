@@ -36,6 +36,7 @@ body { margin: 0; }
 	display: block;
 	color: #eee;
 	padding: 8px 20px;
+	font: inherit;
 }
 #modal_ok:hover { background-color: #3a3a3a; }
 .detail {

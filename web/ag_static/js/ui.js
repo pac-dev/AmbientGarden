@@ -6,6 +6,9 @@ import { clock } from './world.js';
 /** @type {HTMLDivElement} */
 const modal = document.getElementById('modal');
 
+/** @type {HTMLDivElement} */
+const content = document.getElementById('modal_content');
+
 /** @type {HTMLButtonElement} */
 const ok = document.getElementById('modal_ok');
 
@@ -15,39 +18,59 @@ const pauseButton = document.getElementById('pause');
 /** @type {HTMLInputElement} */
 const autoBox = document.getElementById('autopilot');
 
-const modalKeyListener = e => {
-	if (e.key === 'Enter') onModalOK();
-};
+let welcomeContent;
+const uiStack = ['welcome'];
 
-export const closeModal = () => {
-	modal.style.display = 'none';
-	window.document.removeEventListener('keydown', modalKeyListener);
-	pauseButton.disabled = false;
-	events.trigger('doneWelcome');
-};
-
-const onModalOK = () => {
-	closeModal();
-	if (!runMode.enabled) {
+const refreshUi = () => {
+	if (!uiStack.length) {
+		uiStack.push('world');
+		events.trigger('doneWelcome');
 		runMode.enable();
 		toggleAutopilot(autoBox.checked, true);
 	}
+	switch(uiStack.at(-1)) {
+		case 'welcome':
+			content.innerHTML = welcomeContent;
+			modal.style.display = 'block';
+			window.document.addEventListener('keydown', modalKeyListener);
+			ok.innerText = 'Start';
+			break;
+		case 'about':
+			content.innerHTML = aboutContent;
+			modal.style.display = 'block';
+			window.document.addEventListener('keydown', modalKeyListener);
+			ok.innerText = 'Close';
+			break;
+		case 'world':
+			pauseButton.disabled = false;
+			break;
+	}
+
 };
 
-const showAbout = () => {
-	if (modal.style.display === 'none') {
-		modal.style.display = 'block';
-		window.document.addEventListener('keydown', modalKeyListener);
-		ok.innerText = 'Close';
+export const popUi = () => {
+	if (uiStack.at(-1) === 'world') return;
+	const lastState = uiStack.pop();
+	if (lastState === 'welcome' || lastState === 'about') {
+		modal.style.display = 'none';
+		window.document.removeEventListener('keydown', modalKeyListener);
 	}
-	document.getElementById('modal_content').innerHTML = aboutContent;
+	refreshUi();
+};
+
+const pushUi = (state) => {
+	uiStack.push(state);
+	refreshUi();
+};
+
+const modalKeyListener = e => {
+	if (e.key === 'Enter') popUi();
 };
 
 export const initUI = () => {
-	window.document.addEventListener('keydown', modalKeyListener);
+	welcomeContent = content.innerHTML;
+	ok.addEventListener('click', () => popUi());
 	ok.disabled = false;
-	ok.innerText = 'Start';
-	ok.addEventListener('click', onModalOK);
 	autoBox.disabled = false;
 	autoBox.onchange = () => toggleAutopilot(autoBox.checked);
 	events.on('pause', () => { pauseButton.innerText = 'Resume'; });
@@ -55,10 +78,14 @@ export const initUI = () => {
 	pauseButton.addEventListener('click', () => {
 		events.trigger(clock.paused ? 'resume' : 'pause')
 	});
-	document.getElementById('question').onclick = showAbout;
 	document.body.addEventListener('mousedown', () => {
 		if (detailEle) detailEle.remove();
 	});
+	document.getElementById('question').onclick = () => {
+		if (uiStack.at(-1) === 'about') popUi();
+		else pushUi('about');
+	};
+	refreshUi();
 };
 
 export const setAutopilotUi = on => {
