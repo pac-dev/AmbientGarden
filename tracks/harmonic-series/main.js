@@ -1,3 +1,16 @@
+/**
+ * Harmonic series synth.
+ * 
+ * This patch uses a waveguide model to play natural harmonics. The notes are
+ * not sequenced, rather, a single note is effectively played, and a sweeping
+ * filter inside the waveguide causes successive harmonics to resonate. Similar
+ * to the "harmonic flute" described in: https://www.osar.fr/notes/waveguides/
+ * 
+ * The low-level instrument code is in faust/harmo.dsp
+ * 
+ * This file contains envelopes, automation, and other control code.
+ */
+
 import { Graph, Seq, FaustNode } from '../_lib/tealib.js';
 
 export const sampleRate = 44100;

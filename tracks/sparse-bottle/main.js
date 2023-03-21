@@ -1,3 +1,10 @@
+/**
+ * Melodic bottle. This is a classic waveguide model for a closed-ended wind
+ * instrument. The low-level instrument code is in faust/bottle.dsp
+ * 
+ * This file contains sequencing, envelopes, and other control code.
+ */
+
 import { Graph, FaustNode, Seq, Poly } from '../_lib/tealib.js';
 import { mainHost as host } from '../host.js';
 

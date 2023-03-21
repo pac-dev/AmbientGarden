@@ -1,3 +1,10 @@
+/**
+ * Wind chimes based on modal synthesis. The low-level instrument code is in
+ * faust/chime.dsp
+ * 
+ * This file contains sequencing, envelopes, and other control code.
+ */
+
 import { Graph, FaustNode, Seq, Poly } from '../_lib/tealib.js';
 import { mainHost as host } from '../host.js';
 import { mixFreqs } from '../fraclib.js';
@@ -20,7 +27,7 @@ const lpParam1 = graph.addParam('lp1', { def: 350, min: 50, max: 2000 });
 const density = graph.addParam('density', { def: 1, min: 0.1, max: 3 });
 
 const mkVoice = i => {
-	const ret = new FaustNode('faust/bowl1.dsp', { freq: 500, noise: 0, lp1: 100 });
+	const ret = new FaustNode('faust/chime.dsp', { freq: 500, noise: 0, lp1: 100 });
 	lpParam1.connect(ret.lp1);
 	ret.notePos = 100;
 	ret.amp = 1;

@@ -1,3 +1,12 @@
+/**
+ * Melodic soprano.
+ * 
+ * A simple vocal synth. A sawtooth wave, combined with noise, are fed into a
+ * formant filter bank. The low-level instrument code is in faust/soprano.dsp
+ * 
+ * This file contains sequencing, envelopes, and other control code.
+ */
+
 import { Graph, Seq, FaustNode } from '../_lib/tealib.js';
 
 export const sampleRate = 44100;

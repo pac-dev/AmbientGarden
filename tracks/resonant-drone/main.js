@@ -1,3 +1,16 @@
+/**
+ * Resonant drone.
+ * 
+ * The "resodrone" algorithm is very simple and consists of noise run through a
+ * small number of high-feedback comb filters. The resulting timbre is
+ * surprisingly complex, emphasizing harmonics that are near-multiples of all
+ * three comb filter frequencies.
+ * 
+ * The low-level instrument code is in faust/reso.dsp
+ * 
+ * This file contains envelopes, automation, and other control code.
+ */
+
 import { Graph, Seq, FaustNode, SampleProcessor } from '../_lib/tealib.js';
 
 export const sampleRate = 44100;

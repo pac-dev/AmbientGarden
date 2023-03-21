@@ -1,3 +1,10 @@
+/**
+ * A vibraphone model based on modal synthesis. The low-level instrument code is
+ * in faust/vib.dsp
+ * 
+ * This file contains sequencing, envelopes, and other control code.
+ */
+
 import { Graph, FaustNode, Seq } from '../_lib/tealib.js';
 
 export const sampleRate = 44100;

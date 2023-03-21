@@ -1,3 +1,16 @@
+/**
+ * Vocal overtones.
+ * 
+ * This starts off with classic vocal synthesis: an exciter (sawtooth and noise)
+ * is fed into a formant filter bank. Additional sweeping "overtone" filters are
+ * added in parallel to the original bank, and fixed "tonic" filters are added
+ * on the combined output to keep it tuned.
+ * 
+ * The low-level instrument code is in faust/tuvan.dsp
+ * 
+ * This file contains envelopes, automation, and other control code.
+ */
+
 import { Graph, Seq, FaustNode } from '../_lib/tealib.js';
 
 export const sampleRate = 44100;

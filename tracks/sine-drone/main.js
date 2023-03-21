@@ -1,3 +1,10 @@
+/**
+ * Sine drone.
+ * 
+ * A simple additive synthesizer. At its core is a bank of sine waves, tuned to
+ * be multiples of both input frequencies.
+ */
+
 import { Graph, FaustNode, Sine } from '../_lib/tealib.js';
 import { mixFreqs } from '../fraclib.js';
 
