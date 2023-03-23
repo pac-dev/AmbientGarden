@@ -39,7 +39,7 @@ body { margin: 0; }
 	font: inherit;
 }
 #modal_ok:hover { background-color: #3a3a3a; }
-.detail {
+.detail, .flash_message {
 	position: absolute;
 	bottom: 50px;
 	left: 50%;
@@ -189,4 +189,15 @@ button:disabled {
 }
 .tip.playing {
 	color: #eff;
+}
+
+.flash_message {
+	color: #eee;
+	opacity: 0;
+	transition: opacity 4s;
+}
+
+.flash_message.visible {
+	opacity: 1;
+	transition: opacity 0.2s;
 }

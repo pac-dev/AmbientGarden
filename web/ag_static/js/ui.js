@@ -78,7 +78,7 @@ export const initUI = () => {
 	pauseButton.addEventListener('click', () => {
 		events.trigger(clock.paused ? 'resume' : 'pause')
 	});
-	document.body.addEventListener('mousedown', () => {
+	document.body.addEventListener('pointerdown', () => {
 		if (detailEle) detailEle.remove();
 	});
 	document.getElementById('question').onclick = () => {
@@ -88,7 +88,19 @@ export const initUI = () => {
 	refreshUi();
 };
 
+const flashPilotOff = () => {
+	if (detailEle) detailEle.remove();
+	const msgEle = document.createElement('div');
+	msgEle.innerText = 'Autopilot disabled.';
+	msgEle.className = 'flash_message';
+	document.body.appendChild(msgEle);
+	setTimeout(() => { msgEle.classList.add('visible'); }, 50);
+	setTimeout(() => { msgEle.classList.remove('visible'); }, 1250);
+	setTimeout(() => { msgEle.remove(); }, 5250);
+};
+
 export const setAutopilotUi = on => {
+	if (autoBox.checked && !on) flashPilotOff();
 	autoBox.checked = on;
 };
 
@@ -123,7 +135,7 @@ export const showDetail = beacon => {
 		detailEle.remove();
 		detailEle = undefined;
 	};
-	detailEle.addEventListener('mousedown', event => {
+	detailEle.addEventListener('pointerdown', event => {
 		event.stopPropagation();
 	});
 };
