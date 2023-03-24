@@ -57,13 +57,17 @@ graph.ctrl((tSeconds, delta) => {
 
 const seq = new Seq(graph);
 const idxpow = 1;
+let freqs;
+const setFreqs = () => {
+	freqs = mixFreqs(fParam1.value, fParam2.value, 2);
+	freqs = freqs.slice(0,8);
+}
 seq.schedule(async () => {
-	const mfs = mixFreqs(fParam1.value, fParam2.value, 2);
-	const fs1 = mfs.slice(0,8);
 	let t = 0;
 	let rand = mulberry32(1);
 	let lastIdx = 0;
 	while (true) {
+		if (fParam1.changed() || fParam2.changed()) setFreqs();
 		if (t === 50) host.wantInterrupt = true;
 		if (t === 100) {
 			t = 0;
@@ -74,7 +78,7 @@ seq.schedule(async () => {
 		if (idx === lastIdx) idx = Math.pow(rand(), idxpow);
 		if (idx === lastIdx) idx = Math.pow(rand(), idxpow);
 		lastIdx = idx;
-		const f = fs1[Math.floor(idx*fs1.length)];
+		const f = freqs[Math.floor(idx*freqs.length)];
 		poly.note(f, rand(), Math.sign(rand()-0.1));
 		await seq.play((0.3+0.2*rand())/density.value);
 		t++;

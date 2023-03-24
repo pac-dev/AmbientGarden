@@ -19,7 +19,7 @@ post.connect(graph.out);
 const baseAmp = (freq, i) => 1 / (i + 1);
 const sines = [...new Array(10)].map(i => new Sine());
 sines.forEach(s => s.connect(post));
-let init = () => {
+let setFreqs = () => {
 	const mfs = mixFreqs(fParam1.value, fParam2.value, 3);
 	if (mfs.length < 10) throw new Error("fracsin can't intersect freqs");
 	sines.forEach((sine, i) => {
@@ -28,11 +28,10 @@ let init = () => {
 		sine.lfRate = 1 / (2 + ((i * 79.6789) % 3));
 		sine.lfPhase = i;
 	});
-	init = undefined;
 };
 
 graph.ctrl(t => {
-	if (init) init();
+	if (fParam1.changed() || fParam2.changed()) setFreqs();
 	const env = 1 - 1 / (t * t * 0.15 + 1);
 	for (let sine of sines) {
 		sine.amp.value = sine.baseAmp * env * (0.5 + 0.5 * Math.sin(t * sine.lfRate + sine.lfPhase));

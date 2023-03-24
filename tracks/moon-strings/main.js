@@ -64,12 +64,16 @@ const swell = (t) => {
     return 1-s*s*s;
 };
 
+let freqs;
+const setFreqs = () => {
+	freqs = mixFreqs(fParam1.value, fParam2.value, 4);
+	freqs = freqs.slice(0,scaleLen).sort((a, b) => a - b);
+}
 seq.schedule(async () => {
-	const mfs = mixFreqs(fParam1.value, fParam2.value, 4);
-	const fs1 = mfs.slice(0,scaleLen).sort((a, b) => a - b);
 	let t = 0;
 	let rand = mulberry32(1);
 	while (true) {
+		if (fParam1.changed() || fParam2.changed()) setFreqs();
 		if (t === 200) host.wantInterrupt = true;
 		if (t === 400) {
 			t = 0;
@@ -77,7 +81,7 @@ seq.schedule(async () => {
 		}
 		//if (t%5<0.1) console.log('swell = '+Math.round(swell(t)*100)/100)
 		if (rand() < density.value)
-			poly.note(fs1[arpNote(t+0.1)], arpVel(t+0.1)*swell(t));
+			poly.note(freqs[arpNote(t+0.1)], arpVel(t+0.1)*swell(t));
 		await seq.play(arpDel(t+0.1)*0.05);
 		t++;
 	}

@@ -45,10 +45,10 @@ const evil = (a, b) => Math.max(a, b) / Math.min(a, b) < 10 / 9;
 let intro = 3;
 const seq = new Seq(graph);
 seq.schedule(async () => {
-	const mfs = mixFreqs(fParam1.value, fParam2.value, 6);
 	let flowlen = 3,
 		flowdir = 2;
 	while (true) {
+		const mfs = mixFreqs(fParam1.value, fParam2.value, 6);
 		const ofs = Math.floor((flowlen - 2) * 0.13);
 		let freqs = mfs.filter((_, i) => i >= ofs && i < flowlen + ofs && !(i % 2));
 		freqs.push(...mfs.filter((_, i) => i >= ofs && i < flowlen + ofs && i % 2).reverse());

@@ -21,24 +21,27 @@ fau.connect(post).connect(graph.out);
 
 const fParam1 = graph.addParam('freq1', { def: 800, min: 50, max: 2000 });
 const fParam2 = graph.addParam('freq2', { def: 900, min: 50, max: 2000 });
-let mfs = mixFreqs(fParam1.value, fParam2.value, 6);
-mfs = mfs.filter(f => f > 350 && f < 1000);
-if (mfs.length > 6) mfs.length = 6;
-mfs.sort((a, b) => b - a);
-const freqs = [];
-for (let i = 0; i < mfs.length; i += 2) freqs.push(mfs[i]);
-freqs.reverse();
-for (let i = 1; i < mfs.length; i += 2) freqs.push(mfs[i]);
-let freqi = 0;
 
-const note0 = freqs[0] * 0.75;
-let freq = note0,
-	fTgt = note0,
-	fChange = 1;
-let press = 0,
-	pressTgt = 0;
+let mfs, freqs, freq, fTgt, fChange;
+let press = 0, pressTgt = 0, freqi = 0;
+
+const setFreqs = () => {
+	mfs = mixFreqs(fParam1.value, fParam2.value, 6);
+	mfs = mfs.filter(f => f > 350 && f < 1000);
+	if (mfs.length > 6) mfs.length = 6;
+	mfs.sort((a, b) => b - a);
+	freqs = [];
+	for (let i = 0; i < mfs.length; i += 2) freqs.push(mfs[i]);
+	freqs.reverse();
+	for (let i = 1; i < mfs.length; i += 2) freqs.push(mfs[i]);
+	const note0 = freqs[0] * 0.75;
+	freq = note0, fTgt = note0, fChange = 1;
+};
+setFreqs();
+
 const vibNode = new CtrlSine();
 vibNode.connect(new SampleProcessor(v => (1 + v * 0.02) * freq)).connect(fau.f1);
+
 graph.ctrl(t => {
 	const fDif = (fTgt - freq) * 0.03;
 	const fAbs = Math.abs(fDif);
@@ -61,6 +64,7 @@ graph.ctrl(t => {
 const seq = new Seq(graph);
 seq.schedule(async () => {
 	while (true) {
+		if (fParam1.changed() || fParam2.changed()) setFreqs();
 		pressTgt = 1;
 		fTgt = freqs[freqi];
 		await seq.play(3);

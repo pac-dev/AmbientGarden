@@ -169,9 +169,11 @@ export class HostParam extends TeaNode {
 	constructor(name, { def = 0, min = 0, max = 1 } = {}) {
 		super();
 		this.value = def;
+		this._changed = true;
 		const setFn = value => {
 			this.value = value;
 			this.host.params[name].val = value;
+			this._changed = true;
 		};
 		this.on('got host', () => {
 			this.host.params[name] = { setFn, def, min, max };
@@ -179,5 +181,10 @@ export class HostParam extends TeaNode {
 	}
 	process() {
 		return [this.value];
+	}
+	changed() {
+		const ret = this._changed
+		this._changed = false;
+		return ret;
 	}
 }
