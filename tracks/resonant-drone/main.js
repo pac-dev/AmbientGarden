@@ -23,9 +23,9 @@ fau.connect(post).connect(graph.out);
 const impact = graph.addParam('impact');
 const ofs = graph.addParam('ofs', { def: 0.09 });
 const mulOfs = mul => new SampleProcessor(x => x * (1 + ofs.value * mul * 0.1));
-graph.addParam('freq1', { def: 100, min: 30, max: 330 }).connect(fau.f1);
-graph.addParam('freq2', { def: 175, min: 30, max: 330 }).connect(mulOfs(-1)).connect(fau.f2);
-graph.addParam('freq3', { def: 50, min: 30, max: 330 }).connect(mulOfs(1)).connect(fau.f3);
+graph.addParam('freq1', { def: '100*1' }).connect(fau.f1);
+graph.addParam('freq2', { def: '100*7/4' }).connect(mulOfs(-1)).connect(fau.f2);
+graph.addParam('freq3', { def: '100*1/2' }).connect(mulOfs(1)).connect(fau.f3);
 
 graph.ctrlDuration(1, t => {
 	fau.pulse.value = Math.max(0, 1 / (t + 1) - 1 / 1.51) * impact.value;

@@ -24,8 +24,8 @@ fau2.connectWithGain(post).connect(graph.out);
 // f1=[50 - 220] ; f2=[f1*2 - f1*10] ; f2amt=[0-0.3]
 
 const num = graph.addParam('num', { def: 1, min: 1, max: 2 });
-graph.addParam('freq1', { def: 80, min: 30, max: 400 }).connect(fau.f1);
-graph.addParam('freq2', { def: 100, min: 30, max: 400 }).connect(fau2.f1);
+graph.addParam('freq1', { def: '100*4/5' }).connect(fau.f1);
+graph.addParam('freq2', { def: '100' }).connect(fau2.f1);
 graph.ctrl(t => {
 	if (num.value > 1.5) {
 		fau.f2amt.value = 0.2;

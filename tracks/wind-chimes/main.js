@@ -21,8 +21,8 @@ const graph = new Graph({ sampleRate });
 const post = new FaustNode('faust/post.dsp');
 post.connect(graph.out);
 
-const fParam1 = graph.addParam('freq1', { def: 600, min: 50, max: 2000 });
-const fParam2 = graph.addParam('freq2', { def: 800, min: 50, max: 2000 });
+const fParam1 = graph.addParam('freq1', { def: '100*6' });
+const fParam2 = graph.addParam('freq2', { def: '100*8' });
 const lpParam1 = graph.addParam('lp1', { def: 350, min: 50, max: 2000 });
 const density = graph.addParam('density', { def: 1, min: 0.1, max: 3 });
 

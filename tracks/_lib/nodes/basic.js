@@ -166,8 +166,18 @@ export class NumNode extends TeaNode {
 }
 
 export class HostParam extends TeaNode {
-	constructor(name, { def = 0, min = 0, max = 1 } = {}) {
+	constructor(name, { def = 0, min, max } = {}) {
 		super();
+		let defStr;
+		if ((typeof def) === 'string') {
+			defStr = def;
+			def = Function(`"use strict"; return parseFloat(${def})`)();
+			if (min === undefined) min = Number.MIN_VALUE;
+			if (max === undefined) max = Number.MAX_VALUE;
+		} else {
+			if (min === undefined) min = 0;
+			if (max === undefined) max = 1;
+		}
 		this.value = def;
 		this._changed = true;
 		const setFn = value => {
@@ -176,7 +186,7 @@ export class HostParam extends TeaNode {
 			this._changed = true;
 		};
 		this.on('got host', () => {
-			this.host.params[name] = { setFn, def, min, max };
+			this.host.params[name] = { setFn, def, defStr, min, max };
 		});
 	}
 	process() {

@@ -14,7 +14,7 @@ const graph = new Graph({ sampleRate });
 
 const fau = new FaustNode('faust/soprano.dsp', { f1: 0, noise: 1, saw: 0.4 });
 const post = new FaustNode('faust/post.dsp');
-const f1param = graph.addParam('freq1', { def: 300, min: 100, max: 1500 });
+const f1param = graph.addParam('freq1', { def: '100*3' });
 fau.connectWithGain(post).connect(graph.out);
 
 graph.ctrl(t => {

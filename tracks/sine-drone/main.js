@@ -11,8 +11,8 @@ import { mixFreqs } from '../fraclib.js';
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
 
-const fParam1 = graph.addParam('freq1', { def: 400, min: 50, max: 2000 });
-const fParam2 = graph.addParam('freq2', { def: 600, min: 50, max: 2000 });
+const fParam1 = graph.addParam('freq1', { def: '100*4' });
+const fParam2 = graph.addParam('freq2', { def: '100*6' });
 
 const post = new FaustNode('faust/post.dsp');
 post.connect(graph.out);

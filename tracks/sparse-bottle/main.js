@@ -12,8 +12,8 @@ host.willInterupt = true;
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
 
-const fParam1 = graph.addParam('freq1', { def: 200, min: 50, max: 2000 });
-const fParam2 = graph.addParam('freq2', { def: 300, min: 50, max: 2000 });
+const fParam1 = graph.addParam('freq1', { def: '100*2' });
+const fParam2 = graph.addParam('freq2', { def: '100*3' });
 
 const post = new FaustNode('faust/post.dsp');
 const mkVoice = i => {

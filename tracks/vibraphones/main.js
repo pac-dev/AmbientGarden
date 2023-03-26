@@ -17,8 +17,8 @@ fau.connect(post);
 fau2.connect(post);
 post.connect(graph.out);
 const impact = graph.addParam('impact');
-graph.addParam('freq1', { def: 300, min: 50, max: 2000 }).connect(fau.freq);
-graph.addParam('freq2', { def: 360, min: 50, max: 2000 }).connect(fau2.freq);
+graph.addParam('freq1', { def: '100*3' }).connect(fau.freq);
+graph.addParam('freq2', { def: '100*7/2' }).connect(fau2.freq);
 
 const env = x => 1 - 1 / (x * (0.5 - 0.3 * impact.value) + 1);
 new Seq(graph).schedule(() => {

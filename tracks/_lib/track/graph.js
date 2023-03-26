@@ -22,7 +22,7 @@ export class Graph {
 		this.skipTgt = 0;
 		this.ampParam = this.addParam('amp', { def: 1 });
 	}
-	addParam(name, { def = 0, min = 0, max = 1 } = {}) {
+	addParam(name, { def = 0, min, max } = {}) {
 		const node = new HostParam(name, { def, min, max });
 		node.setGraph(this);
 		return node;

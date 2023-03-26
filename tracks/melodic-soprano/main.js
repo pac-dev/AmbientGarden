@@ -19,8 +19,8 @@ const fau = new FaustNode('faust/soprano.dsp', { f1: 0, noise: 0, saw: 0 });
 const post = new FaustNode('faust/post.dsp');
 fau.connect(post).connect(graph.out);
 
-const fParam1 = graph.addParam('freq1', { def: 800, min: 50, max: 2000 });
-const fParam2 = graph.addParam('freq2', { def: 900, min: 50, max: 2000 });
+const fParam1 = graph.addParam('freq1', { def: '100*8' });
+const fParam2 = graph.addParam('freq2', { def: '100*9' });
 
 let mfs, freqs, freq, fTgt, fChange;
 let press = 0, pressTgt = 0, freqi = 0;

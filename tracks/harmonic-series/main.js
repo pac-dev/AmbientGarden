@@ -19,7 +19,7 @@ const graph = new Graph({ sampleRate });
 const fau = new FaustNode('faust/harmo.dsp', { fb: 0, amp: 1, sdelay1: 1, sdelay2: 1, locut: 1, hicut: 1 });
 fau.connect(graph.out);
 
-const f1param = graph.addParam('freq1', { def: 80, min: 60, max: 120 });
+const f1param = graph.addParam('freq1', { def: '100' });
 // const f2param = graph.addParam('freq2', {def: 300, min: 200, max: 1200});
 const harmo = { value: 4 };
 

@@ -19,7 +19,7 @@ const fau = new FaustNode('faust/contrabass.dsp', { freq: 0, noise1: 0, noise2: 
 const post = new FaustNode('faust/post.dsp');
 fau.connect(post).connect(graph.out);
 
-graph.addParam('freq1', { def: 50, min: 20, max: 200 }).connect(fau.freq);
+graph.addParam('freq1', { def: '100*1/2' }).connect(fau.freq);
 const flatten = graph.addParam('flatten');
 graph.addParam('lp1', { def: 3300, min: 100, max: 10000 }).connect(fau.lp1);
 
