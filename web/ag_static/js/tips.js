@@ -194,6 +194,8 @@ const layoutTips = pool => {
 	colAttribute.needsUpdate = true;
 };
 
+const tipsDiv = document.getElementById('gl_container');
+
 const addTipsPool = () =>
 	addResourcePool({
 		name: 'tips',
@@ -212,7 +214,7 @@ const addTipsPool = () =>
 			res.domEle.innerHTML = rec.trackName.replace(/\-/g, ' ');
 			res.domEle.onclick = () => showDetail(res.beacon);
 			res.domEle.className = 'tip';
-			document.body.appendChild(res.domEle);
+			tipsDiv.appendChild(res.domEle);
 			res.textRoot = new THREE.Vector3();
 			res.spawnTime = clock.worldTime;
 		},

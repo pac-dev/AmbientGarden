@@ -1,5 +1,13 @@
 
 body { margin: 0; }
+#modal_back {
+	display: none;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
 #modal {
 	position: absolute;
 	top: calc(50% - 25px);
@@ -69,8 +77,9 @@ body { margin: 0; }
 }
 #detail_close {
 	position: absolute;
-	top: 2px;
-	right: 2px;
+	top: 0;
+	right: 0;
+	padding: 4px;
 	color: #999;
 }
 #gl_container {

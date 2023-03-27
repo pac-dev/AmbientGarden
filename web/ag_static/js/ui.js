@@ -4,17 +4,15 @@ import { runMode, toggleAutopilot, goTo } from './runMode.js';
 import { clock } from './world.js';
 
 /** @type {HTMLDivElement} */
+const modalBack = document.getElementById('modal_back');
+/** @type {HTMLDivElement} */
 const modal = document.getElementById('modal');
-
 /** @type {HTMLDivElement} */
 const content = document.getElementById('modal_content');
-
 /** @type {HTMLButtonElement} */
 const ok = document.getElementById('modal_ok');
-
 /** @type {HTMLButtonElement} */
 const pauseButton = document.getElementById('pause');
-
 /** @type {HTMLInputElement} */
 const autoBox = document.getElementById('autopilot');
 
@@ -38,6 +36,7 @@ const refreshUi = () => {
 		case 'about':
 			content.innerHTML = aboutContent;
 			modal.style.display = 'block';
+			modalBack.style.display = 'block';
 			window.document.addEventListener('keydown', modalKeyListener);
 			ok.innerText = 'Close';
 			break;
@@ -51,6 +50,7 @@ const refreshUi = () => {
 export const popUi = () => {
 	if (uiStack.at(-1) === 'world') return;
 	const lastState = uiStack.pop();
+	if (lastState === 'about') modalBack.style.display = 'none';
 	if (lastState === 'welcome' || lastState === 'about') {
 		modal.style.display = 'none';
 		window.document.removeEventListener('keydown', modalKeyListener);
@@ -85,6 +85,7 @@ export const initUI = () => {
 		if (uiStack.at(-1) === 'about') popUi();
 		else pushUi('about');
 	};
+	modalBack.onclick = popUi;
 	refreshUi();
 };
 
