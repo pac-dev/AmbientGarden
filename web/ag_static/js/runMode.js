@@ -1,6 +1,6 @@
 import * as THREE from './lib/three.module.js';
 import { renderer, camera, scene, intersectPointer, updatePointer } from './mainLoop.js';
-import { beginWakeIntro } from './beacons.js';
+import { anyLoading, beginWakeIntro } from './beacons.js';
 import { clock, heightAt } from './world.js';
 import { setAutopilotUi, showDetail } from './ui.js';
 import { disableTips, enableTips, tipsEnabled } from './tips.js';
@@ -268,6 +268,11 @@ export const toggleAutopilot = (toggle, isIntro) => {
 			if (clock.worldTime > endTime) {
 				waypointId = (waypointId + 1) % waypoints.length;
 				setWaypoint(waypoints[waypointId]);
+			}
+			if (anyLoading()) {
+				startTime += clock.diff;
+				endTime += clock.diff;
+				yawTime += clock.diff;
 			}
 			const progress = (clock.worldTime - startTime) / (endTime - startTime);
 			runMode.tgtXz = startPos.clone().lerp(endPos, progress);

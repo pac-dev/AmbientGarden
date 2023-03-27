@@ -179,3 +179,11 @@ export const initTrackPool = loader =>
 			}
 		},
 	});
+
+export const anyLoading = () => {
+	const pool = getResourcePool('tracks');
+	for (const trackRes of pool.loaded) {
+		if (trackRes.track.status === 'loading') return true;
+	}
+	return false;
+};
