@@ -5,11 +5,11 @@ Ambient.Garden is an experiment that started with the question: can a compositio
 
 ## Generative Aspects
 
-Generative art is art that is generated from code. An effective approach is to rely on a generative base, but to turn to hand-crafting elements when fine control is needed. In Ambient.Garden, the layout and tuning of the musical forest is done by hand, but essentially everything else is written as code.
+Generative art is art that is generated from an autonomous process, most often using code. An effective approach is to rely on a generative base, but to turn to hand-crafting elements when fine control is needed. In Ambient.Garden, the layout and tuning of the musical forest is done by hand, but everything else is generated from code.
 
 On the visual side, classic generative techniques are used, some of them reworked for the pointillist aesthetic. The terrain is based on [Perlin noise and FBM](https://thebookofshaders.com/13/). The trees make use of the golden angle and L-systems.
 
-On the sonic side, all elements are generative, to the point of avoiding the use of any recorded samples. The chosen synthesis techniques mostly focus on physical modeling (waveguides, modal synthesis) aiming for an organic sound. All harmony is in natural temperament, allowing a more direct link from theory and code to sound. Deeper explanations can be found in [the code itself](https://ambient.garden/tracks).
+On the sonic side, all elements are generative, to the point of avoiding the use of any recorded samples. The chosen synthesis techniques mostly focus on physical modeling (waveguides, modal synthesis) aiming for an organic sound. All harmony is in free style just intonation, allowing for simpler manipulation of notes as ratios of each other. Deeper explanations can be found in [the code itself](https://ambient.garden/tracks).
 
 ## About the Author
 

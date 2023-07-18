@@ -38,7 +38,7 @@ body { margin: 0; }
 }
 #modal a:hover { color: #edc2ff; }
 #modal_ok {
-	margin: 30px auto 0;
+	margin: 33px auto 9px;
 	border: 3px solid #b3532e;
 	background-color: #333;
 	display: block;
@@ -47,6 +47,22 @@ body { margin: 0; }
 	font: inherit;
 }
 #modal_ok:hover { background-color: #3a3a3a; }
+#welcome {
+	margin: auto;
+	width: fit-content;
+}
+#welcome h1 {
+	font-size: 20px;
+	font-weight: 500;
+	margin: 15px 0 30px;
+	color: #bbb;
+}
+#welcome p, #welcome ul {
+	font-size: 17px;
+	margin: 11px 0;
+	line-height: 27px;
+}
+#welcome ::marker { color: #bbb; }
 .detail, .flash_message {
 	position: absolute;
 	bottom: 50px;
@@ -209,4 +225,12 @@ button:disabled {
 .flash_message.visible {
 	opacity: 1;
 	transition: opacity 0.2s;
+}
+
+@media (max-width: 650px) {
+	#welcome h1 { font-size: 17px; }
+	#welcome p, #welcome ul {
+		font-size: 16px;
+		line-height: 23px;
+	}
 }
