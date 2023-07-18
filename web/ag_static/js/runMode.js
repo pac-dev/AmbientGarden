@@ -98,12 +98,15 @@ const onCapturedUp = event => {
 	const mouseHit = intersectPointer(event);
 	if (totalDrag > 0.01 || clock.worldTime - runMode.dragTime > 2) return;
 	if (!mouseHit) return;
+	/** @type {import('./beacons.js').BeaconResource} */
+	const beaconRes = mouseHit.object.userData?.beaconRes;
 	if (mouseHit.object.layers.isEnabled(0)) {
 		// terrain
 		goTo({hit: mouseHit});
-	} else if (mouseHit.object.userData?.beaconRes) {
+	} else if (beaconRes) {
 		// beacon
-		showDetail(mouseHit.object.userData.beaconRes);
+		goTo({x: beaconRes.x, z: beaconRes.z, spectate: true});
+		showDetail(beaconRes);
 	}
 };
 

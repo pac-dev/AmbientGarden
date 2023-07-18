@@ -89,15 +89,19 @@ export const initUI = () => {
 	refreshUi();
 };
 
+let flashingMessage;
 const flashPilotOff = () => {
 	if (detailEle) detailEle.remove();
-	const msgEle = document.createElement('div');
-	msgEle.innerText = 'Autopilot disabled.';
-	msgEle.className = 'flash_message';
-	document.body.appendChild(msgEle);
-	setTimeout(() => { msgEle.classList.add('visible'); }, 50);
-	setTimeout(() => { msgEle.classList.remove('visible'); }, 1250);
-	setTimeout(() => { msgEle.remove(); }, 5250);
+	flashingMessage = document.createElement('div');
+	flashingMessage.innerText = 'Autopilot disabled.';
+	flashingMessage.className = 'flash_message';
+	document.body.appendChild(flashingMessage);
+	setTimeout(() => { flashingMessage.classList.add('visible'); }, 50);
+	setTimeout(() => { flashingMessage.classList.remove('visible'); }, 2500);
+	setTimeout(() => {
+		flashingMessage.remove();
+		flashingMessage = undefined;
+	}, 2500+4000);
 };
 
 export const setAutopilotUi = on => {
@@ -110,6 +114,7 @@ let detailEle;
 
 /** @param {import('./beacons.js').BeaconResource} beacon */
 export const showDetail = beacon => {
+	if (flashingMessage) return;
 	if (detailEle) detailEle.remove();
 	const rec = beacon.record;
 	let desc = rec.trackName.replace(/\-/g, ' ');
@@ -124,14 +129,10 @@ export const showDetail = beacon => {
 	detailEle.className = 'detail';
 	detailEle.innerHTML = `
 		<div>Selected: ${desc}</div><br><br>
-		<a id=detail_goto>Go To</a> | 
 		<a href="${rec.sourceUrl}" target="_blank">View Source</a>
 		<a id=detail_close>X</a>
 	`;
 	document.body.appendChild(detailEle);
-	document.getElementById('detail_goto').onclick = () => {
-		goTo({x: beacon.x, z: beacon.z, spectate: true});
-	};
 	document.getElementById('detail_close').onclick = () => {
 		detailEle.remove();
 		detailEle = undefined;
