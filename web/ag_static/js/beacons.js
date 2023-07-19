@@ -81,6 +81,8 @@ const loadBeacon = resource => {
 	beaconGroup.add(resource.form);
 };
 
+const sq = x => x * x;
+
 export const initBeaconPool = () =>
 	addResourcePool({
 		name: 'beacons',
@@ -88,9 +90,8 @@ export const initBeaconPool = () =>
 			for (let record of beaconRecords) {
 				if (!('x' in record)) continue;
 				const [x, z] = [record.x, record.z];
-				const subX = camX - x,
-					subZ = camZ - z;
-				if (!getMeta(record).transforming && subX * subX + subZ * subZ > beaconMinSquare) {
+				const dSquare = sq(camX - x) + sq(camZ - z)
+				if (!getMeta(record).transforming && dSquare > beaconMinSquare) {
 					continue;
 				}
 				yield { x, z, record };
@@ -115,7 +116,6 @@ const trackId = (() => {
 	return () => 'track_' + ++count;
 })();
 
-const sq = x => x * x;
 let lastProxSetTime = 0;
 
 /**

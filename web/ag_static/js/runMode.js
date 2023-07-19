@@ -65,15 +65,21 @@ export const goTo = ({hit, x, z, spectate}) => {
 	tgtLockMesh.visible = true;
 	const startPos = runMode.tgtXz.clone();
 	const endPos = xz(tgtLockMesh.position);
-	const startTime = clock.worldTime;
-	const endTime = clock.worldTime + Math.max(5, startPos.distanceTo(endPos) * 0.06);
-	const endYawTime = clock.worldTime + 5;
+	let startTime = clock.worldTime;
+	let endTime = clock.worldTime + Math.max(5, startPos.distanceTo(endPos) * 0.06);
+	let endYawTime = clock.worldTime + 5;
 	const startYaw = runMode.tgtYaw;
 	const relPos = xz(tgtPos).sub(endPos).normalize();
 	const endYaw = Math.PI * -0.5 - Math.atan2(relPos.y, relPos.x);
-	runMode.dragTime = clock.worldTime - 2;
+	runMode.dragTime = clock.worldTime - 200;
 	runMode.stepFn = () => {
 		if (runMode.dragTime > startTime) spectate = false;
+		if (!clock.paused) {
+			const s = runMode.speed*runMode.speed*Math.sign(runMode.speed);
+			startTime -= clock.diff*s;
+			endTime -= clock.diff*s;
+			endYawTime -= clock.diff*s;
+		}
 		if (clock.worldTime > endTime) {
 			runMode.stepFn = undefined;
 			tgtLockMesh.visible = false;
@@ -276,6 +282,12 @@ export const toggleAutopilot = (toggle, isIntro) => {
 				startTime += clock.diff;
 				endTime += clock.diff;
 				yawTime += clock.diff;
+			} else if (!clock.paused) {
+				let s = runMode.speed;
+				s = s*0.5 + s*s*Math.sign(s)*0.25;
+				startTime -= clock.diff*s;
+				endTime -= clock.diff*s;
+				yawTime -= clock.diff*s;
 			}
 			const progress = (clock.worldTime - startTime) / (endTime - startTime);
 			runMode.tgtXz = startPos.clone().lerp(endPos, progress);
@@ -320,5 +332,6 @@ export const runMode = {
 	tgtPos: undefined,
 	tgtYaw: undefined,
 	stepFn: undefined,
+	speed: 0,
 	dragTime: 0,
 };

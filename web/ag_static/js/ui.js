@@ -15,6 +15,8 @@ const ok = document.getElementById('modal_ok');
 const pauseButton = document.getElementById('pause');
 /** @type {HTMLInputElement} */
 const autoBox = document.getElementById('autopilot');
+/** @type {HTMLInputElement} */
+const speedIn = document.getElementById('speedin');
 
 let welcomeContent;
 const uiStack = ['welcome'];
@@ -73,6 +75,7 @@ export const initUI = () => {
 	ok.disabled = false;
 	autoBox.disabled = false;
 	autoBox.onchange = () => toggleAutopilot(autoBox.checked);
+	speedIn.oninput = (v) => runMode.speed = Number(speedIn.value);
 	events.on('pause', () => { pauseButton.innerText = 'Resume'; });
 	events.on('resume', () => { pauseButton.innerText = 'Pause'; });
 	pauseButton.addEventListener('click', () => {
