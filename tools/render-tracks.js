@@ -1,6 +1,6 @@
 import { exists, parse, path } from './deps.js';
 import { loadTrack, createRenderer } from '../../Teasynth/teasynth.js';
-import { beaconRecords } from '../web/ag_static/js/beaconRecords.js';
+import { beaconRecords } from '../web/ag_static/js/beacons/beaconRecords.js';
 
 const baseDir = path.join(path.fromFileUrl(import.meta.url), '..', '..');
 const tracksDir = path.join(baseDir, 'tracks');
@@ -8,7 +8,7 @@ const webDir = path.join(baseDir, 'web');
 
 const args = parse(Deno.args);
 
-/** @param {import('../web/ag_static/js/beaconRecords.js').BeaconRecord} beacon */
+/** @param {import('../web/ag_static/js/beacons/beaconRecords.js').BeaconRecord} beacon */
 const renderBeacon = async beacon => {
 	const introPath = path.join(webDir, beacon.introUrl);
 	const loopPath = path.join(webDir, beacon.loopUrl);

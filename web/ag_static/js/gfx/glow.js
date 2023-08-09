@@ -1,7 +1,7 @@
-import * as THREE from './lib/three.module.js';
-import { getMeta } from './beacons.js';
-import { clock } from './world.js';
-import { events } from './events.js';
+import * as THREE from '../lib/three.module.js';
+import { getMeta } from '../beacons/beaconPool.js';
+import { clock } from '../world.js';
+import { events } from '../events.js';
 
 const flareMap = new THREE.TextureLoader().load(window.agStaticPath+'img/glow.png');
 const waveMap = new THREE.TextureLoader().load(window.agStaticPath+'img/wave512.png');
@@ -60,14 +60,14 @@ export const addGlow = (grp, height) => {
 	};
 };
 
-/** @type {Set.<import('./beaconRecords.js').BeaconRecord>} */
+/** @type {Set.<import('../beacons/beaconRecords.js').BeaconRecord>} */
 const activeGlows = new Set();
 export const startGlow = record => {
 	getMeta(record).startTime = clock.worldTime;
 	activeGlows.add(record);
 };
 
-/** @param {import('./beaconRecords.js').BeaconRecord} record */
+/** @param {import('../beacons/beaconRecords.js').BeaconRecord} record */
 export const stopGlow = record => {
 	for (let obj3d of Object.values(getMeta(record).glow)) {
 		obj3d.material.opacity = 0;

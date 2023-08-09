@@ -115,7 +115,7 @@ export const setAutopilotUi = on => {
 /** @type {HTMLDivElement} */
 let detailEle;
 
-/** @param {import('./beacons.js').BeaconResource} beacon */
+/** @param {import('./beacons/beaconPool.js').BeaconResource} beacon */
 export const showDetail = beacon => {
 	if (flashingMessage) return;
 	if (detailEle) detailEle.remove();

@@ -1,5 +1,5 @@
-import { getMeta } from './beacons.js';
-import { clock } from './world.js';
+import { getMeta } from '../beacons/beaconPool.js';
+import { clock } from '../world.js';
 
 export class Track {
 	constructor(proximity) {
@@ -29,11 +29,11 @@ export class Track {
 }
 
 export class TrackLoader {
-	/** @param {import('./beacons.js').TrackResource} resource */
+	/** @param {import('../beacons/beaconPool.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
 		throw new Error('Override TrackLoader.startTrack!');
 	}
-	/** @param {import('./beacons.js').TrackResource} resource */
+	/** @param {import('../beacons/beaconPool.js').TrackResource} resource */
 	stopTrack(resource) {
 		resource.track.stop();
 		resource.track = undefined;

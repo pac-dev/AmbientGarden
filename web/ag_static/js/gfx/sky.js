@@ -1,5 +1,5 @@
-import * as THREE from './lib/three.module.js';
-import { camera } from './mainLoop.js';
+import * as THREE from '../lib/three.module.js';
+import { camera } from '../mainLoop.js';
 
 export const skyFrag = /*glsl*/`
 const vec3 eastColor = vec3(.97, .6, .51);

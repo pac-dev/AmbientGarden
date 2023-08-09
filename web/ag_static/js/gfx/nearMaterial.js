@@ -1,6 +1,6 @@
-import * as THREE from './lib/three.module.js';
-import { events } from './events.js';
-import { mapcnv, terrainGlsl } from './world.js';
+import * as THREE from '../lib/three.module.js';
+import { events } from '../events.js';
+import { mapcnv, terrainGlsl } from '../world.js';
 
 /**
  * "Impressionist" terrain material.

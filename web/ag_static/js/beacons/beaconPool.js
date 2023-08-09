@@ -1,16 +1,16 @@
-import * as THREE from './lib/three.module.js';
+import * as THREE from '../lib/three.module.js';
 import { initTree, updateTree, disposeTree } from './tree.js';
 import { addTreball, disposeTreball } from './treball.js';
 import { addTrelsys, disposeTrelsys } from './trelsys.js';
-import { farCoord2world, clock, beaconLoadDist } from './world.js';
-import { addResourcePool, getResourcePool } from './resourcePool.js';
-import { addGlow, startGlow, stopGlow } from './glow.js';
-import { runMode } from './runMode.js';
+import { farCoord2world, clock, beaconLoadDist } from '../world.js';
+import { addResourcePool, getResourcePool } from '../resourcePool.js';
+import { addGlow, startGlow, stopGlow } from '../gfx/glow.js';
+import { runMode } from '../runMode.js';
 import { beaconRecords } from './beaconRecords.js';
 
 /**
  * @typedef {Object} BeaconMeta
- * @property {import('./tracks.js').Track} [track]
+ * @property {import('../audio/tracks.js').Track} [track]
  * @property {Array.<THREE.Mesh>} [glow]
  * @property {number} [startTime]
  * @property {boolean} [transforming]
@@ -53,9 +53,9 @@ const updateWake = () => {
 /**
  * @typedef {Object} _BeaconResource
  * @property {import('./beaconRecords.js').BeaconRecord} record
- * @property {import('./lib/three.module.js').Object3D} [form]
+ * @property {import('../lib/three.module.js').Object3D} [form]
  *
- * @typedef {import('./resourcePool.js').Resource & _BeaconResource} BeaconResource
+ * @typedef {import('../resourcePool.js').Resource & _BeaconResource} BeaconResource
  */
 
 /** @param {BeaconResource} resource */
@@ -124,9 +124,9 @@ let lastProxSetTime = 0;
  * @property {string} [trackName]
  * @property {string} [trackId]
  * @property {Object} [trackParams]
- * @property {import('./tracks.js').Track} [track]
+ * @property {import('../audio/tracks.js').Track} [track]
  *
- * @typedef {import('./resourcePool.js').Resource & _TrackResource} TrackResource
+ * @typedef {import('../resourcePool.js').Resource & _TrackResource} TrackResource
  */
 
 /** @param {TrackResource} resource */
@@ -135,7 +135,7 @@ const proximity = (resource, camX, camZ) => {
 	return Math.max(0, (trackHush - d) / trackHush);
 };
 
-/** @param {import('./tracks.js').TrackLoader} loader */
+/** @param {import('../audio/tracks.js').TrackLoader} loader */
 export const initTrackPool = loader =>
 	addResourcePool({
 		name: 'tracks',
@@ -167,7 +167,7 @@ export const initTrackPool = loader =>
 			loader.stopTrack(res);
 			stopGlow(res.record);
 		},
-		/** @param {import('./resourcePool.js').ResourcePool & {loaded: Array.<TrackResource>}} pool */
+		/** @param {import('../resourcePool.js').ResourcePool & {loaded: Array.<TrackResource>}} pool */
 		afterUpdate(pool, camX, camZ) {
 			updateWake();
 			if (clock.worldTime - lastProxSetTime > 0.1) {

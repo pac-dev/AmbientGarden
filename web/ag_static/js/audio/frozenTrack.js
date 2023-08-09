@@ -1,5 +1,5 @@
-import { getMeta } from './beacons.js';
-import { events } from './events.js';
+import { getMeta } from '../beacons/beaconPool.js';
+import { events } from '../events.js';
 import { Track, TrackLoader } from './tracks.js';
 
 const xfDur = 2;
@@ -196,7 +196,7 @@ class FrozenTrack extends Track {
 }
 
 export class FrozenTrackLoader extends TrackLoader {
-	/** @param {import('./beacons.js').TrackResource} resource */
+	/** @param {import('../beacons/beaconPool.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
 		if (canPlayAudioElements === undefined) {
 			await checkAudioCapability();

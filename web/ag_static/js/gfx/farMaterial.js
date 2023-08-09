@@ -1,6 +1,6 @@
-import * as THREE from './lib/three.module.js';
+import * as THREE from '../lib/three.module.js';
 import { skyFrag } from './sky.js';
-import { mapcnv, terrainGlsl } from './world.js';
+import { mapcnv, terrainGlsl } from '../world.js';
 
 const farVert = /*glsl*/ `
 #include <common>

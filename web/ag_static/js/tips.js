@@ -1,4 +1,4 @@
-import { getMeta } from './beacons.js';
+import { getMeta } from './beacons/beaconPool.js';
 import * as THREE from './lib/three.module.js';
 import { renderer, camera, scene } from './mainLoop.js';
 import { addResourcePool, getResourcePool, removeResourcePool } from './resourcePool.js';
@@ -65,7 +65,7 @@ export const disableTips = () => {
 
 /**
  * @typedef {Object} _TipResource
- * @property {import('./beacons.js').BeaconResource} beacon
+ * @property {import('./beacons/beaconPool.js').BeaconResource} beacon
  * @property {number} dSquare
  * @property {number} spawnTime
  * @property {HTMLDivElement} [domEle]

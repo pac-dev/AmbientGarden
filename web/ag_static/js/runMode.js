@@ -1,6 +1,6 @@
 import * as THREE from './lib/three.module.js';
 import { renderer, camera, scene, intersectPointer, updatePointer } from './mainLoop.js';
-import { anyLoading, beginWakeIntro } from './beacons.js';
+import { anyLoading, beginWakeIntro } from './beacons/beaconPool.js';
 import { clock, heightAt } from './world.js';
 import { setAutopilotUi, showDetail } from './ui.js';
 import { disableTips, enableTips, tipsEnabled } from './tips.js';
@@ -104,7 +104,7 @@ const onCapturedUp = event => {
 	const mouseHit = intersectPointer(event);
 	if (totalDrag > 0.01 || clock.worldTime - runMode.dragTime > 2) return;
 	if (!mouseHit) return;
-	/** @type {import('./beacons.js').BeaconResource} */
+	/** @type {import('./beacons/beaconPool.js').BeaconResource} */
 	const beaconRes = mouseHit.object.userData?.beaconRes;
 	if (mouseHit.object.layers.isEnabled(0)) {
 		// terrain

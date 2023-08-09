@@ -1,5 +1,5 @@
-import { getMeta } from './beacons.js';
-import { events } from './events.js';
+import { getMeta } from '../beacons/beaconPool.js';
+import { events } from '../events.js';
 import { Track, TrackLoader } from './tracks.js';
 
 const defaultParamSpec = {
@@ -104,7 +104,7 @@ const cachedFetch = async (url, format) => {
 };
 
 export class LiveTrackLoader extends TrackLoader {
-	/** @param {import('./beacons.js').TrackResource} resource */
+	/** @param {import('../beacons/beaconPool.js').TrackResource} resource */
 	async startTrack(resource, proximity) {
 		const workletRoot = `${window.agStaticPath}generated/worklets/${resource.trackName}/`;
 		const processorName = `worklet_${resource.trackName}`;

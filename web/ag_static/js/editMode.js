@@ -9,12 +9,12 @@ import {
 	updateResources,
 } from './resourcePool.js';
 import { heightAt } from './world.js';
-import { getMeta, trackHush } from './beacons.js';
+import { getMeta, trackHush } from './beacons/beaconPool.js';
 import { popUi } from './ui.js';
 import { runMode } from './runMode.js';
-import { beaconRecords, parseTrack } from './beaconRecords.js';
+import { beaconRecords, parseTrack } from './beacons/beaconRecords.js';
 
-/** @param {import('./beaconRecords.js').BeaconRecord} beacon */
+/** @param {import('./beacons/beaconRecords.js').BeaconRecord} beacon */
 const getBeaconFreqs = beacon => {
 	const p = beacon.trackParams;
 	switch (beacon.trackName) {
@@ -77,8 +77,8 @@ const teleport = (x, z) => {
 
 /**
  * @typedef {Object} _HarmolineResource
- * @property {import('./beacons.js').BeaconResource} beacon1
- * @property {import('./beacons.js').BeaconResource} beacon2
+ * @property {import('./beacons/beaconPool.js').BeaconResource} beacon1
+ * @property {import('./beacons/beaconPool.js').BeaconResource} beacon2
  * @property {number} distance
  * @property {number} [dissonance]
  * @property {import('./lib/three.module.js').Color} [color]
@@ -187,7 +187,7 @@ const forSelected = fn => {
 
 /**
  * @typedef {Object} _TransformerResource
- * @property {import('./beacons.js').BeaconResource} beacon
+ * @property {import('./beacons/beaconPool.js').BeaconResource} beacon
  * @property {import('./lib/three.module.js').Object3D} [form]
  *
  * @typedef {import('./resourcePool.js').Resource & _TransformerResource} TransformerResource
@@ -256,7 +256,7 @@ const rounded = params => Object.fromEntries(
 
 /**
  * @typedef {Object} _EditorTipResource
- * @property {import('./beacons.js').BeaconResource} [beacon]
+ * @property {import('./beacons/beaconPool.js').BeaconResource} [beacon]
  * @property {HarmolineResource} [line]
  * @property {HTMLDivElement} [domEle]
  *

@@ -1,4 +1,4 @@
-import { noise1D } from './noise.js';
+import { noise1D } from '../noise.js';
 
 /**
  * Beacons are specified with coordinates and a short-form description, from
@@ -32,7 +32,6 @@ export const beaconRecords = [
 	{desc: 'vib 8 9 + 1', x: 17, z: 500},
 	{desc: 'vib 8/3 16/3 + 1', x: -284, z: 261},
 	{desc: 'vib 16/3 20/3 + 1', x: -175, z: -553},
-	{desc: 'hseri 2/3', x: 942, z: 1434},
 	{desc: 'hseri 1', x: -77, z: -1858},
 	{desc: 'cbass 1/2', x: -240, z: -1503},
 	{desc: 'rdrone 1 1 7/4', x: -150, z: -1785},
@@ -57,7 +56,6 @@ export const beaconRecords = [
 	{desc: 'vib 6 19/4', x: 528, z: -106},
 	{desc: 'cbass 3/5 + 0.7', x: 509, z: -325},
 	{desc: 'cbass 1 + 0.5', x: 874, z: -338},
-	{desc: 'rdrone 1 7/6 1/2', x: 770, z: 1492},
 	{desc: 'cbass 7/6 + 1 360', x: 1192, z: -483},
 	{desc: 'cbass 1 + 0.6', x: 1223, z: -283},
 	{desc: 'sdrone 4*3/4 3*8/5*3/4', x: 1363, z: -574},
@@ -84,7 +82,7 @@ export const beaconRecords = [
 	{desc: 'cbass 1 + 0.5', x: 1279, z: 965},
 	{desc: 'msop 6 8', x: 1036, z: 966},
 	{desc: 'vib 5/2 8/3', x: 630, z: 829},
-	{desc: 'cbass 9/16 + 0.5', x: 452, z: 905},
+	{desc: 'cbass 1/2 + 0.5', x: 452, z: 905},
 	{desc: 'cbass 1/2 + 0.5', x: 798, z: 961},
 	{desc: 'cbass 3/4 + 0.5', x: 224, z: 874},
 	{desc: 'vib 6/4 4', x: 329, z: 991},

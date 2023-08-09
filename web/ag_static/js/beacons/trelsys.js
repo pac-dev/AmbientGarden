@@ -1,7 +1,7 @@
-import * as THREE from './lib/three.module.js';
-import { leafMaterial, leafDepth } from './leafMaterial.js';
-import { PtBuf } from './points.js';
-import { heightAt, randomPointRange } from './world.js';
+import * as THREE from '../lib/three.module.js';
+import { leafMaterial, leafDepth } from '../gfx/leafMaterial.js';
+import { PtBuf } from '../gfx/points.js';
+import { heightAt, randomPointRange } from '../world.js';
 
 const up = new THREE.Vector3(0, 1, 0);
 const front = new THREE.Vector3(0, 0, 1);

@@ -1,6 +1,6 @@
-import * as THREE from './lib/three.module.js';
-import { events } from './events.js';
-import { ratio, clock, pointHiDist } from './world.js';
+import * as THREE from '../lib/three.module.js';
+import { events } from '../events.js';
+import { ratio, clock, pointHiDist } from '../world.js';
 
 const ptEyeVert = /*glsl*/ `
 #include <common>
