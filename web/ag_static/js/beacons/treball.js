@@ -9,7 +9,8 @@ const gold = 2.4;
 const pi = Math.PI;
 const hiMore = x => -0.4 * (x - 3.5) * x;
 
-export const addTreball = o => {
+export const addTreball = (params, x, z) => {
+	const o = Object.assign(params, {});
 	o.height = o.height ?? 60;
 	o.numBranches = o.numBranches ?? 9;
 	o.twist = o.twist ?? 0;
@@ -65,15 +66,7 @@ export const addTreball = o => {
 	pts.castShadow = true;
 	const treball = new THREE.Group();
 	treball.userData = o;
-	treball.position.set(o.x, heightAt(o.x, o.z), o.z);
+	treball.position.set(x, heightAt(x, z), z);
 	treball.add(pts);
 	return treball;
-};
-
-export const disposeTreball = tree => {
-	for (let child of tree.children) {
-		if (child.isPoints) {
-			child.geometry.dispose();
-		}
-	}
 };

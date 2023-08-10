@@ -51,7 +51,8 @@ const addFlare = (grp, height) => {
 };
 
 /** @param {THREE.Group} grp */
-export const addGlow = (grp, height) => {
+export const addGlow = (grp) => {
+	const height = grp.userData.height;
 	return {
 		wave1: addWave(grp), 
 		wave2: addWave(grp), 

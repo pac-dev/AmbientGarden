@@ -35,44 +35,6 @@ export class Species {
 	}
 }
 
-export const initTree = o => {
-	o.segPts = o.segPts ?? 12;
-	o.height = o.height ?? 60;
-	o.numBranches = o.numBranches ?? 30;
-	o.numCoreSegs = o.numCoreSegs ?? 5;
-	o.numPts = o.segPts * (o.numBranches + o.numCoreSegs);
-	o.open = o.open ?? 12;
-	o.jitter = o.jitter ?? 0;
-	o.twist = o.twist ?? 0;
-	o.shuf = [...Array(o.segPts).keys()];
-	if (o.colorFn === 'hsl') {
-		const c = new THREE.Color().setHSL(...o.colorParams);
-		o.getColor = () => c;
-	} else if (o.colorFn === 'pick') {
-		const cs = o.colorParams.map(c => new THREE.Color().setHSL(...c));
-		o.getColor = () => cs[Math.floor(Math.random() * cs.length)];
-	} else if (o.colorFn === 'grad') {
-		const cs = o.colorParams.map(c => new THREE.Color().setHSL(...c));
-		o.getColor = pos => {
-			const ret = cs[0].clone();
-			ret.lerp(cs[1], Math.min(1, pos.y / o.height));
-			return ret.offsetHSL(Math.random() * 0.2 - 0.1, 0, 0);
-		};
-	}
-	const tree = new THREE.Group();
-	tree.userData = o;
-	tree.position.set(o.x, heightAt(o.x, o.z), o.z);
-	const ptsGeom = new THREE.BufferGeometry();
-	ptsGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(o.numPts * 3), 3));
-	ptsGeom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(o.numPts * 3), 3));
-	ptsGeom.setAttribute('mindist', new THREE.BufferAttribute(new Float32Array(o.numPts), 1));
-	const pts = new THREE.Points(ptsGeom, leafMaterial);
-	pts.customDepthMaterial = leafDepth;
-	pts.castShadow = true;
-	tree.add(pts);
-	return tree;
-};
-
 const wave = x => 0.5 - Math.cos(x * Math.PI * 2) * 0.5;
 const dewave = x => 1 - Math.acos(x * 2 - 1) / Math.PI;
 const up = new THREE.Vector3(0, 1, 0);
@@ -150,18 +112,46 @@ const updateLeaves = (o, pts) => {
 	geometry.getAttribute('mindist').needsUpdate = true;
 };
 
-export const updateTree = tree => {
+export const addTree = (params, x, z) => {
+	const o = Object.assign(params, {});
+	o.segPts = o.segPts ?? 12;
+	o.height = o.height ?? 60;
+	o.numBranches = o.numBranches ?? 30;
+	o.numCoreSegs = o.numCoreSegs ?? 5;
+	o.numPts = o.segPts * (o.numBranches + o.numCoreSegs);
+	o.open = o.open ?? 12;
+	o.jitter = o.jitter ?? 0;
+	o.twist = o.twist ?? 0;
+	o.shuf = [...Array(o.segPts).keys()];
+	if (o.colorFn === 'hsl') {
+		const c = new THREE.Color().setHSL(...o.colorParams);
+		o.getColor = () => c;
+	} else if (o.colorFn === 'pick') {
+		const cs = o.colorParams.map(c => new THREE.Color().setHSL(...c));
+		o.getColor = () => cs[Math.floor(Math.random() * cs.length)];
+	} else if (o.colorFn === 'grad') {
+		const cs = o.colorParams.map(c => new THREE.Color().setHSL(...c));
+		o.getColor = pos => {
+			const ret = cs[0].clone();
+			ret.lerp(cs[1], Math.min(1, pos.y / o.height));
+			return ret.offsetHSL(Math.random() * 0.2 - 0.1, 0, 0);
+		};
+	}
+	const tree = new THREE.Group();
+	tree.userData = o;
+	tree.position.set(x, heightAt(x, z), z);
+	const ptsGeom = new THREE.BufferGeometry();
+	ptsGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(o.numPts * 3), 3));
+	ptsGeom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(o.numPts * 3), 3));
+	ptsGeom.setAttribute('mindist', new THREE.BufferAttribute(new Float32Array(o.numPts), 1));
+	const pts = new THREE.Points(ptsGeom, leafMaterial);
+	pts.customDepthMaterial = leafDepth;
+	pts.castShadow = true;
+	tree.add(pts);
 	for (let child of tree.children) {
 		if (child.isPoints) {
 			updateLeaves(tree.userData, child);
 		}
 	}
-};
-
-export const disposeTree = tree => {
-	for (let child of tree.children) {
-		if (child.isPoints) {
-			child.geometry.dispose();
-		}
-	}
+	return tree;
 };

@@ -203,7 +203,6 @@ const addTipsPool = () =>
 			for (let beacon of getResourcePool('beacons').loaded) {
 				const dSquare = sq(camX - beacon.x) + sq(camZ - beacon.z);
 				if (dSquare > sq(500)) continue;
-				if (!beacon.record.formParams.height) continue;
 				yield { beacon, dSquare };
 			}
 		},

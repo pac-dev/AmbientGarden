@@ -7,7 +7,8 @@ const up = new THREE.Vector3(0, 1, 0);
 const front = new THREE.Vector3(0, 0, 1);
 const pi = Math.PI;
 
-export const addTrelsys = o => {
+export const addTrelsys = (params, x, z) => {
+	const o = Object.assign(params, {});
 	o.height = o.height ?? 60;
 	o.depth = o.depth ?? 3;
 	o.branching = o.branching ?? (() => 3);
@@ -86,16 +87,8 @@ export const addTrelsys = o => {
 	pts.castShadow = true;
 	const trelsys = new THREE.Group();
 	trelsys.userData = o;
-	trelsys.position.set(o.x, heightAt(o.x, o.z) - 3, o.z);
+	trelsys.position.set(x, heightAt(x, z) - 3, z);
 	trelsys.add(pts);
 
 	return trelsys;
-};
-
-export const disposeTrelsys = tree => {
-	for (let child of tree.children) {
-		if (child.isPoints) {
-			child.geometry.dispose();
-		}
-	}
 };

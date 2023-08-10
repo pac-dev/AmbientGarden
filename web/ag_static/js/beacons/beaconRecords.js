@@ -1,9 +1,7 @@
-import { noise1D } from '../noise.js';
-
 /**
- * Beacons are specified with coordinates and a short-form description, from
- * which the other properties are generated. This is for easy editing from the
- * browser console.
+ * Beacons are initially specified with coordinates and a short-form
+ * description, from which the other properties are generated. This is for easy
+ * editing from the browser console.
  * @typedef {Object} BeaconRecord
  * @property {string} desc - short form description.
  * Contains the following space-sparated elements:
@@ -14,13 +12,11 @@ import { noise1D } from '../noise.js';
  * @property {number} x
  * @property {number} z
  * @property {string} [trackName]
- * @property {string} [formName]
- * @property {Object} [trackParams]
- * @property {Object} [formParams]
- * @property {string} [glowCurve]
- * @property {string} [introUrl]
- * @property {string} [loopUrl]
- * @property {string} [sourceUrl]
+ * @property {Object.<string, number>} [trackParams] - parsed parameters
+ * @property {string} [glowCurve] - how fast the beacon starts glowing
+ * @property {string} [introUrl] - audio location if using "frozen" mode
+ * @property {string} [loopUrl] - audio location if using "frozen" mode
+ * @property {string} [sourceUrl] - audio location if using "frozen" mode
  */
 
 // postition to test forms:
@@ -88,166 +84,6 @@ export const beaconRecords = [
 	{desc: 'vib 6/4 4', x: 329, z: 991},
 ];
 
-// forms: tree
-const tall = (rec, x) => {
-	rec.formName = 'tree';
-	rec.formParams = {
-		height: 90,
-		numCoreSegs: 10,
-		colorFn: 'pick',
-		colorParams: [
-			[0.4 + x * 0.1, 0.6, 0.4], // hsl(148.7deg, 60.4%, 39.9%)
-			[0.15 + x * 0.2, 0.7, 0.35], // hsl(142.3deg, 69.4%, 35%)
-		],
-	};
-};
-const stout = (rec, x) => {
-	rec.formName = 'tree';
-	rec.formParams = {
-		colorFn: 'pick',
-		colorParams: [
-			[0.35, 0.48, 0.45], // hsl(119.9deg, 48.3%, 46.8%)
-			[(0.9 + 0.35 * x) % 1, 0.48 + 0.2 * x, 0.45],
-		],
-	};
-};
-const stoutEh = (rec, x) => {
-	// stout but kinda blue i guess
-	rec.formName = 'tree';
-	rec.formParams = {
-		colorFn: 'pick',
-		colorParams: [
-			[0.26, 0.6, 0.4], // c`hsl(76.2deg, 60.4%, 39.2%)`,
-			[0.7 + 0.2 * x, 0.2, 0.53], // c`hsl(299.8deg, 20.8%, 52.6%)`,
-		],
-	};
-};
-const sparseTwist = (rec, x) => {
-	rec.formName = 'tree';
-	rec.formParams = {
-		height: 65,
-		numBranches: 12,
-		numCoreSegs: 6,
-		segPts: 22,
-		open: 17,
-		twist: 1,
-		colorFn: 'grad',
-		colorParams: [
-			[0.1, 0.1, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
-			[0.2 * x, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
-		],
-	};
-};
-const magicTwist = (rec, x) => {
-	rec.formName = 'tree';
-	rec.formParams = {
-		height: 70,
-		numBranches: 10,
-		numCoreSegs: 2,
-		segPts: 32,
-		open: 15,
-		twist: -2,
-		colorFn: 'grad',
-		colorParams: [
-			[0.4, 0.1, 0.4],
-			[0.3 + 0.2 * x, 0.6, 0.33],
-		],
-	};
-};
-// forms: treball
-const cactus = (rec, x) => {
-	rec.formName = 'treball';
-	rec.formParams = {
-		colorFn: 'pick',
-		colorParams: [
-			[0.26, 0.6, 0.4], // c`hsl(90.3deg, 60.4%, 39.2%)`,
-			[(0.86 + 0.3 * x) % 1, 0.55, 0.6], // c`hsl(27deg, 40.3%, 50.8%)`,
-		],
-	};
-};
-const hand = (rec, x) => {
-	rec.formName = 'treball';
-	rec.formParams = {
-		height: 80,
-		numBranches: 5,
-		minHang: 0.2,
-		outShrink: 0.02,
-		twist: 2.5,
-		cup: 1.4,
-		colorFn: 'grad',
-		colorParams: [
-			[0.2, 0.6, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
-			[0.2 * x, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
-		],
-	};
-};
-const rxSpiral = (rec, x) => {
-	rec.formName = 'treball';
-	rec.formParams = {
-		height: 80,
-		numBranches: 2,
-		minHang: 0.5,
-		outShrink: 0,
-		twist: 18.5,
-		cup: 1.66,
-		colorFn: 'grad',
-		colorParams: [
-			[0, 0.1, 0.4],
-			[0.3 + 0.3 * x, 0.6, 0.33],
-		],
-	};
-};
-// forms: lsys
-const windy = (rec, x) => {
-	rec.formName = 'trelsys';
-	rec.formParams = {
-		height: 80,
-		branching: lev => 3 - Math.max(0, lev - 3),
-		branchPts: lev => 2 + lev * 3,
-		twist: lev => 0.05 + lev * 0.02,
-		bias: lev => -0.6 + lev * 0.25,
-		pull: lev => Math.max(0, lev - 3) * 0.05,
-		pullDir: () => [-1, 0, -1],
-		colorFn: 'grad',
-		colorParams: [
-			[0, 0.1, 0.4],
-			[0.3 + 0.3 * x, 0.6, 0.33],
-		],
-	};
-};
-const willow = (rec, x) => {
-	rec.formName = 'trelsys';
-	rec.formParams = {
-		height: 80,
-		branching: lev => 3 - Math.max(0, lev - 3),
-		branchPts: (lev, id) => lev * 4 + lev * (id % 4) + Math.max(0, 2 - lev),
-		twist: lev => 0.01 + lev * 0.02,
-		pull: lev => Math.max(0, lev - 3) * 0.2,
-		colorFn: 'grad',
-		colorParams: [
-			[0.1, 0.27, 0.5], // c`hsl(0.1turn, 27.5%, 52.5%)`
-			[0.3 + 0.3 * x, 0.6, 0.33],
-		],
-	};
-};
-const reachy = (rec, x) => {
-	rec.formName = 'trelsys';
-	rec.formParams = {
-		height: 80,
-		branching: lev => 3 - Math.max(0, lev - 3),
-		branchPts: (lev, id) => 2 + lev + lev * (id % 4), //+Math.max(0, 2-lev),
-		twist: lev => 0.02 + Math.min(2, lev) * 0.03,
-		pull: lev => Math.max(0, lev - 3) * 0.2,
-		pullDir: () => [0, 1, 0],
-		colorFn: 'pick',
-		colorParams: [
-			[0.3 + x * 0.1, 0.55, 0.4], // hsl(0.4turn, 60%, 40%)
-			[0.2 + x * 0.2, 0.6, 0.35], // hsl(0.1turn, 70%, 35%)
-			[0.1 + x * 0.1, 0.55, 0.44], // hsl(0.4turn, 60%, 40%)
-		],
-	};
-};
-
 const parseToken = (tok, isExtra) => {
 	if (tok.match(/[a-zA-Z]/)) return tok;
 	if (isExtra) return Function(`"use strict"; return parseFloat(${tok})`)();
@@ -280,52 +116,44 @@ const trackParsers = {
 	cbass(rec) {
 		rec.trackName = 'contrabass';
 		// 20 - 200
-		const { freq1 } = parseDesc(rec, 'freq1', 'flatten', 'lp1');
+		parseDesc(rec, 'freq1', 'flatten', 'lp1');
 		rec.glowCurve = 'slow';
-		reachy(rec, noise1D(freq1 + 50));
 	},
 	hseri(rec) {
 		rec.trackName = 'harmonic-series';
 		// 60 - 120
-		const { freq1 } = parseDesc(rec, 'freq1');
+		parseDesc(rec, 'freq1');
 		rec.glowCurve = 'slow';
-		magicTwist(rec, noise1D(freq1 + 123));
 	},
 	mbottl(rec) {
 		rec.trackName = 'melodic-bottle';
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
-		hand(rec, noise1D(freq1 + freq2 + 50));
+		parseDesc(rec, 'freq1', 'freq2');
 	},
 	msop(rec) {
 		rec.trackName = 'melodic-soprano';
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
-		rxSpiral(rec, noise1D(freq1 + freq2 + 50));
+		parseDesc(rec, 'freq1', 'freq2');
 	},
 	rdrone(rec) {
 		rec.trackName = 'resonant-drone';
 		// 50 - 200
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2', 'freq3', 'impact');
+		parseDesc(rec, 'freq1', 'freq2', 'freq3', 'impact');
 		if (!rec.trackParams.impact) rec.glowCurve = 'slow';
-		tall(rec, noise1D(freq1 + freq2));
 	},
 	sdrone(rec) {
 		rec.trackName = 'sine-drone';
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
+		parseDesc(rec, 'freq1', 'freq2');
 		rec.glowCurve = 'slow';
-		willow(rec, noise1D(freq1 + freq2 + 50));
 	},
 	vib(rec) {
 		rec.trackName = 'vibraphones';
 		// 50 - 2000
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2', 'impact');
+		parseDesc(rec, 'freq1', 'freq2', 'impact');
 		if (!rec.trackParams.impact) rec.glowCurve = 'slow';
-		stout(rec, noise1D(freq1 + freq2));
 	},
 	vtone(rec) {
 		rec.trackName = 'vocal-overtones';
-		const { freq1, freq2 } = parseDesc(rec, 'freq1', 'freq2');
+		const { freq2 } = parseDesc(rec, 'freq1', 'freq2');
 		rec.trackParams.num = freq2 ? 2 : 1;
-		sparseTwist(rec, noise1D(freq1 + (freq2 ?? 0) + 50));
 	},
 };
 

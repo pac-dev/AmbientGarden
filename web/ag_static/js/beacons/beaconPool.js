@@ -1,12 +1,10 @@
 import * as THREE from '../lib/three.module.js';
-import { initTree, updateTree, disposeTree } from './tree.js';
-import { addTreball, disposeTreball } from './treball.js';
-import { addTrelsys, disposeTrelsys } from './trelsys.js';
 import { farCoord2world, clock, beaconLoadDist } from '../world.js';
 import { addResourcePool, getResourcePool } from '../resourcePool.js';
 import { addGlow, startGlow, stopGlow } from '../gfx/glow.js';
 import { runMode } from '../runMode.js';
 import { beaconRecords } from './beaconRecords.js';
+import { generateForm } from './beaconForms.js';
 
 /**
  * @typedef {Object} BeaconMeta
@@ -60,21 +58,11 @@ const updateWake = () => {
 
 /** @param {BeaconResource} resource */
 const loadBeacon = resource => {
-	const formParams = Object.assign(resource.record.formParams, { x: resource.x, z: resource.z });
-	if (resource.record.formName === 'tree') {
-		resource.form = initTree(formParams);
-		updateTree(resource.form);
-	} else if (resource.record.formName === 'treball') {
-		resource.form = addTreball(formParams);
-	} else if (resource.record.formName === 'trelsys') {
-		resource.form = addTrelsys(formParams);
-	} else {
-		throw new Error('Unknown beacon form: ' + resource.record.formName);
-	}
-	getMeta(resource.record).glow = addGlow(resource.form, formParams.height);
-	const bboxGeom = new THREE.CylinderGeometry(20, 20, formParams.height, 4, 1, true);
+	resource.form = generateForm(resource.record, resource.x, resource.z);
+	getMeta(resource.record).glow = addGlow(resource.form);
+	const bboxGeom = new THREE.CylinderGeometry(20, 20, resource.form.userData.height, 4, 1, true);
 	const bbox = new THREE.Mesh(bboxGeom);
-	bbox.position.y = formParams.height / 2;
+	bbox.position.y = resource.form.userData.height / 2;
 	bbox.layers.set(1);
 	bbox.userData.beaconRes = resource;
 	resource.form.add(bbox);
@@ -107,7 +95,11 @@ export const initBeaconPool = () =>
 				res.form.userData.disposeTransformer();
 			}
 			beaconGroup.remove(res.form);
-			disposeTree(res.form);
+			for (let child of res.form.children) {
+				if (child.isPoints) {
+					child.geometry.dispose();
+				}
+			}
 		},
 	});
 
