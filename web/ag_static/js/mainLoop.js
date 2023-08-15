@@ -28,7 +28,7 @@ export const initGfx = () => {
 	container.appendChild(renderer.domElement);
 	initPos();
 	scene.add(camera);
-	addSky();
+	addSky(window.innerWidth, window.innerHeight);
 	const aLight = new THREE.AmbientLight(0x333333);
 	scene.add(aLight);
 	dLight.position.set(9, 20, 13);
