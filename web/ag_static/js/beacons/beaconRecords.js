@@ -133,6 +133,10 @@ const trackParsers = {
 		rec.trackName = 'melodic-soprano';
 		parseDesc(rec, 'freq1', 'freq2');
 	},
+	ssop(rec) {
+		rec.trackName = 'sparse-soprano';
+		parseDesc(rec, 'freq1');
+	},
 	rdrone(rec) {
 		rec.trackName = 'resonant-drone';
 		// 50 - 200

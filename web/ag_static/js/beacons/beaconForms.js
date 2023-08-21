@@ -2,7 +2,15 @@ import { noise1D } from '../noise.js';
 import { addTree } from './tree.js';
 import { addTreball } from './treball.js';
 import { addTrelsys } from './trelsys.js';
+import { addString } from './stringForm.js';
 
+const pi = Math.PI;
+const ga = pi*(3-Math.sqrt(5));
+const rot = (x, y, angle) => {
+	const c = Math.cos(angle);
+	const s = Math.sin(angle);
+	return [x*c + s*y, y*c - s*x];
+};
 const recordToNoise = (rec, salt=0) => {
 	return noise1D(
 		rec.trackParams['freq1']
@@ -14,52 +22,46 @@ const recordToNoise = (rec, salt=0) => {
 /** @type {Object.<string, function(import('./beaconRecords.js').BeaconRecord)>} */
 const formGenerators = {
 	cbass(rec, x, z) {
-		const n = recordToNoise(rec, 50);
-		return addTrelsys({
-			height: 80,
-			branching: lev => 3 - Math.max(0, lev - 3),
-			branchPts: (lev, id) => 2 + lev + lev * (id % 4), //+Math.max(0, 2-lev),
-			twist: lev => 0.02 + Math.min(2, lev) * 0.03,
-			pull: lev => Math.max(0, lev - 3) * 0.2,
-			pullDir: () => [0, 1, 0],
-			colorFn: 'pick',
+		const n = recordToNoise(rec);
+		return addTree({
+			height: 55,
+			open: 20,
+			colorFn: 'grad',
 			colorParams: [
-				[0.3 + n * 0.1, 0.55, 0.4], // hsl(0.4turn, 60%, 40%)
-				[0.2 + n * 0.2, 0.6, 0.35], // hsl(0.1turn, 70%, 35%)
-				[0.1 + n * 0.1, 0.55, 0.44], // hsl(0.4turn, 60%, 40%)
+				[0.1, 0.1, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
+				[0.2 * n, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
 			],
 		}, x, z);
 	},
 	hseri: (rec, x, z) => {
-		const n = recordToNoise(rec, 123);
-		return addTree({
-			height: 70,
-			numBranches: 10,
-			numCoreSegs: 2,
-			segPts: 32,
-			open: 15,
-			twist: -2,
-			colorFn: 'grad',
-			colorParams: [
-				[0.4, 0.1, 0.4],
-				[0.3 + 0.2 * n, 0.6, 0.33],
-			],
+		const n = recordToNoise(rec);
+		const triWave = x => 1-Math.abs(x%2-1)*2;
+		const posFn = a => {
+			const y = 1.01+triWave(a);
+			const f = r => 12*triWave(a*r)*Math.sqrt(y*(1+n*0.5));
+			const [x, z] = rot(f(5/4), f(4/5), y);
+			return [x, 40*y, z];
+		};
+		return addString({
+			ptGroups: [400],
+			v0: 0.1,
+			separation: 2,
+			posFn
 		}, x, z);
 	},
 	mbottl: (rec, x, z) => {
-		const n = recordToNoise(rec, 50);
-		return addTreball({
-			height: 80,
-			numBranches: 5,
-			minHang: 0.2,
-			outShrink: 0.02,
-			twist: 2.5,
-			cup: 1.4,
-			colorFn: 'grad',
-			colorParams: [
-				[0.2, 0.6, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
-				[0.2 * n, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
-			],
+		const posFn = a => {
+			const h = 1 - Math.cos(a);
+			return [
+				Math.sin(a*8)*8*h,
+				30*h,
+				Math.cos(a*8)*8*h
+			];
+		};
+		return addString({
+			ptGroups: [210],
+			v0: 0.1,
+			posFn
 		}, x, z);
 	},
 	msop: (rec, x, z) => {
@@ -78,8 +80,24 @@ const formGenerators = {
 			],
 		}, x, z);
 	},
-	rdrone: (rec, x, z) => {
+	ssop: (rec, x, z) => {
 		const n = recordToNoise(rec);
+		const posFn = (a, group) => {
+			const zi = 8+6*Math.tanh(group*0.07-1.5);
+			const xi = 4*Math.sin(a+.5);
+			const y = 4*Math.cos(a+.5)+group*(2-0.1*Math.sqrt(group));
+			const [x,z] = rot(xi, zi, group*ga);
+			return [x,y,z];
+		};
+		return addString({
+			ptGroups: Array(60).fill(8),
+			v0: 1,
+			separation: 2.25,
+			posFn
+		}, x, z);
+	},
+	rdrone: (rec, x, z) => {
+		const n = recordToNoise(rec, 5);
 		return addTree({
 			height: 90,
 			numCoreSegs: 10,
@@ -93,21 +111,22 @@ const formGenerators = {
 	sdrone: (rec, x, z) => {
 		const n = recordToNoise(rec, 50);
 		return addTrelsys({
-				height: 80,
-				branching: lev => 3 - Math.max(0, lev - 3),
-				branchPts: (lev, id) => lev * 4 + lev * (id % 4) + Math.max(0, 2 - lev),
-				twist: lev => 0.01 + lev * 0.02,
-				pull: lev => Math.max(0, lev - 3) * 0.2,
-				colorFn: 'grad',
-				colorParams: [
-					[0.1, 0.27, 0.5], // c`hsl(0.1turn, 27.5%, 52.5%)`
-					[0.3 + 0.3 * n, 0.6, 0.33],
-				],
-			}, x, z);
+			colorFn: 'pick',
+			colorParams: [
+				[0.35, 0.48, 0.45], // hsl(119.9deg, 48.3%, 46.8%)
+				[(0.9 + 0.35 * n) % 1, 0.48 + 0.2 * n, 0.45],
+			],
+		}, x, z);
 	},
 	vib: (rec, x, z) => {
-		const n = recordToNoise(rec);
+		const n = recordToNoise(rec, 4);
 		return addTree({
+			height: 65,
+			numBranches: 12,
+			numCoreSegs: 6,
+			segPts: 22,
+			open: 17,
+			twist: 1,
 			colorFn: 'pick',
 			colorParams: [
 				[0.35, 0.48, 0.45], // hsl(119.9deg, 48.3%, 46.8%)
@@ -117,16 +136,16 @@ const formGenerators = {
 	},
 	vtone: (rec, x, z) => {
 		const n = recordToNoise(rec, 50);
-		return addTree({
-			height: 65,
-			numBranches: 12,
-			numCoreSegs: 6,
-			segPts: 22,
-			open: 17,
-			twist: 1,
+		return addTreball({
+			height: 80,
+			numBranches: 5,
+			minHang: 0.2,
+			outShrink: 0.02,
+			twist: 2.5,
+			cup: 1.4,
 			colorFn: 'grad',
 			colorParams: [
-				[0.1, 0.1, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
+				[0.2, 0.6, 0.4], // c`hsl(0.5turn, 17.4%, 57.8%)`,
 				[0.2 * n, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
 			],
 		}, x, z);

@@ -5,36 +5,6 @@ import { heightAt, randomPointRange } from '../world.js';
 
 const gold = 2.4;
 
-export class Species {
-	constructor({
-		segPts = 12, // points per segment
-		numBranches = 30, // "branch" segments
-		numCoreSegs = 5, // "trunk" segments
-		open = 12, // vertical -> horizontal branches
-		jitter = 0, // random angle
-		colorFn = 'hsl',
-		colorParams = [0.2, 0.55, 0.35],
-	}) {
-		this.segPts = segPts;
-		this.numBranches = numBranches;
-		this.numCoreSegs = numCoreSegs;
-		this.open = open;
-		this.jitter = jitter;
-		this.colorFn = colorFn;
-		this.colorParams = colorParams;
-
-		this.numPts = segPts * (numBranches + numCoreSegs);
-		this.shuf = [...Array(segPts).keys()];
-		if (colorFn === 'hsl') {
-			const c = new THREE.Color().setHSL(...colorParams);
-			this.getColor = () => c;
-		} else if (colorFn === 'pick') {
-			const cs = colorParams.map(c => new THREE.Color().setHSL(...c));
-			this.getColor = () => cs[Math.floor(Math.random() * cs.length)];
-		}
-	}
-}
-
 const wave = x => 0.5 - Math.cos(x * Math.PI * 2) * 0.5;
 const dewave = x => 1 - Math.acos(x * 2 - 1) / Math.PI;
 const up = new THREE.Vector3(0, 1, 0);
