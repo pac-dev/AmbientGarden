@@ -35,6 +35,10 @@ ${skyFrag}
 ${terrainGlsl}
 
 void main() {
+	float dist = distance(vWorldPos.xz, cameraPosition.xz);
+	if (dist < 600.) {
+		discard;
+	}
 	vec3 rd = normalize(vWorldPos - cameraPosition);
 
 	gl_FragColor = terrain(vWorldPos.xz);
@@ -51,12 +55,10 @@ export const mkFarMaterial = () => {
 	maptex.wrapT = THREE.MirroredRepeatWrapping;
 	maptex.anisotropy = 4;
 	const ret = new THREE.ShaderMaterial({
-		uniforms: THREE.UniformsUtils.merge([
-			{
-				maptex: { type: 't', value: maptex },
-				mapsz: { type: 'f', value: mapcnv.width },
-			},
-		]),
+		uniforms: {
+			maptex: { type: 't', value: maptex },
+			mapsz: { type: 'f', value: mapcnv.width },
+		},
 		vertexShader: farVert,
 		fragmentShader: farFrag,
 	});
