@@ -1,5 +1,9 @@
+/**
+ * Run mode - with manual control and optional autopilot.
+ */
+
 import * as THREE from './lib/three.module.js';
-import { renderer, camera, scene, intersectPointer, updatePointer } from './mainLoop.js';
+import { renderer, camera, scene, intersectFloor, intersectPointer, updatePointer, monument } from './mainLoop.js';
 import { anyLoading, beginWakeIntro } from './beacons/beaconPool.js';
 import { clock, heightAt } from './world.js';
 import { setAutopilotUi, showDetail } from './ui.js';
@@ -9,7 +13,31 @@ import { events } from './events.js';
 let lastMouseX, lastMouseY, totalDrag;
 let tgtDiskMesh, tgtLockMesh;
 const yawAccel = x => Math.tanh(x * 6 - 2.5) * 0.5 + 1.5;
-const up = new THREE.Vector3(0, 1, 0);
+
+const intersectTgtDisk = (event) => {
+	tgtDiskMesh.visible = false;
+	const mouseHit = intersectPointer(event);
+	if (!mouseHit) return;
+	if (mouseHit.object.isInstancedMesh) {
+		// monument
+		if (!isMeshWalkable(mouseHit)) return;
+		tgtDiskMesh.position.set(0, 0, 0);
+		tgtDiskMesh.lookAt(getMeshHitNormal(mouseHit));
+		tgtDiskMesh.position.copy(mouseHit.point);
+	} else if (mouseHit.object.layers.isEnabled(0)) {
+		// terrain
+		tgtDiskMesh.position.set(0, 0, 0);
+		tgtDiskMesh.lookAt(mouseHit.face.normal);
+		tgtDiskMesh.position.copy(mouseHit.point);
+	} else {
+		// beacon
+		tgtDiskMesh.position.copy(mouseHit.object.parent.position);
+		tgtDiskMesh.rotation.set(Math.PI * -0.5, 0, 0);
+	}
+	tgtDiskMesh.translateZ(2);
+	tgtDiskMesh.visible = true;
+	return mouseHit;
+};
 
 const onPointerDown = event => {
 	// preventDefault avoids additional "mouse" events on touchscreens
@@ -40,21 +68,58 @@ const onCapturedMove = event => {
 };
 
 export const xz = inVec3 => new THREE.Vector2(inVec3.x, inVec3.z);
+export let camFloor = 0;
+let tgtFloor = 0;
 
-export const goTo = ({hit, x, z, spectate}) => {
+const doorZone = new THREE.Box2(new THREE.Vector2(-50, 4450), new THREE.Vector2(60, 4580));
+const apexZone = new THREE.Box3(
+	new THREE.Vector3(1022-150, 894-150, 5791-150),
+	new THREE.Vector3(1022+150, 894+150, 5791+150)
+);
+const isMeshWalkable = (hit) => {
+	return getMeshHitNormal(hit).y > 0.75 || apexZone.containsPoint(hit.point);
+};
+const getMeshHitNormal = (hit) => {
+	const n = hit.face.normal.clone();
+	const m = new THREE.Matrix4();
+	hit.object.getMatrixAt(hit.instanceId, m);
+	const m2 = new THREE.Matrix4().extractRotation(m);
+	const m3 = new THREE.Matrix4().extractRotation(hit.object.matrix);
+	return n.applyMatrix4(m2).applyMatrix4(m3).normalize();
+};
+const floorsAvailable = (x, z) => {
+	const hit0 = intersectFloor(0, x, z);
+	const hit1 = intersectFloor(1, x, z);
+	const terrainY = hit0 ? hit0.point.y : heightAt(x, z);
+	const ret = [0];
+	if (hit1 && isMeshWalkable(hit1) && hit1.point.y > terrainY) ret.push(1);
+	return ret;
+};
+const checkForCliff = () => {
+	if (doorZone.containsPoint(runMode.tgtXz)) return false;
+	const nose = runMode.tgtXz.clone().addScaledVector(runMode.direction, 20);
+	const noseFloors = floorsAvailable(nose.x, nose.y);
+	return (!noseFloors.includes(tgtFloor));
+};
+const wallCaster = new THREE.Raycaster();
+const checkForWall = () => {
+	const floorHit = intersectFloor(tgtFloor, runMode.tgtXz.x, runMode.tgtXz.y);
+	const y = floorHit ? floorHit.point.y : heightAt(runMode.tgtXz.x, runMode.tgtXz.y);
+	const src = new THREE.Vector3(runMode.tgtXz.x, y+50, runMode.tgtXz.y);
+	wallCaster.set(src, new THREE.Vector3(runMode.direction.x, 0, runMode.direction.y));
+	const inter = wallCaster.intersectObject(monument, true)[0];
+	if (!inter) return false;
+	return (inter.distance < 60);
+};
+
+const stop = () => { runMode.stepFn = undefined; };
+
+const goToDisk = ({spectate}={}) => {
 	if (clock.paused) events.trigger('resume');
-	let normal, tgtPos;
-	if (hit) {
-		normal = hit.face.normal;
-		tgtPos = hit.point;
-	} else {
-		normal = up;
-		tgtPos = new THREE.Vector3(x, heightAt(x, z), z);
-	}
 	setAutopilotUi(false);
-	tgtLockMesh.position.set(0, 0, 0);
-	tgtLockMesh.lookAt(normal);
-	tgtLockMesh.position.copy(tgtPos);
+	tgtLockMesh.rotation.copy(tgtDiskMesh.rotation);
+	tgtLockMesh.position.copy(tgtDiskMesh.position);
+	const tgtPos = tgtDiskMesh.position.clone();
 	if (spectate) {
 		// keep some distance to the target
 		tgtLockMesh.position.add(
@@ -72,7 +137,9 @@ export const goTo = ({hit, x, z, spectate}) => {
 	const relPos = xz(tgtPos).sub(endPos).normalize();
 	const endYaw = Math.PI * -0.5 - Math.atan2(relPos.y, relPos.x);
 	runMode.dragTime = clock.worldTime - 200;
+	runMode.direction = endPos.clone().sub(startPos).normalize();
 	runMode.stepFn = () => {
+		if (checkForCliff() || checkForWall()) return stop();
 		if (runMode.dragTime > startTime) spectate = false;
 		if (!clock.paused) {
 			const s = runMode.speed*runMode.speed*Math.sign(runMode.speed);
@@ -80,10 +147,7 @@ export const goTo = ({hit, x, z, spectate}) => {
 			endTime -= clock.diff*s;
 			endYawTime -= clock.diff*s;
 		}
-		if (clock.worldTime > endTime) {
-			runMode.stepFn = undefined;
-			tgtLockMesh.visible = false;
-		}
+		if (clock.worldTime > endTime) stop();
 		runMode.tgtXz = startPos.clone();
 		runMode.tgtXz.lerp(endPos, (clock.worldTime - startTime) / (endTime - startTime));
 		if (spectate) {
@@ -91,8 +155,6 @@ export const goTo = ({hit, x, z, spectate}) => {
 			const yawProg = (clock.worldTime - startTime) / (endYawTime - startTime);
 			if (yawProg < 1) runMode.tgtYaw = (1 - yawProg) * startYaw + yawProg * yawNo360;
 		}
-		const d = xz(camera.position).distanceTo(endPos);
-		tgtLockMesh.material.opacity = 1 - 1 / (d * d * 0.00002 + 1);
 	};
 };
 
@@ -101,17 +163,20 @@ const onCapturedUp = event => {
 	renderer.domElement.releasePointerCapture(event.pointerId);
 	renderer.domElement.removeEventListener('pointermove', onCapturedMove);
 	renderer.domElement.removeEventListener('pointerup', onCapturedUp);
-	const mouseHit = intersectPointer(event);
+	updatePointer(event);
+	const mouseHit = intersectTgtDisk(event);
 	if (totalDrag > 0.01 || clock.worldTime - runMode.dragTime > 2) return;
 	if (!mouseHit) return;
 	/** @type {import('./beacons/beaconPool.js').BeaconResource} */
 	const beaconRes = mouseHit.object.userData?.beaconRes;
-	if (mouseHit.object.layers.isEnabled(0)) {
+	if (mouseHit.object.isInstancedMesh) {
+		if (isMeshWalkable(mouseHit)) goToDisk();
+	} else if (mouseHit.object.layers.isEnabled(0)) {
 		// terrain
-		goTo({hit: mouseHit});
+		goToDisk();
 	} else if (beaconRes) {
 		// beacon
-		goTo({x: beaconRes.x, z: beaconRes.z, spectate: true});
+		goToDisk({spectate: true});
 		showDetail(beaconRes);
 	}
 };
@@ -121,7 +186,7 @@ const enable = () => {
 	camera.rotation.z = 0;
 	runMode.tgtYaw = camera.rotation.y;
 	runMode.tgtXz = xz(camera.position);
-	runMode.stepFn = undefined;
+	stop();
 	beginWakeIntro();
 	renderer.domElement.addEventListener('pointerdown', onPointerDown);
 	if (!tipsEnabled) enableTips();
@@ -258,6 +323,7 @@ export const toggleAutopilot = (toggle, isIntro) => {
 			console.log('moving to: ', waypointId, waypoint);
 			startPos = runMode.tgtXz.clone();
 			endPos = xz(waypoint);
+			runMode.direction = endPos.clone().sub(startPos).normalize();
 			startTime = clock.worldTime;
 			endTime = startTime + Math.max(4, startPos.distanceTo(endPos) * 0.06);;
 			if (isIntro) {
@@ -273,6 +339,7 @@ export const toggleAutopilot = (toggle, isIntro) => {
 		else waypointId = closestWaypoint(runMode.tgtXz);
 		setWaypoint(waypoints[waypointId]);
 		runMode.stepFn = () => {
+			if (checkForCliff() || checkForWall()) return stop();
 			if (clock.worldTime < startTime) return;
 			if (clock.worldTime > endTime) {
 				waypointId = (waypointId + 1) % waypoints.length;
@@ -301,27 +368,22 @@ export const toggleAutopilot = (toggle, isIntro) => {
 			}
 		};
 	} else {
-		runMode.stepFn = undefined;
+		stop();
 	}
 };
 
 const update = () => {
 	if (!runMode.enabled) return;
-	tgtDiskMesh.visible = false;
-	const mouseHit = intersectPointer();
-	if (!mouseHit) return;
-	if (mouseHit.object.layers.isEnabled(0)) {
-		// terrain
-		tgtDiskMesh.position.set(0, 0, 0);
-		tgtDiskMesh.lookAt(mouseHit.face.normal);
-		tgtDiskMesh.position.copy(mouseHit.point);
-	} else {
-		// beacon
-		tgtDiskMesh.position.copy(mouseHit.object.parent.position);
-		tgtDiskMesh.rotation.set(Math.PI * -0.5, 0, 0);
+	if (runMode.tgtXz && doorZone.containsPoint(runMode.tgtXz)) {
+		tgtFloor = Math.max(...floorsAvailable(runMode.tgtXz.x, runMode.tgtXz.y));
 	}
-	tgtDiskMesh.position.y += 2;
-	tgtDiskMesh.visible = true;
+	const camPos = xz(camera.position);
+	if (camFloor !== tgtFloor) {
+		camFloor = Math.max(...floorsAvailable(camPos.x, camPos.y));
+	}
+	const d = camPos.distanceTo(xz(tgtLockMesh.position));
+	tgtLockMesh.material.opacity = 1 - 1 / (d * d * 0.00002 + 1);
+	intersectTgtDisk();
 };
 
 export const runMode = {
@@ -329,9 +391,10 @@ export const runMode = {
 	disable,
 	update,
 	enabled: false,
-	tgtPos: undefined,
+	tgtXz: undefined,
 	tgtYaw: undefined,
 	stepFn: undefined,
+	direction: undefined,
 	speed: 0,
 	dragTime: 0,
 };

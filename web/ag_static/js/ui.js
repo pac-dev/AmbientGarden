@@ -1,6 +1,6 @@
 import { aboutContent } from './about.js';
 import { events } from './events.js';
-import { runMode, toggleAutopilot, goTo } from './runMode.js';
+import { runMode, toggleAutopilot } from './runMode.js';
 import { clock } from './world.js';
 
 /** @type {HTMLDivElement} */
