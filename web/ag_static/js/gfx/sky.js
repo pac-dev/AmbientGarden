@@ -1,3 +1,10 @@
+/**
+ * "Impressionist" sky material and object.
+ * 
+ * It's just a plane owned by the camera. All the dots are drawn in the fragment
+ * shader. The dots feature reduced perspective distortion.
+ */
+
 import { events } from '../events.js';
 import * as THREE from '../lib/three.module.js';
 import { camera } from '../mainLoop.js';
@@ -65,7 +72,9 @@ void main() {
 	vec2 plane = vec2(phi, rd.y*0.5);
 	vec2 diskRatio = vec2(dFdx(plane.x), dFdy(plane.y));
 	diskRatio = 1.0 / (diskRatio*vpSize.y);
+	// make disks larger on the sides of the screen where they are farther apart
 	if (diskRatio.x > diskRatio.y) diskRatio *= diskRatio.y/diskRatio.x;
+	// fake perspective (smaller dots near the horizon)
 	float persp = rd.y*0.66;
 	if (rd.y > 0.2) persp = (0.2*0.66)+(rd.y-0.2)*1.4;
 	diskRatio /= persp;
@@ -89,7 +98,7 @@ export const addSky = (width, height) => {
 	const geo = new THREE.PlaneBufferGeometry(dist*6,dist*2,1,1);
 	const material = new THREE.ShaderMaterial({
 		vertexShader, fragmentShader,
-		uniforms: {vpSize: new THREE.Vector2()}
+		uniforms: { vpSize: new THREE.Vector2() }
 	});
 	const resize = ({width, height}) => {
 		material.uniforms.vpSize.value = new THREE.Vector2(
