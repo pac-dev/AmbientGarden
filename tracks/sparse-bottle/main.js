@@ -1,6 +1,8 @@
 /**
  * Melodic bottle. This is a classic waveguide model for a closed-ended wind
- * instrument. The low-level instrument code is in faust/bottle.dsp
+ * instrument.
+ * 
+ * Audio-rate code is written in faust and can be found in the faust directory.
  * 
  * This file contains sequencing, envelopes, and other control code.
  */

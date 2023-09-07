@@ -5,7 +5,7 @@
  * makes deliberate use of (what I believe to be) aliasing artifacts, and has an
  * additional layer of ambient noise.
  * 
- * The low-level instrument code is in faust/contrabass.dsp
+ * Audio-rate code is written in Faust and can be found in the faust directory.
  * 
  * This file contains sequencing, envelope, and other control code.
  */

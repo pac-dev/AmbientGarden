@@ -2,11 +2,11 @@
  * Resonant drone.
  * 
  * The "resodrone" algorithm is very simple and consists of noise run through a
- * small number of high-feedback comb filters. The resulting timbre is
- * surprisingly complex, emphasizing harmonics that are near-multiples of all
- * three comb filter frequencies.
+ * small number of high-feedback comb filters in series. The resulting timbre is
+ * complex, emphasizing harmonics that are near-multiples of all comb filter
+ * frequencies combined.
  * 
- * The low-level instrument code is in faust/reso.dsp
+ * Audio-rate code is written in Faust and can be found in the faust directory.
  * 
  * This file contains envelopes, automation, and other control code.
  */

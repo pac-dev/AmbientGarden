@@ -1,3 +1,11 @@
+
+export const randomSeed = seed => () => {
+	seed = seed + 1831565813|0;
+	let t = Math.imul(seed^seed>>>15, 1|seed);
+	t = t+Math.imul(t^t>>>7, 61|t)^t;
+	return ((t^t>>>14)>>>0)/2**32;
+};
+
 const toFraction = (x, tolerance, iterations) => {
 	let num = 1,
 		den = 1,
@@ -43,12 +51,12 @@ const getMixer = locality => {
 };
 
 export const mixFreqs = (freq1, freq2, locality) => {
+	[freq1, freq2] = [Math.min(freq1, freq2), Math.max(freq1, freq2)];
 	const mixer = getMixer(locality);
-	const fr1 = toFraction(freq1 / 100, 0.03, 50);
-	const fr2 = toFraction(freq2 / 100, 0.03, 50);
-	console.log('Converted freqs to fractions: ', fr1, fr2);
-	const rel1 = mixer.related((100 * fr1[0]) / fr1[1]);
-	const rel2 = mixer.related((100 * fr2[0]) / fr2[1]);
+	const frac = toFraction(freq2/freq1, 0.001, 50);
+	console.log('Mixer relative fraction: ', frac);
+	const rel1 = mixer.related(1);
+	const rel2 = mixer.related(frac[0] / frac[1]);
 	const mixed = mixer.mix(rel1, rel2);
-	return mixed.map(ele => ele[0]);
+	return mixed.map(ele => ele[0]*freq1);
 };

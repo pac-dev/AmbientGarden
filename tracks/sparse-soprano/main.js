@@ -1,8 +1,8 @@
 /**
- * Melodic soprano.
+ * Melodic soprano. This is a simple vocal synth, starting with a sawtooth wave
+ * combined with noise, which are then fed into a formant filter bank.
  * 
- * A simple vocal synth. A sawtooth wave, combined with noise, are fed into a
- * formant filter bank. The low-level instrument code is in faust/soprano.dsp
+ * Audio-rate code is written in Faust and can be found in the faust directory.
  * 
  * This file contains sequencing, envelopes, and other control code.
  */

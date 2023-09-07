@@ -1,15 +1,15 @@
 /**
- * Melodic soprano.
+ * Melodic soprano. This is a simple vocal synth, starting with a sawtooth wave
+ * combined with noise, which are then fed into a formant filter bank.
  * 
- * A simple vocal synth. A sawtooth wave, combined with noise, are fed into a
- * formant filter bank. The low-level instrument code is in faust/soprano.dsp
+ * Audio-rate code is written in Faust and can be found in the faust directory.
  * 
  * This file contains sequencing, envelopes, and other control code.
  */
 
 import { Graph, Seq, FaustNode, CtrlSine, SampleProcessor } from '../_lib/tealib.js';
 import { mainHost as host } from '../host.js';
-import { mixFreqs } from '../fraclib.js';
+import { mixFreqs } from '../_lib/math.js';
 
 host.willInterupt = true;
 export const sampleRate = 44100;
@@ -21,13 +21,15 @@ fau.connect(post).connect(graph.out);
 
 const fParam1 = graph.addParam('freq1', { def: '100*8' });
 const fParam2 = graph.addParam('freq2', { def: '100*9' });
+const fMin = graph.addParam('minFreq', { def: 350, min: 50, max: 3000 });
+const fMax = graph.addParam('maxFreq', { def: 1000, min: 50, max: 3000 });
 
 let mfs, freqs, freq, fTgt, fChange;
 let press = 0, pressTgt = 0, freqi = 0;
 
 const setFreqs = () => {
 	mfs = mixFreqs(fParam1.value, fParam2.value, 6);
-	mfs = mfs.filter(f => f > 350 && f < 1000);
+	mfs = mfs.filter(f => f > fMin.value && f < fMax.value);
 	if (mfs.length > 6) mfs.length = 6;
 	mfs.sort((a, b) => b - a);
 	freqs = [];

@@ -1,13 +1,14 @@
+/**
+ * Plucked string arpeggio based on Karplus–Strong synthesis.
+ * 
+ * Audio-rate code is written in Faust and can be found in the faust directory.
+ * 
+ * This file contains sequencing, envelopes, and other control code.
+ */
+
 import { Graph, FaustNode, Seq, Poly } from '../_lib/tealib.js';
 import { mainHost as host } from '../host.js';
-import { mixFreqs } from '../fraclib.js';
-
-const mulberry32 = seed => () => {
-	seed = seed + 1831565813|0;
-	let t = Math.imul(seed^seed>>>15, 1|seed);
-	t = t+Math.imul(t^t>>>7, 61|t)^t;
-	return ((t^t>>>14)>>>0)/2**32;
-};
+import { mixFreqs, randomSeed } from '../_lib/math.js';
 
 host.willInterupt = true;
 export const sampleRate = 44100;
@@ -71,13 +72,13 @@ const setFreqs = () => {
 }
 seq.schedule(async () => {
 	let t = 0;
-	let rand = mulberry32(1);
+	let rand = randomSeed(1);
 	while (true) {
 		if (fParam1.changed() || fParam2.changed()) setFreqs();
 		if (t === 200) host.wantInterrupt = true;
 		if (t === 400) {
 			t = 0;
-			rand = mulberry32(1);
+			rand = randomSeed(1);
 		}
 		//if (t%5<0.1) console.log('swell = '+Math.round(swell(t)*100)/100)
 		if (rand() < density.value)

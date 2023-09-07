@@ -3,10 +3,12 @@
  * 
  * A simple additive synthesizer. At its core is a bank of sine waves, tuned to
  * be multiples of both input frequencies.
+ * 
+ * Post-processing code is written in Faust and can be found in faust/post.dsp
  */
 
 import { Graph, FaustNode, Sine } from '../_lib/tealib.js';
-import { mixFreqs } from '../fraclib.js';
+import { mixFreqs } from '../_lib/math.js';
 
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });

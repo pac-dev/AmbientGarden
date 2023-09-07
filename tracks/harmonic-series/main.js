@@ -6,7 +6,7 @@
  * filter inside the waveguide causes successive harmonics to resonate. Similar
  * to the "harmonic flute" described in: https://www.osar.fr/notes/waveguides/
  * 
- * The low-level instrument code is in faust/harmo.dsp
+ * Audio-rate code is written in Faust and can be found in the faust directory.
  * 
  * This file contains envelopes, automation, and other control code.
  */

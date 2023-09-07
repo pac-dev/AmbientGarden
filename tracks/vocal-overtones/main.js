@@ -6,7 +6,7 @@
  * added in parallel to the original bank, and fixed "tonic" filters are added
  * on the combined output to keep it tuned.
  * 
- * The low-level instrument code is in faust/tuvan.dsp
+ * Audio-rate code is written in Faust and can be found in the faust directory.
  * 
  * This file contains envelopes, automation, and other control code.
  */
