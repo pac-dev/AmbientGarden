@@ -125,6 +125,11 @@ vec4 voxelTrace(vec3 hit, vec3 rd, vec3 normal, float camAA) {
 	return col;
 }
 
+float rangeBrightness(float camDist) {
+	float ret = max(0., 1. - abs(1. - camDist));
+	return ret*ret*clamp((1. - camDist)*40., -1., 1.);
+}
+
 void main() {
 	#include <normal_fragment_begin>
 	gl_FragColor.a = 1.0 - smoothstep(192.0*3.0, 192.0*5.0, vCamDist);
@@ -138,6 +143,9 @@ void main() {
 	vec4 col = voxelTrace(vPos, rd, worldNormal, camAA);
 	col.xyz += ter.xyz * (1.-col.a);
 	gl_FragColor.rgb = col.xyz;
+
+	float br = rangeBrightness(length(vPos.xz - cameraPosition.xz)/250.);
+	gl_FragColor.rgb *= 1.+br*0.2;
 
 	// let's assume the near material is always in the shadow frustum:
 	vec4 sCoord = directionalShadowMatrix[0] * vec4(vPos, 1.);
