@@ -235,7 +235,7 @@ input:checked + .slider:before {
 .flash_message {
 	color: #eee;
 	opacity: 0;
-	transition: opacity 4s;
+	transition: opacity 2s;
 }
 
 .flash_message.visible {

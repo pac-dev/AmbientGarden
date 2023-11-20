@@ -94,17 +94,18 @@ export const initUI = () => {
 
 let flashingMessage;
 const flashPilotOff = () => {
-	if (detailEle) detailEle.remove();
+	if (detailEle) detailEle.style.display = 'none';
 	flashingMessage = document.createElement('div');
 	flashingMessage.innerText = 'Autopilot disabled.';
 	flashingMessage.className = 'flash_message';
 	document.body.appendChild(flashingMessage);
 	setTimeout(() => { flashingMessage.classList.add('visible'); }, 50);
-	setTimeout(() => { flashingMessage.classList.remove('visible'); }, 2500);
+	setTimeout(() => { flashingMessage.classList.remove('visible'); }, 2200);
 	setTimeout(() => {
 		flashingMessage.remove();
 		flashingMessage = undefined;
-	}, 2500+4000);
+		if (detailEle) detailEle.style.display = 'block';
+	}, 2200+1900);
 };
 
 export const setAutopilotUi = on => {
@@ -117,7 +118,6 @@ let detailEle;
 
 /** @param {import('./beacons/beaconPool.js').BeaconResource} beacon */
 export const showDetail = beacon => {
-	if (flashingMessage) return;
 	if (detailEle) detailEle.remove();
 	const rec = beacon.record;
 	let desc = rec.trackName.replace(/\-/g, ' ');
@@ -135,6 +135,7 @@ export const showDetail = beacon => {
 		<a href="${rec.sourceUrl}" target="_blank">View Source</a>
 		<a id=detail_close>X</a>
 	`;
+	if (flashingMessage) detailEle.style.display = 'none';
 	document.body.appendChild(detailEle);
 	document.getElementById('detail_close').onclick = () => {
 		detailEle.remove();
