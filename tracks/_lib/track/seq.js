@@ -9,6 +9,7 @@ export class Seq {
 	 */
 	constructor(graph) {
 		this.graph = graph;
+		this.timeError = 0;
 	}
 	/**
 	 * @param {function():Promise} cb
@@ -43,19 +44,27 @@ export class Seq {
 		this.graph.eventProcessors.add(startProcessor);
 	}
 	/**
-	 * @param {Number} dur - duration in seconds
+	 * Wait for `dur` seconds to play before resolving. Note this will actually
+	 * resolve at the end of a 128-frame block, as of current implementations.
 	 */
-	play(dur) {
+	async play(dur) {
 		if (!this.graph.sampleRate) throw new Error('Seq.play: graph not ready!');
 		let countDown = dur * this.graph.sampleRate;
-		return new Promise(resolve => {
+		// prevent error from accumulating
+		const compensation = Math.min(this.timeError, countDown);
+		countDown -= compensation;
+		this.timeError -= compensation;
+		await new Promise(resolve => {
 			const eventProcessor = () => {
 				if (countDown-- > 0) return;
 				this.graph.eventProcessors.delete(eventProcessor);
+				this.resolveTimeSmp = this.graph.timeSmp;
 				resolve();
 			};
 			this.graph.eventProcessors.add(eventProcessor);
+			eventProcessor();
 		});
+		this.timeError += this.graph.timeSmp - this.resolveTimeSmp;
 	}
 	async rep(n, f) {
 		for (let i = 0; i < n; i++) {
