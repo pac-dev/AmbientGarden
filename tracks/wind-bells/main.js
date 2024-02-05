@@ -17,7 +17,7 @@ const fParam1 = graph.addParam('freq1', { def: '100*6' });
 const fParam2 = graph.addParam('freq2', { def: '100*8' });
 const tightParam = graph.addParam('tightness', { max: 6.5 });
 const lpParam1 = graph.addParam('lp1', { def: 350, min: 50, max: 2000 });
-const density = graph.addParam('density', { def: 1, min: 0.1, max: 3 });
+const density = graph.addParam('density', { def: 1.7, min: 0.1, max: 3 });
 lpParam1.connect(post.lp1);
 
 const mkVoice = i => {
@@ -81,8 +81,8 @@ seq.schedule(async () => {
 		if (idx === lastIdx) idx = Math.pow(rand(), idxpow);
 		lastIdx = idx;
 		const f = freqs[Math.floor(idx*freqs.length)];
-		poly.note(f, t ? rand() : 1, Math.sign(rand()-0.1));
-		await seq.play((0.3+0.2*rand())/density.value);
+		poly.note(f, t ? 0.6 + 0.4*rand() : 1, Math.sign(rand()-0.05));
+		await seq.play(0.1*rand() + 0.4/density.value);
 		t++;
 	}
 });

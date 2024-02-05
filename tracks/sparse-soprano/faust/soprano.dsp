@@ -22,9 +22,9 @@ sop_o_q = (11, 10, 28, 32, 41);
 sop_u_q = (7, 12, 16, 21, 25);
 
 // exciter
-saw = os.sawtooth(f1) * sawAmt * 0.4 : fi.lowpass(1, f1*1.5) : fi.lowpass(2, 500+f1);
+saw = os.sawtooth(f1) * sawAmt * 0.4 : fi.lowpass(1, f1*1.5) : fi.lowpass(1, 500+f1);
 noise = no.noise * 0.01 * noiseAmt : fi.ffbcombfilter(1/50 : ba.sec2samp, 1/f1 : ba.sec2samp, 0.9) : fi.lowpass(2, 600 + f1*1.5);
-exc = saw + noise;
+exc = saw*0.8 + noise;
 // body
 vowel = os.osc(0.3)*0.12+0.18;//0.3;//os.osc(4)*0.7+0.71;
 linterp(lst1, lst2, i) = ba.take(i+1, lst1), ba.take(i+1, lst2) : si.interpolate(vowel);

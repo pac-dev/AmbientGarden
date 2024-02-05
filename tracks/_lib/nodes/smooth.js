@@ -38,3 +38,40 @@ export class LinSmooth extends SampleProcessor {
 		return this.val;
 	}
 }
+
+const watcher = () => {
+	let lastValue;
+	return (newValue) => {
+		const changed = (lastValue !== undefined) && (newValue !== lastValue);
+		lastValue = newValue;
+		return changed;
+	};
+};
+
+/**
+ * Whenever the input changes, the output will take `duration` seconds to reach
+ * the new value. Useful for sequencing slides with exact durations.
+ */
+export class DurSmooth extends SampleProcessor {
+	constructor(duration = 1) {
+		super();
+		this.duration = this.addParam((typeof duration === 'number') ? duration : 1);
+		if (typeof duration === 'object') duration.connect(this.duration);
+		this.durChanged = watcher();
+		this.inChanged = watcher();
+		this.x = 0;
+		this.xmax = 0;
+	}
+	processSample(s) {
+		if (this.durChanged(this.duration.value) || this.inChanged(s)) {
+			this.src = this.value;
+			this.tgt = s;
+			this.x = 0;
+			this.xmax = this.duration.value * this.sampleRate;
+		}
+		this.x++;
+		if (this.x >= this.xmax) this.value = s;
+		else this.value = this.src + (this.tgt - this.src) * (this.x / this.xmax);
+		return this.value;
+	}
+}

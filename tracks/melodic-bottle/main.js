@@ -8,36 +8,47 @@
  */
 
 import { Graph, FaustNode, Seq, Poly } from '../_lib/tealib.js';
-import { mainHost as host } from '../host.js';
 import { mixFreqs } from '../_lib/math.js';
 
-host.willInterupt = true;
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
+const post = new FaustNode('faust/post.dsp', { preamp: 1, bounce: 0 });
 
+graph.addParam('preamp', { def: 1 }).connect(post.preamp);
 const fParam1 = graph.addParam('freq1', { def: '100*4' });
 const fParam2 = graph.addParam('freq2', { def: '100*6' });
-const hiLen = graph.addParam('hilen', { def: 9, min: 5, max: 105 });
+const hiLen = graph.addParam('hilen', { def: 9, min: 4, max: 105 });
+const breath = graph.addParam('breath');
+const trem = graph.addParam('trem');
+const modes = graph.addParam('modes', { def: 4, min: 0, max: 4 });
+const bounce = graph.addParam('bounce');
+bounce.connect(post.bounce)
+// resMul = 1/Math.pow(10, breath.value)
+// ampMul = 1+breath.value*2
 
-const post = new FaustNode('faust/post.dsp');
 const mkVoice = i => {
-	const ret = new FaustNode('faust/bottle.dsp', { freq: 500, noise: 0 });
+	const ret = new FaustNode('faust/bottle.dsp', { freq: 500, noise: 0, resmul: 1, modes: 4, trem: 0, bounce: 0 });
 	ret.notePos = 100;
 	ret.amp = 1;
 	ret.note = (freq, amp) => {
-		ret.freq.value = freq;
 		ret.notePos = 0;
-		ret.amp = amp;
+		ret.amp = amp * (1+breath.value*4) * (5/(modes.value+1));
+		ret.freq.value = freq;
+		ret.modes.value = modes.value;
+		ret.trem.value = trem.value;
+		ret.resmul.value = 1/Math.pow(10, breath.value*2);
+		ret.bounce.value = bounce.value;
+	};
+	ret.ctrl = () => {
+		ret.notePos += 0.002;
+		ret.noise.value = pulse(2*Math.pow(10, 1+ret.bounce.value), ret.notePos) * ret.amp;
 	};
 	return ret;
 };
 const poly = new Poly(3, mkVoice, post);
 const pulse = (k, x) => Math.max(0, (2 * Math.sqrt(k) * x) / (1 + k * x * x) - x * 0.1);
 graph.ctrl(tSeconds => {
-	poly.forEach(voice => {
-		voice.notePos += 0.002;
-		voice.noise.value = pulse(20, voice.notePos) * voice.amp;
-	});
+	poly.forEach(voice => voice.ctrl());
 });
 let spliceFreq,
 	noteN = 0;
@@ -50,23 +61,24 @@ seq.schedule(async () => {
 	let flowlen = 3,
 		flowdir = 2;
 	while (true) {
-		const mfs = mixFreqs(fParam1.value, fParam2.value, 6);
-		const ofs = Math.floor((flowlen - 2) * 0.13);
-		let freqs = mfs.filter((_, i) => i >= ofs && i < flowlen + ofs && !(i % 2));
-		freqs.push(...mfs.filter((_, i) => i >= ofs && i < flowlen + ofs && i % 2).reverse());
-		freqs = freqs.filter((f, i) => i < 3 || !evil(f, freqs[i - 1]));
 		for (let fpos = 0; fpos < flowlen * 2; fpos++) {
+			const mfs = mixFreqs(fParam1.value, fParam2.value, 6);
+			const ofs = Math.floor((flowlen - 2) * 0.13);
+			let freqs = mfs.filter((_, i) => i >= ofs && i < flowlen + ofs && !(i % 2));
+			freqs.push(...mfs.filter((_, i) => i >= ofs && i < flowlen + ofs && i % 2).reverse());
+			freqs = freqs.filter((f, i) => i < 3 || !evil(f, freqs[i - 1]));
+
 			intro = Math.max(intro - 0.5, 0);
-			poly.note(freqs[fpos % freqs.length], 0.2 + 0.8 / (fpos + 1));
+			if (hiLen.value > 4) poly.note(freqs[fpos % freqs.length], 0.5 + 0.5 / (fpos + 1));
 			await seq.play(0.3 + 2 / (flowlen * 0.5 + 5) + Math.round(intro));
 			if (noteN++ > 15 && fpos % 2 && spliceFreq === freqs[fpos % freqs.length]) {
 				noteN = 0;
-				host.wantInterrupt = true;
+				graph.setSplicePoint('loop');
 			}
 			if (noteN > 10 && !spliceFreq && fpos % 2) {
 				noteN = 0;
 				spliceFreq = freqs[fpos % freqs.length];
-				host.wantInterrupt = true;
+				graph.setSplicePoint('intro');
 			}
 			await seq.play(fpos % 2);
 		}

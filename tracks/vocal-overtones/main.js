@@ -18,20 +18,23 @@ const graph = new Graph({ sampleRate });
 
 const fau = new FaustNode('faust/tuvan.dsp', { f1: 0, f2amt: 0 });
 const fau2 = new FaustNode('faust/tuvan.dsp', { f1: 0, f2amt: 0.1 });
-const post = new FaustNode('faust/post.dsp');
+const post = new FaustNode('faust/post.dsp', { preamp: 1 });
 fau.connectWithGain(post).connect(graph.out);
 fau2.connectWithGain(post).connect(graph.out);
 // f1=[50 - 220] ; f2=[f1*2 - f1*10] ; f2amt=[0-0.3]
 
+graph.addParam('preamp', { def: 1 }).connect(post.preamp);
 const num = graph.addParam('num', { def: 1, min: 1, max: 2 });
 graph.addParam('freq1', { def: '100*4/5' }).connect(fau.f1);
 graph.addParam('freq2', { def: '100' }).connect(fau2.f1);
-graph.ctrl(t => {
+graph.ctrl(tSec => {
+	if (tSec > 12) graph.setSplicePoint('intro');
+	if (tSec > 30) graph.setSplicePoint('loop');
 	if (num.value > 1.5) {
 		fau.f2amt.value = 0.2;
 		fau2.muted = false;
-		graph.getConnection(fau, post).gain.value = 0.8 - 0.2 * Math.cos(t * 0.5);
-		graph.getConnection(fau2, post).gain.value = 0.75 + 0.25 * Math.cos(t * 0.5);
+		graph.getConnection(fau, post).gain.value = 0.8 - 0.2 * Math.cos(tSec * 0.5);
+		graph.getConnection(fau2, post).gain.value = 0.75 + 0.25 * Math.cos(tSec * 0.5);
 	} else {
 		graph.getConnection(fau, post).gain.value = 1;
 		fau.f2amt.value = 0.33;

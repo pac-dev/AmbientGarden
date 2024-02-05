@@ -141,6 +141,29 @@ export class Gain extends SampleProcessor {
 	}
 }
 
+/**
+ * Triangular panning node.
+ */
+export class TriPan extends TeaNode {
+	constructor() {
+		super();
+		this.numInChannels = 2;
+		this.numOutChannels = 2;
+		this.pan = this.addParam(0.5);
+	}
+	/**
+	 * @param {Array.<Number>} frame
+	 * @returns {Array.<Number>}
+	 */
+	process(frame) {
+		const p = this.pan.value;
+		return [
+			p<.5 ? frame[0] : frame[0]*(1-p)*2,
+			p>.5 ? frame[1] : frame[1]*p*2,
+		];
+	}
+}
+
 export class Mul extends SampleMixer {
 	mixSamples(inputs) {
 		return inputs.reduce((a, b) => a * b);

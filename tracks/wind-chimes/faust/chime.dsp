@@ -1,9 +1,8 @@
 import("stdfaust.lib");
 freq = hslider("freq", 500, 50, 2000, 0.001);
 noiseAmt = vslider("noise", 0, 0, 1, 0.0001);
-lp1 = vslider("lp1", 400, 100, 10000, 0.0001);
 
-exc = no.pink_noise * noiseAmt * 0.5 : fi.lowpass(1, lp1);
+exc = no.pink_noise * noiseAmt * 0.5;
 
 // tibetan bowl (180mm): 1, 2.77828, 5.18099, 8.16289, 11.66063, 15.63801, 19.99
 body = exc <:

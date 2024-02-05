@@ -28,8 +28,8 @@ f1vib = f1 * (1 + atk1*0.01*os.osc(5+os.osc(0.5))) * (0.5 + 0.5*atk2);
 
 // exciter: saw + noise
 saw = os.sawtooth(f1vib)*0.5;
-noise = no.noise * (0.2 - 0.2*f2amt) : fi.lowpass(1, 1500);
-exc = (saw + noise) * 0.2;
+noise = no.noise * (0.2 - 0.2*f2amt);
+exc = (saw + noise) * 0.1;
 
 // body: formants, tuned filters, controlled harmonic bands
 linterp(lst1, lst2, i) = ba.take(i+1, lst1), ba.take(i+1, lst2) : si.interpolate(vowel);
@@ -37,8 +37,8 @@ form(i) = fi.resonbp(linterp(fs1, fs2, i), linterp(qs1, qs2, i), linterp(as1, as
 forms(amp) = par(i, 5, form(i)*amp);
 
 ctrlforms(amt) = * (0.5*amt) : fi.lowpass(1, 15000) <:
-	(fi.resonbp(f2, 5, 1) : fi.resonbp(f2, 5, 1)), 
-	(fi.resonbp(f2*2, 7, 1) : fi.resonbp(f2*2, 7, 1))*0.4,
+	(fi.resonbp(f2, 1, 1) : fi.resonbp(f2, 1, 1)), 
+	(fi.resonbp(f2*4, 2, 1) : fi.resonbp(f2*4, 2, 1))*0.4,
 	fi.highpass(1, 1600);
 
 tuner(i) = fi.resonlp(f1*ba.take(i+1, tfs), ba.take(i+1, tqs), 1)*ba.take(i+1, tas);

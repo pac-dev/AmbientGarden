@@ -8,80 +8,134 @@
  */
 
 import { Graph, Seq, FaustNode, CtrlSine, SampleProcessor } from '../_lib/tealib.js';
-import { mainHost as host } from '../host.js';
-import { mixFreqs } from '../_lib/math.js';
+import { mixFreqs, randomSeed } from '../_lib/math.js';
 
-host.willInterupt = true;
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
+const post = new FaustNode('faust/post.dsp', { preamp: 1, slowness: 0 });
+post.connect(graph.out);
 
-const fau = new FaustNode('faust/soprano.dsp', { f1: 0, noise: 0, saw: 0 });
-const post = new FaustNode('faust/post.dsp');
-fau.connect(post).connect(graph.out);
-
+graph.addParam('preamp', { def: 1 }).connect(post.preamp);
 const fParam1 = graph.addParam('freq1', { def: '100*8' });
 const fParam2 = graph.addParam('freq2', { def: '100*9' });
 const fMin = graph.addParam('minFreq', { def: 350, min: 50, max: 3000 });
 const fMax = graph.addParam('maxFreq', { def: 1000, min: 50, max: 3000 });
+const complexity = graph.addParam('complexity', { def: 1, max: 3 });
+const skip = graph.addParam('skip', { max: 12 });
+const slowness = graph.addParam('slowness');
 
-let mfs, freqs, freq, fTgt, fChange;
-let press = 0, pressTgt = 0, freqi = 0;
+const rand = randomSeed();
+export class Soprano extends FaustNode {
+	constructor() {
+		super('faust/soprano.dsp', { f1: 0, noise: 0, saw: 0, highness: 0 });
+		this.freq = 100;
+		this.fTgt = 100;
+		this.fChange = 100;
+		this.press = 0;
+		this.pressTgt = 0;
+		this.vibNode = new CtrlSine({ phase: rand() });
+		this.vibNode
+			.connect(new SampleProcessor(v => (1 + v * 0.02) * this.freq))
+			.connect(this.f1);
+	}
+	ctrl(t) {
+		// slowness 0 -> df 0.03 ; slowness 1 -> df 0.005
+		const fDif = (this.fTgt - this.freq) * (0.03-0.025*slowness.value);
+		const fAbs = Math.abs(fDif);
+
+		if (fAbs > this.fChange) this.fChange += (fAbs - this.fChange) * 0.1;
+		else this.fChange += (fAbs - this.fChange) * 0.007;
+		if (this.fChange > 1) this.fChange = 1;
+
+		if (this.pressTgt > this.press) this.press += (this.pressTgt - this.press) * 0.02;
+		else this.press += (this.pressTgt - this.press) * 0.002;
+
+		this.freq += fDif;
+		this.vibNode.freq.value = 3 + Math.sqrt(this.fChange) * 4;
+		this.vibNode.amp.value = 1 - this.fChange;
+		this.noise.value = this.fChange * 0.2 + 0.2;
+		this.noise.value *= this.press;
+		this.saw.value = (1 - this.fChange) * 0.2 + 0.15;
+		this.saw.value *= this.press * this.press;
+		this.highness.value = 1-30/(t*t+30);
+	}
+	init(freq) {
+		this.freq = freq
+		this.fTgt = freq
+		this.fChange = 1;
+	}
+}
+
+const sop1 = new Soprano();
+const sop2 = new Soprano();
+sop1.connect(post);
+sop2.connect(post);
+slowness.connect(post.slowness);
+
+let freqs1, freqs2, freqi = 0;
 
 const setFreqs = () => {
-	mfs = mixFreqs(fParam1.value, fParam2.value, 6);
-	mfs = mfs.filter(f => f > fMin.value && f < fMax.value);
+	const all = mixFreqs(fParam1.value, fParam2.value, 6);
+	let mfs = all.filter(f => f > fMin.value && f < fMax.value);
 	if (mfs.length > 6) mfs.length = 6;
-	mfs.sort((a, b) => b - a);
-	freqs = [];
-	for (let i = 0; i < mfs.length; i += 2) freqs.push(mfs[i]);
-	freqs.reverse();
-	for (let i = 1; i < mfs.length; i += 2) freqs.push(mfs[i]);
-	const note0 = freqs[0] * 0.75;
-	freq = note0, fTgt = note0, fChange = 1;
+	mfs.sort((a, b) => b - a); // descending
+	freqs1 = [];
+	for (let i = 0; i < mfs.length; i += 2) freqs1.push(mfs[i]);
+	freqs1.reverse();
+	for (let i = 1; i < mfs.length; i += 2) freqs1.push(mfs[i]);
+	freqs2 = freqs1.map(ref => {
+		for (const f of all) {
+			if (f < ref*0.84 && f > ref*0.5) return f;
+			if (f/2 < ref*0.84 && f/2 > ref*0.5) return f/2;
+		}
+		throw new Error('No backing pitch found.');
+	})
+	if (!sop1.pressTgt) sop1.init(freqs1[0] * 0.75);
+	if (!sop2.pressTgt) sop2.init(freqs2[0] * 0.75);
 };
 setFreqs();
 
-const vibNode = new CtrlSine();
-vibNode.connect(new SampleProcessor(v => (1 + v * 0.02) * freq)).connect(fau.f1);
-
 graph.ctrl(t => {
-	const fDif = (fTgt - freq) * 0.03;
-	const fAbs = Math.abs(fDif);
-
-	if (fAbs > fChange) fChange += (fAbs - fChange) * 0.1;
-	else fChange += (fAbs - fChange) * 0.007;
-	if (fChange > 1) fChange = 1;
-
-	if (pressTgt > press) press += (pressTgt - press) * 0.02;
-	else press += (pressTgt - press) * 0.002;
-
-	freq += fDif;
-	vibNode.freq.value = 3 + Math.sqrt(fChange) * 4;
-	vibNode.amp.value = 1 - fChange;
-	fau.noise.value = fChange * 0.2 + 0.2;
-	fau.noise.value *= press;
-	fau.saw.value = (1 - fChange) * 0.2 + 0.15;
-	fau.saw.value *= press * press;
+	sop1.ctrl(t);
+	sop2.ctrl(t);
 });
 const seq = new Seq(graph);
 seq.schedule(async () => {
+	if (skip.value) {
+		freqi = Math.floor(skip.value) % freqs1.length;
+		sop1.init(freqs1[freqi] * 0.75);
+		sop2.init(freqs2[freqi] * 0.75);
+	}
 	while (true) {
-		if (fParam1.changed() || fParam2.changed()) setFreqs();
-		pressTgt = 1;
-		fTgt = freqs[freqi];
+		if ([fParam1, fParam2, fMin, fMax].some(p => p.changed())) setFreqs();
+		if (complexity.value > 1.5) sop2.pressTgt = 1;
+		sop2.fTgt = freqs2[freqi];
+		(async () => {
+			await seq.play(rand()*0.5);
+			sop1.pressTgt = 1;
+			sop1.fTgt = freqs1[freqi];
+		})();
 		await seq.play(3);
-		fTgt = freqs[(freqi + 1) % freqs.length];
+		if ([fParam1, fParam2, fMin, fMax].some(p => p.changed())) setFreqs();
+		sop1.fTgt = freqs1[(freqi + 1) % freqs1.length];
+		sop2.fTgt = freqs2[(freqi + 1) % freqs1.length];
 		await seq.play(3);
-		fTgt = freqs[freqi];
+		if ((complexity.value % 2) > 0.5) {
+			sop1.fTgt = freqs1[freqi];
+			sop2.fTgt = freqs2[freqi];
+		}
 		await seq.play(3);
-		pressTgt = 0;
+		sop1.pressTgt = 0;
+		sop2.pressTgt = 0;
 		await seq.play(1);
-		if (freqi === 1) host.wantInterrupt = true;
+		if (freqi === 1) graph.setSplicePoint();
 		await seq.play(2);
-		freqi = (freqi + 1) % freqs.length;
-		fTgt = freqs[freqi] * 0.75;
+		freqi = (freqi + 1) % freqs1.length;
+		sop1.fTgt = freqs1[freqi] * 0.75;
+		sop2.fTgt = freqs2[freqi] * 0.75;
 		await seq.play(1);
 	}
 });
+
 
 export const process = graph.makeProcessor();

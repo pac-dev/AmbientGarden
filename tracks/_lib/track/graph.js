@@ -20,6 +20,8 @@ export class Graph {
 		this.ready = false;
 		this.skipping = false;
 		this.skipTgt = 0;
+		this.timeSmp = 0;
+		this.splicePoints = [];
 		this.ampParam = this.addParam('amp', { def: 1 });
 	}
 	addParam(name, { def = 0, min, max } = {}) {
@@ -83,6 +85,7 @@ export class Graph {
 		for (let i = 0; i < this.out.outFrame.length; i++) {
 			this.out.outFrame[i] *= this.ampParam.value;
 		}
+		this.timeSmp++;
 		return this.out.outFrame;
 	}
 	/**
@@ -184,5 +187,12 @@ export class Graph {
 		if (id === this.wantMarker) {
 			this.skipping = false;
 		}
+	}
+	setSplicePoint(id) {
+		if (id) {
+			if (this.splicePoints.includes(id)) return;
+			this.splicePoints.push(id);
+		}
+		this.host.splicePoint = true;
 	}
 }

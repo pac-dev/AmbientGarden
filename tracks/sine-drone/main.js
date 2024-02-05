@@ -12,11 +12,12 @@ import { mixFreqs } from '../_lib/math.js';
 
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
+const post = new FaustNode('faust/post.dsp', { preamp: 1 });
 
+graph.addParam('preamp', { def: 1 }).connect(post.preamp);
 const fParam1 = graph.addParam('freq1', { def: '100*4' });
 const fParam2 = graph.addParam('freq2', { def: '100*6' });
 
-const post = new FaustNode('faust/post.dsp');
 post.connect(graph.out);
 const baseAmp = (freq, i) => 1 / (i + 1);
 const sines = [...new Array(10)].map(i => new Sine());
@@ -32,12 +33,14 @@ let setFreqs = () => {
 	});
 };
 
-graph.ctrl(t => {
+graph.ctrl(tSec => {
+	if (tSec > 12) graph.setSplicePoint('intro');
+	if (tSec > 30) graph.setSplicePoint('loop');
 	if (fParam1.changed() || fParam2.changed()) setFreqs();
-	const env = 1 - 1 / (t * t * 0.15 + 1);
+	const env = 1 - 1 / (tSec * tSec * 0.15 + 1);
 	for (let sine of sines) {
-		sine.amp.value = sine.baseAmp * env * (0.5 + 0.5 * Math.sin(t * sine.lfRate + sine.lfPhase));
-		sine.freq.value = sine.baseFreq * (1 + 0.018 * Math.sin(t * sine.lfRate * 10));
+		sine.amp.value = sine.baseAmp * env * (0.5 + 0.5 * Math.sin(tSec * sine.lfRate + sine.lfPhase));
+		sine.freq.value = sine.baseFreq * (1 + 0.018 * Math.sin(tSec * sine.lfRate * 10));
 	}
 });
 

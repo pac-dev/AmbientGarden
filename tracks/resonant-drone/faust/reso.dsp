@@ -10,7 +10,8 @@ freq2len(f) = 1.0 / f : ba.sec2samp;
 
 noise = no.noise * 0.3 * noiseAmt : fi.lowpass(2, lp1);
 pulse = os.sawtooth(f1) * 4 * pulseAmt : fi.lowpass(1, 500);
-srcs = noise + pulse;
+no2 = no.sparse_noise(5) * 0.2 : fi.resonbp(15000+2000*os.osc(0.3), 5, 1);
+srcs = noise + pulse + no2;
 exc = srcs : fi.highpass(1, 300) : fi.bandstop(1, 2500, 9000) : fi.lowpass(2, 11000);
 loop(f) = + ~ (de.fdelay2(9000, freq2len(f)) : _*0.8);
 res = loop(f1 - 1 + 2*no.lfnoise0(1)) : loop(f2) : loop(f3);

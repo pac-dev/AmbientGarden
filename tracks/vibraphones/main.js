@@ -11,10 +11,11 @@ const graph = new Graph({ sampleRate });
 
 const fau = new FaustNode('faust/vib.dsp', { freq: 1, noise: 1 });
 const fau2 = new FaustNode('faust/vib.dsp', { freq: 1, noise: 1 });
-const post = new FaustNode('faust/post.dsp');
+const post = new FaustNode('faust/post.dsp', { preamp: 1 });
 fau.connect(post);
 fau2.connect(post);
 post.connect(graph.out);
+graph.addParam('preamp', { def: 1, max: 4 }).connect(post.preamp);
 const impact = graph.addParam('impact');
 graph.addParam('freq1', { def: '100*3' }).connect(fau.freq);
 graph.addParam('freq2', { def: '100*7/2' }).connect(fau2.freq);
@@ -24,14 +25,16 @@ new Seq(graph).schedule(() => {
 	fau.noise.value = impact.value;
 	fau2.noise.value = fau.noise.value;
 });
-graph.ctrl(t => {
+graph.ctrl(tSec => {
+	if (tSec > 12) graph.setSplicePoint('intro');
+	if (tSec > 30) graph.setSplicePoint('loop');
 	fau.noise.value *= 0.7;
 	fau2.noise.value *= 0.7;
 	if (Math.random() < 0.01) {
-		fau.noise.value = Math.max(fau.noise.value, Math.random() * env(t));
+		fau.noise.value = Math.max(fau.noise.value, Math.random() * env(tSec));
 	}
 	if (Math.random() < 0.01) {
-		fau2.noise.value = Math.max(fau2.noise.value, Math.random() * env(t));
+		fau2.noise.value = Math.max(fau2.noise.value, Math.random() * env(tSec));
 	}
 });
 

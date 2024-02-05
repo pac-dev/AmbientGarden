@@ -15,17 +15,22 @@ import { Graph, Seq, FaustNode } from '../_lib/tealib.js';
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
 
-const fau = new FaustNode('faust/contrabass.dsp', { freq: 0, noise1: 0, noise2: 0, lp1: 3300, lp2: 580 });
-const post = new FaustNode('faust/post.dsp');
+const fau = new FaustNode('faust/contrabass.dsp', { freq: 0, noise1: 0, texamp: 0, texvar: 0, lp1: 3300, lp2: 580 });
+const post = new FaustNode('faust/post.dsp', { preamp: 1 });
 fau.connect(post).connect(graph.out);
 
+graph.addParam('preamp', { def: 1 }).connect(post.preamp);
 graph.addParam('freq1', { def: '100*1/2' }).connect(fau.freq);
 const flatten = graph.addParam('flatten');
 graph.addParam('lp1', { def: 3300, min: 100, max: 10000 }).connect(fau.lp1);
+graph.addParam('texamp').connect(fau.texamp);
+graph.addParam('texvar').connect(fau.texvar);
 
 let smoothFlat;
-graph.ctrl(t => {
-	smoothFlat = flatten.value * (1 - 1 / (t * t * 0.15 + 1));
+graph.ctrl(tSec => {
+	if (tSec > 12) graph.setSplicePoint('intro');
+	if (tSec > 30) graph.setSplicePoint('loop');
+	smoothFlat = flatten.value * (1 - 1 / (tSec * tSec * 0.15 + 1));
 });
 
 const playWave = (param, amp) => {
@@ -35,7 +40,6 @@ const playWave = (param, amp) => {
 	});
 };
 
-let hiAmps = [0.1, 0.3, 0.6, 0.4];
 let lp2s = [580, 750, 650, 1200];
 const seq = new Seq(graph);
 seq.schedule(async () => {
@@ -43,9 +47,7 @@ seq.schedule(async () => {
 		fau.lp2.value = lp2s[0];
 		playWave(fau.noise1, 0.3);
 		await seq.play(2);
-		playWave(fau.noise2, hiAmps[0]);
 		await seq.play(Math.PI * 2 - 2 + 0.5);
-		hiAmps = [...hiAmps.slice(1), hiAmps[0]];
 		lp2s = [...lp2s.slice(1), lp2s[0]];
 	}
 });
