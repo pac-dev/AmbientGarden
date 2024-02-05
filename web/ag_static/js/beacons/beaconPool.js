@@ -2,7 +2,7 @@ import * as THREE from '../lib/three.module.js';
 import { farCoord2world, clock, beaconLoadDist } from '../world.js';
 import { addResourcePool, getResourcePool } from '../resourcePool.js';
 import { addGlow, startGlow, stopGlow } from '../gfx/glow.js';
-import { runMode } from '../runMode.js';
+import { camFloor, runMode } from '../runMode.js';
 import { beaconRecords } from './beaconRecords.js';
 import { generateForm } from './beaconForms.js';
 
@@ -29,7 +29,6 @@ export const beaconGroup = new THREE.Group();
 const beaconMinSquare = beaconLoadDist * beaconLoadDist;
 let wakeMul = 0.7;
 let trackWake = 250 * wakeMul;
-let trackWakeSquare = trackWake * trackWake;
 export const trackHush = 330;
 let wakeIntroTime = 0;
 
@@ -45,7 +44,6 @@ const updateWake = () => {
 		wakeIntroTime = 0;
 	}
 	trackWake = 250 * wakeMul;
-	trackWakeSquare = trackWake * trackWake;
 };
 
 /**
@@ -60,12 +58,14 @@ const updateWake = () => {
 const loadBeacon = resource => {
 	resource.form = generateForm(resource.record, resource.x, resource.z);
 	getMeta(resource.record).glow = addGlow(resource.form);
-	const bboxGeom = new THREE.CylinderGeometry(20, 20, resource.form.userData.height, 4, 1, true);
-	const bbox = new THREE.Mesh(bboxGeom);
-	bbox.position.y = resource.form.userData.height / 2;
-	bbox.layers.set(1);
-	bbox.userData.beaconRes = resource;
-	resource.form.add(bbox);
+	if (!resource.form.userData.unclickable) {
+		const bboxGeom = new THREE.CylinderGeometry(20, 20, resource.form.userData.height, 4, 1, true);
+		const bbox = new THREE.Mesh(bboxGeom);
+		bbox.position.y = resource.form.userData.height / 2;
+		bbox.layers.set(1);
+		bbox.userData.beaconRes = resource;
+		resource.form.add(bbox);
+	}
 	beaconGroup.add(resource.form);
 };
 
@@ -124,7 +124,8 @@ let lastProxSetTime = 0;
 /** @param {TrackResource} resource */
 const proximity = (resource, camX, camZ) => {
 	const d = Math.sqrt(sq(resource.x - camX) + sq(resource.z - camZ));
-	return Math.max(0, (trackHush - d) / trackHush);
+	const myHush = trackHush*resource.record.reach;
+	return Math.max(0, (myHush - d) / myHush);
 };
 
 /** @param {import('../audio/tracks.js').TrackLoader} loader */
@@ -137,10 +138,12 @@ export const initTrackPool = loader =>
 				if (!('x' in record)) continue;
 				const [x, z, track] = [record.x, record.z, getMeta(record).track];
 				const dSquare = sq(camX - x) + sq(camZ - z);
-				if (dSquare > trackWakeSquare) {
+				const wake = trackWake*record.reach;
+				if (dSquare > wake*wake) {
 					if (track?.status !== 'playing') continue;
 					if (track.isDone()) continue;
 				}
+				if (record.floor !== camFloor) continue;
 				yield { x, z, record };
 			}
 		},

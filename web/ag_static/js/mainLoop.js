@@ -159,7 +159,6 @@ const stepWorld = (gfx = true) => {
 			// have a backup because the resoucePool does not guarantee terrain at any point
 			iy = heightAt(dropMe.x, dropMe.z) + 50;
 		}
-		if (editMode.enabled) camera.position.y += iy - dropMe.y;
 		// smooth out altitude - maybe this should only happen in the door zone
 		let altiSmooth = Math.abs(iy - dropMe.y) > 60 ? 1 : 0.05;
 		dropMe.y += (iy - dropMe.y)*altiSmooth;

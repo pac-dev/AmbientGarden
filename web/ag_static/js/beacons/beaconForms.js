@@ -3,6 +3,7 @@ import { addTree } from './tree.js';
 import { addTreball } from './treball.js';
 import { addTrelsys } from './trelsys.js';
 import { addString } from './stringForm.js';
+import { addRay } from './rayForm.js';
 
 const pi = Math.PI;
 const ga = pi*(3-Math.sqrt(5));
@@ -149,6 +150,9 @@ const formGenerators = {
 				[0.2 * n, 0.6, 0.4], // c`hsl(41.9deg, 66.3%, 33.5%)`,
 			],
 		}, x, z);
+	},
+	wbell: (rec, x, z) => {
+		return addRay({ }, x, z);
 	},
 };
 

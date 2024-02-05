@@ -1,14 +1,13 @@
 import * as THREE from './lib/three.module.js';
 import { OrbitControls } from './lib/OrbitControls.js';
 import { TransformControls } from './lib/TransformControls.js';
-import { intersectPointer, renderer, camera, scene } from './mainLoop.js';
+import { intersectPointer, renderer, camera, scene, intersectFloor } from './mainLoop.js';
 import {
 	addResourcePool,
 	getResourcePool,
 	removeResourcePool,
 	updateResources,
 } from './resourcePool.js';
-import { heightAt } from './world.js';
 import { getMeta, trackHush } from './beacons/beaconPool.js';
 import { popUi } from './ui.js';
 import { runMode } from './runMode.js';
@@ -23,12 +22,13 @@ const getBeaconFreqs = beacon => {
 		case 'melodic-bottle':
 		case 'melodic-soprano':
 			return [p.freq1, p.freq2];
+		case 'contrabass':
+		case 'water-bell':
+			return [p.freq1];
 		case 'resonant-drone':
 			return [p.freq1, p.freq2, p.freq3];
 		case 'harmonic-series':
 			return [...new Array(7)].map((_, i) => (i + 4) * p.freq1);
-		case 'contrabass':
-			return [p.freq1];
 		case 'vocal-overtones':
 			return p.freq2 ? [p.freq1, p.freq2] : [p.freq1];
 		default:
@@ -147,12 +147,18 @@ const addHarmolinePool = () =>
 
 const sq = x => x * x;
 
+/** @param {import('./beacons/beaconPool.js').BeaconResource} beaconRes */
 const changeDrag = (beaconRes, dragging) => {
 	getMeta(beaconRes.record).transforming = dragging;
+	const pos = beaconRes.form.position;
 	if (dragging) {
-		getMeta(beaconRes.record).orig = beaconRes.form.position.clone();
+		getMeta(beaconRes.record).orig = pos.clone();
 	} else {
-		beaconRes.form.position.y = heightAt(beaconRes.form.position.x, beaconRes.form.position.z);
+		// assuming we want the highest floor while editing:
+		let yInter = intersectFloor(1, pos.x, pos.z);
+		beaconRes.record.floor = yInter ? 1 : 0;
+		if (!yInter) yInter = intersectFloor(0, pos.x, pos.z);
+		pos.y = yInter.point.y;
 	}
 };
 
@@ -375,9 +381,10 @@ window.replace = desc => {
 	window.focusRecord = ret;
 };
 
+const floorString = (rec) => rec.floor ? ', floor: 1' : '';
 const exportRecords = async () => {
 	const x = beaconRecords.map(
-		r => `\t{desc: '${r.desc}', x: ${Math.round(r.x)}, z: ${Math.round(r.z)}},`
+		r => `\t{desc: '${r.desc}', x: ${Math.round(r.x)}, z: ${Math.round(r.z)}${floorString(r)}},`
 	);
 	await navigator.clipboard.writeText('[\n' + x.join('\n') + '\n]');
 	console.log(`exported ${x.length} records`);
@@ -396,7 +403,7 @@ const enable = () => {
 	editMode.orbiter.dampingFactor = 0.05;
 	editMode.orbiter.screenSpacePanning = false;
 	editMode.orbiter.minDistance = 1;
-	editMode.orbiter.maxDistance = 800;
+	editMode.orbiter.maxDistance = 1200;
 	editMode.orbiter.maxPolarAngle = Math.PI / 2;
 	editMode.orbiter.keyPanSpeed = 50;
 	editMode.orbiter.listenToKeyEvents(window);

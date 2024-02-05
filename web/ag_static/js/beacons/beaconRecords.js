@@ -17,6 +17,8 @@
  * @property {string} [introUrl] - audio location if using "frozen" mode
  * @property {string} [loopUrl] - audio location if using "frozen" mode
  * @property {string} [sourceUrl] - audio location if using "frozen" mode
+ * @property {number} [reach] - trigger distance (default=1)
+ * @property {number} [floor] - 0=on ground, 1=on mesh above ground
  */
 
 // postition to test forms:
@@ -82,7 +84,43 @@ export const beaconRecords = [
 	{desc: 'cbass 1/2 + 0.5', x: 798, z: 961},
 	{desc: 'cbass 3/4 + 0.5', x: 224, z: 874},
 	{desc: 'vib 6/4 4', x: 329, z: 991},
+	
+	/* 01 */ {desc: 'wbell 4/3', x: 430, z: 4680, floor: 1},
+	/* 02 */ {desc: 'wbell 2', x: 89, z: 4899, floor: 1},
+	/* 03 */ {desc: 'wbell 2*3/4', x: 891, z: 4845, floor: 1},
+	/* 04 */ {desc: 'wbell 2*4/3', x: 549, z: 5134, floor: 1},
+	/* 05 */ {desc: 'wbell 3', x: 176, z: 5442, floor: 1},
+	/* 06 */ {desc: 'wbell 2*4/3*4/3', x: 977, z: 5317, floor: 1},
+	/* 07 */ {desc: 'wbell 2*4/3', x: 602, z: 5611, floor: 1},
+	/* 08 */ {desc: 'wbell 2*2', x: 1022, z: 5791, floor: 1},
+	/* 09 */ {desc: 'wbell 2*2*3/4', x: 1489, z: 5993, floor: 1},
+	/* 10 */ {desc: 'wbell 2*2*4/3', x: 1111, z: 6229, floor: 1},
+	/* 11 */ {desc: 'wbell 2*3', x: 1947, z: 6148, floor: 1},
+	/* 12 */ {desc: 'wbell 2*2*4/3*4/3', x: 1576, z: 6459, floor: 1},
+	/* 13 */ {desc: 'wbell 2*4', x: 1208, z: 6758, floor: 1},
+	/* 14 */ {desc: 'wbell 3*2*4/3', x: 2005, z: 6530, floor: 1},
+	/* 15 */ {desc: 'wbell 3*2', x: 1634, z: 6919, floor: 1},
+	/* 16 */ {desc: 'wbell 4/3', x: 2054, z: 7036, floor: 1},
 ];
+/** "monument" beacon map:
+ *        16
+ *       /  \
+ *      14  15
+ *     /      \
+ *    11--12--13
+ *     \      /
+ *      09  10
+ *       \  /
+ *        08
+ *       /  \
+ *      06  07
+ *     /      \
+ *    03--04--05
+ *     \      /
+ *      01  02
+ *       \  /
+ *        \/
+ */
 
 const parseToken = (tok, isExtra) => {
 	if (tok.match(/[a-zA-Z]/)) return tok;
@@ -108,6 +146,8 @@ const parseDesc = (rec, ...paramNames) => {
 		fragments.push(paramName + '=' + (isExtra ? '' : '100*') + tokens[i]);
 	}
 	rec.paramFragment = fragments.join('&');
+	rec.reach ??= 1;
+	rec.floor ??= 0;
 	return rec.trackParams;
 };
 
@@ -158,6 +198,11 @@ const trackParsers = {
 		rec.trackName = 'vocal-overtones';
 		const { freq2 } = parseDesc(rec, 'freq1', 'freq2');
 		rec.trackParams.num = freq2 ? 2 : 1;
+	},
+	wbell(rec) {
+		rec.trackName = 'water-bell';
+		rec.reach = 1.7;
+		parseDesc(rec, 'freq1', 'interval');
 	},
 };
 
