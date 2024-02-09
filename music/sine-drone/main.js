@@ -12,9 +12,13 @@ import { mixFreqs } from '../_lib/math.js';
 
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
+
+// Post-processing Faust node
 const post = new FaustNode('faust/post.dsp', { preamp: 1 });
 
+// Parameters to control the patch
 graph.addParam('preamp', { def: 1 }).connect(post.preamp);
+// Frequency centers for the generative chord
 const fParam1 = graph.addParam('freq1', { def: '100*4' });
 const fParam2 = graph.addParam('freq2', { def: '100*6' });
 
@@ -22,6 +26,8 @@ post.connect(graph.out);
 const baseAmp = (freq, i) => 1 / (i + 1);
 const sines = [...new Array(10)].map(i => new Sine());
 sines.forEach(s => s.connect(post));
+
+// Generate a set of pitches for the chord
 let setFreqs = () => {
 	const mfs = mixFreqs(fParam1.value, fParam2.value, 3);
 	if (mfs.length < 10) throw new Error("fracsin can't intersect freqs");
@@ -33,6 +39,7 @@ let setFreqs = () => {
 	});
 };
 
+// At control rate, modulate components of the chord
 graph.ctrl(tSec => {
 	if (tSec > 12) graph.setSplicePoint('intro');
 	if (tSec > 30) graph.setSplicePoint('loop');

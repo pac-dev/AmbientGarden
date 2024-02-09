@@ -1,10 +1,16 @@
 /**
- * Beacons are initially specified with coordinates and a short-form
- * description, from which the other properties are generated. This is for easy
- * editing from the browser console.
+ * This file has no imports because it can be loaded online or offline when
+ * rendering patches from the command line. It contains the list of beacons
+ * ("trees") and the audio parameters of patches that they play. This is all
+ * specified with coordinates and a short-form description, from which the other
+ * properties are generated. This is organized for easy editing from the browser
+ * console when running in the "edit" page.
+ */
+
+/**
  * @typedef {Object} BeaconRecord
  * @property {string} desc - short form description.
- * Contains the following space-sparated elements:
+ * Contains the following space-separated elements:
  * - patch name
  * - harmonic patch parameters in units of 100Hz
  * - optionally a "+"
@@ -21,7 +27,7 @@
  * @property {number} [floor] - 0=on ground, 1=on mesh above ground
  */
 
-// postition to test forms:
+// position to test forms:
 // {desc: `vtone ${Math.round(Math.random()*6+4)} ${Math.round(Math.random()*6+4)}`, x: -300, z: 613},
 
 /** @type {Array.<BeaconRecord>} */

@@ -12,12 +12,17 @@ import { mixFreqs, randomSeed } from '../_lib/math.js';
 
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
+
+// Post-processing Faust node
 const post = new FaustNode('faust/post.dsp', { preamp: 1, slowness: 0 });
 post.connect(graph.out);
 
+
+// Basic parameters to control the patch
 graph.addParam('preamp', { def: 1 }).connect(post.preamp);
 const fParam1 = graph.addParam('freq1', { def: '100*8' });
 const fParam2 = graph.addParam('freq2', { def: '100*9' });
+// Params to control the generative melody
 const fMin = graph.addParam('minFreq', { def: 350, min: 50, max: 3000 });
 const fMax = graph.addParam('maxFreq', { def: 1000, min: 50, max: 3000 });
 const complexity = graph.addParam('complexity', { def: 1, max: 3 });
@@ -25,6 +30,13 @@ const skip = graph.addParam('skip', { max: 12 });
 const slowness = graph.addParam('slowness');
 
 const rand = randomSeed();
+
+/**
+ * Class for a vocal synth Faust node with additional control-rate processing.
+ * Control it by setting the "fTgt" and "pressTgt" properties to the desired
+ * frequency and pressure level. Call "ctrl" at control rate and get the output
+ * from the Faust node.
+ */
 export class Soprano extends FaustNode {
 	constructor() {
 		super('faust/soprano.dsp', { f1: 0, noise: 0, saw: 0, highness: 0 });
@@ -74,6 +86,7 @@ slowness.connect(post.slowness);
 
 let freqs1, freqs2, freqi = 0;
 
+// Generate a set of pitches for the melody
 const setFreqs = () => {
 	const all = mixFreqs(fParam1.value, fParam2.value, 6);
 	let mfs = all.filter(f => f > fMin.value && f < fMax.value);
@@ -99,6 +112,8 @@ graph.ctrl(t => {
 	sop1.ctrl(t);
 	sop2.ctrl(t);
 });
+
+// Play a melody according to the parameters and generated pitches
 const seq = new Seq(graph);
 seq.schedule(async () => {
 	if (skip.value) {

@@ -2,6 +2,7 @@ import { Seq } from './seq.js';
 import { Graph } from './graph.js';
 
 /**
+ * Function to use a monospaced table-like string as a sequence.
  * @param {Seq} seq
  * @param {Graph} graph
  * @param {String} table

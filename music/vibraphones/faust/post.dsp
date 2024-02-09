@@ -1,5 +1,7 @@
+// Post-processor in Faust: resonant body, reverb and compression
+
 import("stdfaust.lib");
-preamp = vslider("preamp", 1, 0, 4, 0.0001);
+preamp = hslider("preamp", 1, 0, 4, 0.0001);
 
 barBod = _ <: _*0.2, fi.allpass_comb(1024, 877, -0.96) :> _;
 

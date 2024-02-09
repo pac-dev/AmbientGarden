@@ -1,9 +1,8 @@
-import { Graph } from '../patch/graph.js';
-import { NodeParam } from './params.js';
 import { Gain } from './basic.js';
 
 /**
- * Extend this class to create different node types.
+ * Parent class for audio nodes. This is NOT a Web Audio Node managed by the
+ * browser, it exists purely in JS. Extend this class to create specific nodes.
  *
  * - Overriding the constructor is a good way to take parameters.
  *
@@ -20,7 +19,7 @@ export class TeaNode {
 		this.numOutChannels = 1;
 		/**
 		 * Only available during or after init.
-		 * @type {Graph}
+		 * @type {import('../patch/graph.js').Graph}
 		 */
 		this.graph;
 		/**
@@ -127,7 +126,7 @@ export class TeaNode {
 		this.numInChannels = nChannels;
 		this.numOutChannels = nChannels;
 	}
-	/** @param {Graph} graph */
+	/** @param {import('../patch/graph.js').Graph} graph */
 	baseInit(graph) {
 		this.graph = graph;
 		this.sampleRate = graph.sampleRate;
@@ -175,7 +174,7 @@ export class TeaNode {
 		const connectedParams = this.params.filter(p => p.source);
 		if (!connectedParams.length) return;
 		return () => {
-			for (let param of connectedParams) {
+			for (const param of connectedParams) {
 				param.value = param.source.outFrame[0];
 			}
 		};
@@ -191,14 +190,31 @@ export class TeaNode {
 		this.graph = graph;
 		this.host = graph.host;
 		this.sampleRate = graph.sampleRate;
-		for (let [eventType, handlers] of Object.entries(this.handlers)) {
-			for (let handler of handlers) {
+		for (const [eventType, handlers] of Object.entries(this.handlers)) {
+			for (const handler of handlers) {
 				this.host.events.on(eventType, handler);
 			}
 		}
 	}
 	describe() {
 		return this.constructor.name;
+	}
+}
+
+// Pluggable parameter for nodes. Gets created by TeaNode::addParam
+export class NodeParam {
+	/**
+	 * @param {TeaNode} owner
+	 * @param {Number} value
+	 */
+	constructor(owner, value) {
+		this.owner = owner;
+		this.value = value;
+		/** @type {TeaNode} */
+		this.source;
+	}
+	describe() {
+		return 'parameter of ' + this.owner;
 	}
 }
 

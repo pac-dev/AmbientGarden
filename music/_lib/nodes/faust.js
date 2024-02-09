@@ -1,6 +1,7 @@
 import { TeaNode } from './teanode.js';
 import { mainHost } from '../../host.js';
 
+// Extract parameters from Faust-generated metadata
 const findParams = meta => {
 	const param2index = {};
 	const visit = obj => {
@@ -16,6 +17,7 @@ const findParams = meta => {
 	return param2index;
 };
 
+// Imports to pass to Faust WebAssembly modules
 const importObject = mem => ({
 	env: {
 		memory: mem,
@@ -78,6 +80,11 @@ const importObject = mem => ({
 	},
 });
 
+/**
+ * Create a WebAssembly module from the given Faust source code. Instancing
+ * (a Faust feature) saves resources by placing multiple instances of the same
+ * Faust processor in one module.
+ */
 const initFaustModule = async (source, numInstances) => {
 	const { ui8Code, dspMeta } = await mainHost.compileFaust(source);
 	const mod = {
@@ -127,6 +134,10 @@ const initFaustModule = async (source, numInstances) => {
 	return mod;
 };
 
+/**
+ * Cache of Faust modules to create. This accumulates instances of each Faust
+ * source file before creating any modules.
+ */
 export const faustCache = {
 	reservedPaths: [],
 	reservedSources: {},
@@ -166,6 +177,11 @@ mainHost.events.on('can init faust', async () => {
 	}
 });
 
+/**
+ * Faust processor node using the given Faust source code. Upon construction,
+ * instances are counted globally. Wasm modules are then created before
+ * playback starts.
+ */
 export class FaustNode extends TeaNode {
 	constructor(path, params = {}) {
 		super();

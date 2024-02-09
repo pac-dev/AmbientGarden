@@ -1,4 +1,15 @@
 /**
+ * Module to communicate with the host environment that's running the patches.
+ * This module can be loaded both by the host and by the patches. This allows
+ * communication and synchronization beyond the basic "process" function
+ * exported by patches.
+ *
+ * In the browser, the host is an AudioWorklet. In the command line, the host is
+ * a module loaded by Deno. These can be found in the Teasynth project, under
+ * core/worklet.js and cli/render.js.
+ */
+
+/**
  * @typedef {
  * 'got host'
  * | 'can read files'

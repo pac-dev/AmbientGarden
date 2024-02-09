@@ -1,5 +1,6 @@
 import { TeaNode } from './teanode.js';
 
+// White noise node
 export class Noise extends TeaNode {
 	constructor({ amp = 1 } = {}) {
 		super();
@@ -12,6 +13,7 @@ export class Noise extends TeaNode {
 
 const tau = 2 * Math.PI;
 
+// Sine wave node
 export class Sine extends TeaNode {
 	constructor({ amp = 1, freq = 440, phase = 0 } = {}) {
 		super();
@@ -26,6 +28,7 @@ export class Sine extends TeaNode {
 	}
 }
 
+// Control-rate sine wave (LFO) node
 export class CtrlSine extends TeaNode {
 	constructor({ amp = 1, freq = 440, phase = 0 } = {}) {
 		super();
@@ -44,6 +47,7 @@ export class CtrlSine extends TeaNode {
 	}
 }
 
+// Polyphonic node with managed voices
 export class Poly {
 	constructor(n, makeVoice, out) {
 		this.voices = [...Array(n).keys()].map(makeVoice);
@@ -57,7 +61,7 @@ export class Poly {
 		this.order.unshift(vn);
 	}
 	off(freq) {
-		for (let voice of this.voices) {
+		for (const voice of this.voices) {
 			if (!voice.polyFreq) continue;
 			if (!freq || voice.polyFreq === freq) {
 				voice.off();
@@ -70,6 +74,7 @@ export class Poly {
 	}
 }
 
+// Metronome node that sends a "1" value regularly
 export class Metronome extends TeaNode {
 	constructor({ bpm }) {
 		super();
@@ -90,6 +95,7 @@ export class Metronome extends TeaNode {
 	}
 }
 
+// Attack-Release Envelope node
 export class AREnv extends TeaNode {
 	constructor({ attack, release }) {
 		super();

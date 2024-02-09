@@ -1,6 +1,9 @@
 import { TeaNode } from './teanode.js';
 import { EventTarget } from '../../host.js';
 
+/**
+ * Node to load other patches. Experimental.
+ */
 export class LoaderNode extends TeaNode {
 	/**
 	 * @param {string} mainPath

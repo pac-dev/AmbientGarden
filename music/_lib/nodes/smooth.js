@@ -1,8 +1,8 @@
-import { NodeParam } from './params.js';
 import { SampleProcessor } from './basic.js';
 
+// Non-node-based smoothing that can be used internally by a class
 export class PrivateSmooth {
-	/** @param {NodeParam} param */
+	/** @param {import('./teanode.js').NodeParam} param */
 	constructor(param, { init = param.value, speed = 0.01 } = {}) {
 		this.param = param;
 		this.tgt = init;
@@ -25,6 +25,7 @@ export class PrivateSmooth {
 	}
 }
 
+// Linear smoothing node with fixed speed
 export class LinSmooth extends SampleProcessor {
 	constructor(speed = 0.01) {
 		super();
@@ -49,8 +50,9 @@ const watcher = () => {
 };
 
 /**
- * Whenever the input changes, the output will take `duration` seconds to reach
- * the new value. Useful for sequencing slides with exact durations.
+ * Fixed duration smoothing node. Whenever the input changes, the output will
+ * take `duration` seconds to reach the new value. Useful for sequencing slides
+ * with exact durations.
  */
 export class DurSmooth extends SampleProcessor {
 	constructor(duration = 1) {

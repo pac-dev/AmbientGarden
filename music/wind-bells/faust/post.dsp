@@ -1,7 +1,9 @@
+// Post-processor in Faust: add a phaser, delay, reverb and compression
+
 import("stdfaust.lib");
-preamp = vslider("preamp", 1, 0, 1, 0.0001);
-lp1 = vslider("lp1", 400, 100, 10000, 0.0001);
-hp1 = vslider("hp1", 500, 50, 10000, 0.0001);
+preamp = hslider("preamp", 1, 0, 1, 0.0001);
+lp1 = hslider("lp1", 400, 100, 10000, 0.0001);
+hp1 = hslider("hp1", 500, 50, 10000, 0.0001);
 phaser = pf.phaser2_mono(4, 0, 1000, 400, 1.5, 1500, 0.5, 1, 0, 0);
 rev_st = re.zita_rev1_stereo(0, 200, 6000, 5, 3, 44100);
 filters = fi.lowpass(1, lp1)*preamp : fi.highpass(5, hp1);

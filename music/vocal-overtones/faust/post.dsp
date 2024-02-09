@@ -1,5 +1,7 @@
+// Post-processor in Faust: add a delay, and reverb and compression
+
 import("stdfaust.lib");
-preamp = vslider("preamp", 1, 0, 1, 0.0001);
+preamp = hslider("preamp", 1, 0, 1, 0.0001);
 
 rev_st = re.zita_rev1_stereo(0, 200, 6000, 12, 6, 44100);
 

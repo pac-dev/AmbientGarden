@@ -11,18 +11,26 @@ import { mixFreqs, randomSeed, rhythmArray, biasedRandom } from '../_lib/math.js
 
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
+
+// Post-processing Faust node
 const post = new FaustNode('faust/post.dsp', { preamp: 1, delfb: .5 });
 post.connect(graph.out);
 
+// Parameters to control the patch
 graph.addParam('preamp', { def: 1 }).connect(post.preamp);
+// Frequency centers for the generative strums
 const fParam1 = graph.addParam('freq1', { def: '100*8' });
 const fParam2 = graph.addParam('freq2', { def: '100*9' });
+// Timbral paramters: lowpass and feedback
 const lpParam = graph.addParam('lp', { def: 350, min: 50, max: 2000 });
 const fbParam = graph.addParam('fb', { max: .9 });
+// Post-processing delay feedback
 graph.addParam('delfb', { def: .5 }).connect(post.delfb);
+// Parameters to control the generative strumming intensity
 const density = graph.addParam('density', { def: 1, min: 0, max: 1 });
 const flatParam = graph.addParam('flatness');
 
+// The string synth is polyphonic. This creates one polyphonic voice
 const mkVoice = i => {
 	const ret = new FaustNode('faust/pluck.dsp', { freq: 500, noise: 0, lp1: 3000, fb: 0 });
 	lpParam.connect(ret.lp1);
@@ -36,7 +44,11 @@ const mkVoice = i => {
 	};
 	return ret;
 };
+
+// Use the Poly class to make an instrument with 6 managed voices
 const poly = new Poly(6, mkVoice, post);
+
+// At control rate, apply an envelope to all voices
 const atk = 0.007;
 const env = (x) => {
 	if (x < atk) return (x/atk)*(x/atk);
@@ -67,6 +79,7 @@ const swell = (t) => {
     return 1-s*s*s;
 };
 
+// Generate a set of pitches for the strumming
 let freqs;
 const setFreqs = () => {
 	freqs = mixFreqs(fParam1.value, fParam2.value, 4);
@@ -76,6 +89,8 @@ const tRand = randomSeed(1);
 const thresholds = rhythmArray({len: 40, cycles: [2,5,10,15]})
 	.map(x => biasedRandom(x, 4, tRand))
 	.map((x,i) => 1 - Math.sqrt(x)*(Math.sin(i*.25)*.5+.5));
+
+// Strum according to the parameters and generated pitches
 seq.schedule(async () => {
 	let t = 0;
 	while (true) {

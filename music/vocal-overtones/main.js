@@ -16,17 +16,21 @@ import { Graph, Seq, FaustNode } from '../_lib/tealib.js';
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
 
+// Create some nodes: Faust instrument and post-processing
 const fau = new FaustNode('faust/tuvan.dsp', { f1: 0, f2amt: 0 });
 const fau2 = new FaustNode('faust/tuvan.dsp', { f1: 0, f2amt: 0.1 });
 const post = new FaustNode('faust/post.dsp', { preamp: 1 });
 fau.connectWithGain(post).connect(graph.out);
 fau2.connectWithGain(post).connect(graph.out);
-// f1=[50 - 220] ; f2=[f1*2 - f1*10] ; f2amt=[0-0.3]
 
+// Parameters to control the patch: amp, number of voices
 graph.addParam('preamp', { def: 1 }).connect(post.preamp);
 const num = graph.addParam('num', { def: 1, min: 1, max: 2 });
+// Fundamental frequencies
 graph.addParam('freq1', { def: '100*4/5' }).connect(fau.f1);
 graph.addParam('freq2', { def: '100' }).connect(fau2.f1);
+
+// At control rate, add movement to the voices
 graph.ctrl(tSec => {
 	if (tSec > 12) graph.setSplicePoint('intro');
 	if (tSec > 30) graph.setSplicePoint('loop');

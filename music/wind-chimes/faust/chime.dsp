@@ -1,10 +1,15 @@
-import("stdfaust.lib");
-freq = hslider("freq", 500, 50, 2000, 0.001);
-noiseAmt = vslider("noise", 0, 0, 1, 0.0001);
+// Chime instrument in Faust using modal synthesis
 
+import("stdfaust.lib");
+
+// Use "sliders" to add parameters to control the instrument
+freq = hslider("freq", 500, 50, 2000, 0.001);
+noiseAmt = hslider("noise", 0, 0, 1, 0.0001);
+
+// Exciter: a filtered oscillator
 exc = no.pink_noise * noiseAmt * 0.5;
 
-// tibetan bowl (180mm): 1, 2.77828, 5.18099, 8.16289, 11.66063, 15.63801, 19.99
+// Modal body
 body = exc <:
 	pm.modeFilter(freq, 1.2, 0.1),
 	pm.modeFilter(freq*2.778, 1.2, 0.1),

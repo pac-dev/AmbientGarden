@@ -1,8 +1,14 @@
-import { TeaNode, describe } from '../nodes/teanode.js';
-import { OutputNode, Gain, HostParam } from '../nodes/basic.js';
+import { TeaNode, NodeParam, describe } from '../nodes/teanode.js';
+import { OutputNode, Gain } from '../nodes/basic.js';
+import { HostParam } from '../nodes/params.js';
 import { topologicalSort } from './topo.js';
 import { mainHost } from '../../host.js';
 
+/**
+ * A graph to contain all TeaNodes in a patch. Once all nodes have been added
+ * and the host has signalled that it's ready, the "process" method runs the
+ * graph and returns samples.
+ */
 export class Graph {
 	constructor({ sampleRate = 44100, host = mainHost } = {}) {
 		this.sampleRate = sampleRate;
@@ -47,8 +53,8 @@ export class Graph {
 		if (this.sortedNodes.length !== allNodes.length) {
 			throw new Error('These nodes are... half-connected. It simply should not be.');
 		}
-		this.host.events.on('can make processors', async () => {
-			for (let node of this.sortedNodes) {
+		this.host.events.on('can make processors', () => {
+			for (const node of this.sortedNodes) {
 				const paramProcessor = node.makeParamProcessor();
 				if (paramProcessor) this.processors.push(paramProcessor);
 				this.processors.push(node.makeSignalProcessor());
@@ -131,7 +137,7 @@ export class Graph {
 			}
 		};
 		if (tgt instanceof TeaNode) {
-			for (let midNode of tgt.inNodes) {
+			for (const midNode of tgt.inNodes) {
 				const connection = checkMidNode(midNode);
 				if (connection) return connection;
 			}

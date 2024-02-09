@@ -1,11 +1,10 @@
-import { TeaNode } from '../nodes/teanode.js';
-import { Graph } from './graph.js';
-import { NodeParam } from '../nodes/params.js';
+import { TeaNode, NodeParam } from '../nodes/teanode.js';
 import { playTable } from './seqTable.js';
 
+// Sequencer class using async/await
 export class Seq {
 	/**
-	 * @param {Graph} graph
+	 * @param {import('./graph.js').Graph} graph
 	 */
 	constructor(graph) {
 		this.graph = graph;

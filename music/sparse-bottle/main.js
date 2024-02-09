@@ -1,6 +1,6 @@
 /**
- * Melodic bottle. This is a classic waveguide model for a closed-ended wind
- * instrument.
+ * Sparse bottle. This is a classic waveguide model for a closed-ended wind
+ * instrument. This patch just plays the two notes that are given as parameters.
  * 
  * Audio-rate code is written in faust and can be found in the faust directory.
  * 
@@ -11,14 +11,20 @@ import { Graph, FaustNode, Seq, Poly } from '../_lib/tealib.js';
 
 export const sampleRate = 44100;
 const graph = new Graph({ sampleRate });
+
+// Post-processing Faust node
 const post = new FaustNode('faust/post.dsp', { preamp: 1 });
 
+// Parameters to control the patch
 graph.addParam('preamp', { def: 1 }).connect(post.preamp);
+// Frequencies to play
 const fParam1 = graph.addParam('freq1', { def: '100*2' });
 const fParam2 = graph.addParam('freq2', { def: '100*3' });
+// Timbral parameters: breathiness and number of modes
 const breath = graph.addParam('breath');
 const modes = graph.addParam('modes', { def: 4, min: 0, max: 4 });
 
+// The bottle instrument is polyphonic. This creates one polyphonic voice
 const mkVoice = i => {
 	const ret = new FaustNode('faust/bottle.dsp', { freq: 500, noise: 0, resmul: 1, modes: 4 });
 	ret.notePos = 100;
@@ -32,7 +38,11 @@ const mkVoice = i => {
 	};
 	return ret;
 };
+
+// Use the Poly class to make an instrument with 3 managed voices
 const poly = new Poly(3, mkVoice, post);
+
+// At control rate, apply an envelope to all voices
 const pulse = (k, x) => Math.max(0, (2 * Math.sqrt(k) * x) / (1 + k * x * x) - x * 0.01);
 graph.ctrl(tSeconds => {
 	poly.forEach(voice => {
@@ -41,6 +51,7 @@ graph.ctrl(tSeconds => {
 	});
 });
 
+// Play the specified notes in a cycle
 let cycle = 0;
 post.connect(graph.out);
 const seq = new Seq(graph);

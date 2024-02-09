@@ -23,7 +23,7 @@ export const biasedRandom = (tgt, bias, f=Math.random) => {
 };
 
 /**
- * Returns a rythm array, emphasizing beats repeating along the given cycle
+ * Returns a rhythm array, emphasizing beats repeating along the given cycle
  * lengths.
  */
 export const rhythmArray = ({len=16, minOut=0, maxOut=1, cycles=[2,4,8,16,32,64,128]}) => {
@@ -67,6 +67,7 @@ const toFraction = (x, tolerance, iterations) => {
 
 const fuzzyEq = (x, y) => Math.max(x, y) / Math.min(x, y) < 1.001;
 
+// Helper for "mixFreqs" to find related fractions
 const getMixer = locality => {
 	const dissonance = (a, b) => Math.round(a / 2 + b + (locality * Math.max(a, b)) / Math.min(a, b));
 	const base = [];

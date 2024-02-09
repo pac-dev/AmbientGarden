@@ -1,14 +1,13 @@
 import { TeaNode } from './teanode.js';
-import { Graph } from '../patch/graph.js';
 
 /**
  * A single OutputNode should be accessible as Graph::out.
  */
 export class OutputNode extends TeaNode {
-	constructor(fn) {
+	constructor() {
 		super();
 		this.on('can deduce channels', () => {
-			for (let node of this.inNodes) {
+			for (const node of this.inNodes) {
 				if (node.numOutChannels === 2) {
 					this.numInChannels = 2;
 					this.numOutChannels = 2;
@@ -100,15 +99,15 @@ export class ChannelProcessor extends TeaNode {
 	 * @param {Object} channel
 	 * @param {Number} sample
 	 */
-	processChannel(channel, sample) {
+	processChannel(_channel, sample) {
 		return sample;
 	}
 	/**
 	 * Override to initialize state. Store state in the channel object.
 	 * @param {Object} channel
 	 */
-	initChannel(channel) {}
-	/** @param {Graph} graph */
+	initChannel(_channel) {}
+	/** @param {import('../patch/graph.js').Graph} graph */
 	baseInit(graph) {
 		super.baseInit(graph);
 		this.useInputChannelCount();
@@ -141,9 +140,7 @@ export class Gain extends SampleProcessor {
 	}
 }
 
-/**
- * Triangular panning node.
- */
+// Triangular panning node.
 export class TriPan extends TeaNode {
 	constructor() {
 		super();
@@ -164,12 +161,14 @@ export class TriPan extends TeaNode {
 	}
 }
 
+// Multiply node
 export class Mul extends SampleMixer {
 	mixSamples(inputs) {
 		return inputs.reduce((a, b) => a * b);
 	}
 }
 
+// Number node - usually not necessary but could be convenient
 export class NumNode extends TeaNode {
 	constructor(initValue = 0) {
 		super();
@@ -185,39 +184,5 @@ export class NumNode extends TeaNode {
 			return [1];
 		}
 		return [this.num.value];
-	}
-}
-
-export class HostParam extends TeaNode {
-	constructor(name, { def = 0, min, max } = {}) {
-		super();
-		let defStr;
-		if ((typeof def) === 'string') {
-			defStr = def;
-			def = Function(`"use strict"; return parseFloat(${def})`)();
-			if (min === undefined) min = Number.MIN_VALUE;
-			if (max === undefined) max = Number.MAX_VALUE;
-		} else {
-			if (min === undefined) min = 0;
-			if (max === undefined) max = 1;
-		}
-		this.value = def;
-		this._changed = true;
-		const setFn = value => {
-			this.value = value;
-			this.host.params[name].val = value;
-			this._changed = true;
-		};
-		this.on('got host', () => {
-			this.host.params[name] = { setFn, def, defStr, min, max };
-		});
-	}
-	process() {
-		return [this.value];
-	}
-	changed() {
-		const ret = this._changed
-		this._changed = false;
-		return ret;
 	}
 }

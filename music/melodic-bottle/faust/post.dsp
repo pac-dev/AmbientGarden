@@ -1,6 +1,8 @@
+// Post-processor in Faust: add some delay, reverb and compression
+
 import("stdfaust.lib");
-preamp = vslider("preamp", 1, 0, 1, 0.0001);
-bounce = vslider("bounce", 0, 0, 1, 0.0001);
+preamp = hslider("preamp", 1, 0, 1, 0.0001);
+bounce = hslider("bounce", 0, 0, 1, 0.0001);
 
 no_bounce = 1 - 0.8*bounce;
 del_st = (+ : @(1.1 : ba.sec2samp) * 0.4*bounce) ~ _, (+ : @(1.8 : ba.sec2samp) * 0.4*bounce) ~ _;
