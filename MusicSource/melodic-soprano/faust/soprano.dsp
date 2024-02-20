@@ -48,7 +48,7 @@ syn = exc : forms;
 
 // Per-voice post-processing with compression
 timbre = fi.highpass(1, 3000) : fi.high_shelf(8, 1500+1000*highness) : fi.notchw(150, 720);
-limiter = *(10) : co.limiter_1176_R4_mono;
+limiter = *(10) : co.limiter_1176_R4_mono : *(0.5);
 post = timbre : limiter;
 
 process = syn : post;

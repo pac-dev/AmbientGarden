@@ -24,7 +24,7 @@ const fParam1 = graph.addParam('freq1', { def: '100*8' });
 const fParam2 = graph.addParam('freq2', { def: '100*9' });
 // Params to control the generative melody
 const fMin = graph.addParam('minFreq', { def: 350, min: 50, max: 3000 });
-const fMax = graph.addParam('maxFreq', { def: 1000, min: 50, max: 3000 });
+const fMax = graph.addParam('maxFreq', { def: 860, min: 50, max: 3000 });
 const complexity = graph.addParam('complexity', { def: 1, max: 3 });
 const skip = graph.addParam('skip', { max: 12 });
 const slowness = graph.addParam('slowness');
