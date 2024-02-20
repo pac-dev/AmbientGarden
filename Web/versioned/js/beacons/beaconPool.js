@@ -143,7 +143,7 @@ export const initPatchPool = loader =>
 					if (patch?.status !== 'playing') continue;
 					if (patch.isDone()) continue;
 				}
-				if (record.floor !== camFloor) continue;
+				if (record.floor !== camFloor && patch?.status !== 'playing') continue;
 				yield { x, z, record };
 			}
 		},
