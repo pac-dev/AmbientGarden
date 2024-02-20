@@ -74,9 +74,9 @@ const arpDel = (t) => {
 	return (d*d*d+1.5)*0.055876;
 };
 const swell = (t) => {
-    let s = t+200/(t+7);
-    s = 0.5+Math.cos(s*Math.PI*2/200)*0.5;
-    return 1-s*s*s;
+	let s = t+200/(t+7);
+	s = 0.5+Math.cos(s*Math.PI*2/200)*0.5;
+	return 1-s*s*s;
 };
 
 // Generate a set of pitches for the strumming

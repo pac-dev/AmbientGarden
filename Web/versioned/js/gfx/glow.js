@@ -98,8 +98,8 @@ const defaultCurve = t => {
 };
 
 const slowCurve = t => {
-    t *= 2;
-    return 0.4-0.4/(t*t*0.4+1);
+	t *= 2;
+	return 0.4-0.4/(t*t*0.4+1);
 };
 
 events.on('timestep', () => {

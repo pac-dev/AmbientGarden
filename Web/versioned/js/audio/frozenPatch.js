@@ -71,8 +71,8 @@ class WebAudioElement {
 	}
 	async load() {
 		const response = await fetch(this.url);
-        const arrayBuffer = await response.arrayBuffer();
-        this.audioBuffer = await context.decodeAudioData(arrayBuffer);
+		const arrayBuffer = await response.arrayBuffer();
+		this.audioBuffer = await context.decodeAudioData(arrayBuffer);
 		this.duration = this.audioBuffer.duration;
 		this._resolveLoaded();
 	}
