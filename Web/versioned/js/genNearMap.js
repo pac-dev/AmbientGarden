@@ -55,7 +55,7 @@ export const mapPos2roadDist = (x, y) => {
 	return Math.min(1, Math.abs(dif) * 0.03);
 };
 
-export const genNearMap = async show => {
+export const genNearMap = async () => {
 	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 	svg.setAttribute('width', mapsz);
 	svg.setAttribute('height', mapsz);
@@ -180,7 +180,6 @@ export const genNearMap = async show => {
 	canvas.width = mapsz;
 	canvas.height = mapsz;
 	const ctx = canvas.getContext('2d');
-	if (show) document.body.append(canvas);
 	const img = new Image();
 	img.src = url;
 	await img.decode();
@@ -189,11 +188,5 @@ export const genNearMap = async show => {
 	addHills(cnvData.data);
 	ctx.putImageData(cnvData, 0, 0);
 	URL.revokeObjectURL(url);
-	var canvasURI = canvas.toDataURL();
-	if (show)
-		document.body.insertAdjacentHTML(
-			'afterend',
-			`<a download="neargen.png" href="${canvasURI}">download</a>`
-		);
 	return canvas;
 };

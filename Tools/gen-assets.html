@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>lazy asset generator</title>
+		<style>
+			body { margin: 0; }
+			@font-face {
+				font-family: 'Courier Prime Regular';
+				src: url('CourierPrime-Subset.ttf');
+			}
+			/* Using a webfont from a canvas requires some hacks... */
+			div, canvas, a {
+				display: block;
+				font-family: 'Courier Prime Regular';
+			}
+			a { margin-bottom: 30px; }
+		</style>
+	</head>
+	<body>
+		<!-- The webfont has to be used somewhere else in the page -->
+		<div>.</div>
+		<canvas></canvas>
+		<script type="module">
+			import { initBrowserCanvas, drawCover } from './sharecard.js';
+			import { genNearMap } from '../Web/versioned/js/genNearMap.js';
+			import { genFarMap } from '../Web/versioned/js/genFarMap.js';
+
+			const addLinkedCanvas = async (canvas, url) => {
+				let blob = await new Promise(resolve => canvas.toBlob(resolve));
+				let durl = URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.innerText = 'save to: '+url;
+				link.href = durl;
+				link.download = url.slice(url.lastIndexOf('/')+1);
+				document.body.append(canvas);
+				document.body.appendChild(link);
+			};
+			await document.fonts.ready;
+			const ctx1 = initBrowserCanvas();
+			drawCover(ctx1);
+			await addLinkedCanvas(ctx1.canvas, 'Web/versioned/img/sharecard-main.png');
+			await addLinkedCanvas(await genNearMap(), 'Web/versioned/img/nearmap.png');
+			await addLinkedCanvas(await genFarMap(), 'Web/versioned/img/farmap.png');
+		</script>
+	</body>
+</html>
