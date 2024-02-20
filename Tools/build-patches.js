@@ -14,6 +14,6 @@ const scaredCopy = async (src, dst, yes) => {
 };
 
 const baseDir = path.join(path.fromFileUrl(import.meta.url), '..', '..');
-const inDir = path.join(baseDir, 'music');
-await scaredCopy(inDir, path.join(baseDir, 'web', 'versioned', 'generated', 'source'));
-await build({ inDir, outDir: path.join(baseDir, 'web', 'versioned', 'generated', 'worklets') });
+const inDir = path.join(baseDir, 'MusicSource');
+await scaredCopy(inDir, path.join(baseDir, 'Web', 'versioned', 'generated', 'source'));
+await build({ inDir, outDir: path.join(baseDir, 'Web', 'versioned', 'generated', 'worklets') });

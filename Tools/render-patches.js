@@ -1,10 +1,10 @@
 import { exists, parse, path } from './deps.js';
 import { MultiRenderer } from '../../Teasynth/teasynth.js';
-import { beaconRecords } from '../web/versioned/js/beacons/beaconRecords.js';
+import { beaconRecords } from '../Web/versioned/js/beacons/beaconRecords.js';
 
 const baseDir = path.join(path.fromFileUrl(import.meta.url), '..', '..');
 const patchesDir = path.join(baseDir, 'music');
-const webDir = path.join(baseDir, 'web');
+const webDir = path.join(baseDir, 'Web');
 
 const args = parse(Deno.args);
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -12,7 +12,7 @@ const xf = x => -1 * Math.pow(-0.5 * Math.cos((clamp01(x) + 1)*Math.PI) + 0.5, 1
 const errorDetail = `
 Patches should call "graph.setSplicePoint" when reaching desired splice-points.`;
 
-/** @param {import('../web/versioned/js/beacons/beaconRecords.js').BeaconRecord} beacon */
+/** @param {import('../Web/versioned/js/beacons/beaconRecords.js').BeaconRecord} beacon */
 const renderBeacon = async beacon => {
 	const introPath = path.join(webDir, beacon.introUrl);
 	const loopPath = path.join(webDir, beacon.loopUrl);
