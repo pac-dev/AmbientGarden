@@ -1,5 +1,8 @@
 
-body { margin: 0; }
+body {
+	margin: 0;
+	background-color: #222;
+}
 #modal_back {
 	display: none;
 	position: absolute;
@@ -138,6 +141,7 @@ body { margin: 0; }
 	cursor: default;
 }
 #speedin {
+	width: 110px;
 	opacity: 0.7;
 	filter: grayscale(1);
 }
@@ -147,26 +151,21 @@ body { margin: 0; }
 	right: 9px;
 	color: #777;
 }
-button#question {
+button#about {
 	position: absolute;
 	bottom: 0;
+	top: 0;
 	right: 0;
-	height: 50px;
+	max-width: 30%;
+	margin: 0;
+	padding: 0 min(5%, 20px);
 	display: flex;
 	align-items: center;
 	color: #aaa;
-	padding: 11px;
 	background: none;
 	border: none;
 	cursor: pointer;
 	font: inherit;
-}
-#question::before {
-	content: 'About';
-	margin: 0 9px;
-}
-#question img {
-	height: 100%;
 }
 .switch {
 	position: relative;
@@ -254,14 +253,15 @@ input:checked + .slider:before {
 	}
 	#ctrls {
 		height: 58px;
+		width: 90%;
+	}
+	button#about {
+		right: calc(0px - 10%);
 	}
 	#speedout {
 		width: 500px;
 	}
 	#speedout::before {
-		content: '';
-	}
-	#question::before {
 		content: '';
 	}
 }

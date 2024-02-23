@@ -84,7 +84,7 @@ export const initUI = () => {
 	document.body.addEventListener('pointerdown', () => {
 		if (detailEle) detailEle.remove();
 	});
-	document.getElementById('question').onclick = () => {
+	document.getElementById('about').onclick = () => {
 		if (uiStack.at(-1) === 'about') popUi();
 		else pushUi('about');
 	};
