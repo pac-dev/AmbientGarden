@@ -3,7 +3,7 @@ import { MultiRenderer } from '../../Teasynth/teasynth.js';
 import { beaconRecords } from '../Web/versioned/js/beacons/beaconRecords.js';
 
 const baseDir = path.join(path.fromFileUrl(import.meta.url), '..', '..');
-const patchesDir = path.join(baseDir, 'music');
+const patchesDir = path.join(baseDir, 'MusicSource');
 const webDir = path.join(baseDir, 'Web');
 
 const args = parse(Deno.args);

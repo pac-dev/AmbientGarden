@@ -10,8 +10,8 @@ const prose = `┏━━━━━━━━━━━━━━━━  pac@baraka -
 ┃   Encoding tracks to "./Generated/final"...               ┃
 ┃   Adding metadata: {                                      ┃
 ┃       "artist": "Pure Code",                              ┃
-┃       "album": "A Walk though the Ambient Garden",        ┃
-┃       "date": "20240101"                                  ┃
+┃       "album": "A Walk Though the Ambient Garden",        ┃
+┃       "date": "20240301"                                  ┃
 ┃   }                                                       ┃
 ┃   Done building album.                                    ┃
 ┃   pac@baraka:~$ ▌                                         ┃
