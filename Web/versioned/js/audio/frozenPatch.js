@@ -14,27 +14,24 @@ compressor.connect(context.destination);
 
 /**
  * In most browsers, HTMLAudioElement is the resource-efficient way of playing
- * stuff. However, Apple Webkit (so, all of iOS) does not allow delayed starts
+ * sound. However, Apple Webkit (so, all of iOS) does not allow delayed starts
  * on Audio elements, and forces us to use the Web Audio API instead, and hold
- * the full decoded audio in memory. I'd rather not force this resource hogging
- * onto everyone, so let's check capability.
+ * the full decoded audio in memory. I only realized this later, so now I have
+ * both implementations. Might as well use the more efficient one on non-Webkit
+ * browsers.
+ * 
+ * I would check capability for this, but it's impossible to do so before user
+ * interaction, and preloading should start right away using whichever API is
+ * available. Webkit false positives are OK here.
  */
-let canPlayAudioElements;
-// Do not call this from an event handler context
-const checkAudioCapability = async () => {
-	const testAudio = new Audio();
-	// silent mp3:
-	testAudio.src = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
-	try {
-		await testAudio.play();
-		canPlayAudioElements = true;
-		console.log("Browser can play HTMLAudioElement asynchronously!");
-	} catch {
-		canPlayAudioElements = false;
-		setInterval(() => events.trigger('interval'), 200);
-		console.log("Browser can't play HTMLAudioElement asynchronously. Falling back to Web Audio.");
-	}
-};
+const ua = navigator.userAgent;
+const canPlayAudioElements = !ua.includes('AppleWebKit') || ua.includes('Chrome');
+if (canPlayAudioElements) {
+	console.log("Assuming HTMLAudioElement can play asynchronously.");
+} else {
+	setInterval(() => events.trigger('interval'), 200);
+	console.log("Assuming HTMLAudioElement can't play asynchronously. Falling back to Web Audio.");
+}
 
 /**
  * Using the Web Audio API, roughly simulate HTMLAudioElement with some
@@ -151,16 +148,21 @@ const addAudio = url => {
 };
 
 class FrozenPatch extends Patch {
-	constructor(proximity) {
-		super(proximity);
+	constructor() {
+		super();
 		/** @type {HTMLAudioElement} */
 		this.introAu;
 		/** @type {HTMLAudioElement} */
 		this.loop1Au;
 		/** @type {HTMLAudioElement} */
 		this.loop2Au;
+		const self = this;
+		this.loaded = new Promise((resolve) => {
+			self.loadedResolve = resolve;
+		});
 	}
-	start() {
+	start(proximity) {
+		this.prePlay(proximity);
 		this.setAmp(this.lastAmp);
 		const loop1Au = this.loop1Au;
 		const introAu = this.introAu;
@@ -197,11 +199,9 @@ class FrozenPatch extends Patch {
 
 export class FrozenPatchLoader extends PatchLoader {
 	/** @param {import('../beacons/beaconPool.js').PatchResource} resource */
-	async startPatch(resource, proximity) {
-		if (canPlayAudioElements === undefined) {
-			await checkAudioCapability();
-		}
-		const patch = new FrozenPatch(proximity);
+	async preloadPatch(resource) {
+		console.log(`preloading patch ${resource.record.desc}`);
+		const patch = new FrozenPatch();
 		resource.patch = patch;
 		getMeta(resource.record).patch = patch;
 		patch.introAu = addAudio(resource.record.introUrl);
@@ -210,11 +210,17 @@ export class FrozenPatchLoader extends PatchLoader {
 		try {
 			await Promise.all([patch.introAu.loaded, patch.loop1Au.loaded, patch.loop2Au.loaded]);
 		} catch (error) {
-			console.log(`error loading ${resource.patchName}`);
+			console.log(`error loading ${resource.record.desc}`);
 			return;
 		}
-		if (patch.status === 'canceling') return console.log(`canceled ${resource.patchName}`);
-		patch.start();
-		console.log(`playing patch ${resource.patchName}`);
+		patch.loadedResolve();
+	}
+	/** @param {import('../beacons/beaconPool.js').PatchResource} resource */
+	async playPatch(resource, proximity) {
+		const patch = resource.patch;
+		patch.status = 'loading';
+		await patch.loaded;
+		patch.start(proximity);
+		console.log(`playing patch ${resource.record.desc}`);
 	}
 }

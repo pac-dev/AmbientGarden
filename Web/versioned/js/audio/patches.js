@@ -2,16 +2,20 @@ import { getMeta } from '../beacons/beaconPool.js';
 import { clock } from '../world.js';
 
 export class Patch {
-	constructor(proximity) {
+	constructor() {
+		/** @type {'preloading' | 'loading' | 'playing'} */
+		this.status = 'preloading';
+	}
+	prePlay(proximity) {
 		this.lastAmp = proximity * 0.3 + 0.7;
 		this.lastAmpTime = clock.worldTime;
 		this.lastLivingTime = clock.worldTime;
-		this.status = 'loading';
 	}
 	setAmp(val) {
 		throw new Error('Override Patch.setAmp!');
 	}
 	setProximity(val) {
+		if (this.status !== 'playing') return;
 		// 0.25 -> 12s
 		// 0.15 -> 20s
 		this.lastAmp = this.lastAmp / Math.exp((clock.worldTime - this.lastAmpTime) * 0.15);
@@ -30,8 +34,12 @@ export class Patch {
 
 export class PatchLoader {
 	/** @param {import('../beacons/beaconPool.js').PatchResource} resource */
-	async startPatch(resource, proximity) {
-		throw new Error('Override PatchLoader.startPatch!');
+	async preloadPatch(resource) {
+		throw new Error('Override PatchLoader.preloadPatch!');
+	}
+	/** @param {import('../beacons/beaconPool.js').PatchResource} resource */
+	async playPatch(resource, proximity) {
+		throw new Error('Override PatchLoader.playPatch!');
 	}
 	/** @param {import('../beacons/beaconPool.js').PatchResource} resource */
 	stopPatch(resource) {

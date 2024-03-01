@@ -27,24 +27,15 @@ export const getMeta = record => {
 
 export const beaconGroup = new THREE.Group();
 const beaconMinSquare = beaconLoadDist * beaconLoadDist;
+const patchLoadDist = 350;
+const patchLoadSquare = patchLoadDist * patchLoadDist;
 let wakeMul = 0.7;
 let patchWake = 250 * wakeMul;
 export const patchHush = 330;
-let wakeIntroTime = 0;
-
-export const beginWakeIntro = () => {
-	wakeIntroTime = clock.worldTime;
-};
-
-const updateWake = () => {
-	if (!wakeIntroTime) return;
-	wakeMul = 0.7 + (clock.worldTime - wakeIntroTime) * 0.2;
-	if (wakeMul > 1) {
-		wakeMul = 1;
-		wakeIntroTime = 0;
-	}
-	patchWake = 250 * wakeMul;
-};
+export const beginWakeIntro = () => window.setInterval(() => {
+	if (!anyLoading()) wakeMul += 0.04;
+	patchWake = 250 * Math.min(1, wakeMul);
+}, 200);
 
 /**
  * @typedef {Object} _BeaconResource
@@ -103,18 +94,12 @@ export const initBeaconPool = () =>
 		},
 	});
 
-const patchId = (() => {
-	let count = 100; // fail fast if array index is used instead of id
-	return () => 'patch_' + ++count;
-})();
-
 let lastProxSetTime = 0;
 
 /**
  * @typedef {Object} _PatchResource
  * @property {import('./beaconRecords.js').BeaconRecord} record
  * @property {string} [patchName]
- * @property {string} [patchId]
  * @property {Object} [patchParams]
  * @property {import('../audio/patches.js').Patch} [patch]
  *
@@ -128,34 +113,37 @@ const proximity = (resource, camX, camZ) => {
 	return Math.max(0, (myHush - d) / myHush);
 };
 
+const inUa = (term) => navigator.userAgent.includes(term);
+const canPreload = inUa('Chrome') || !(inUa('Mobile') && inUa('Safari'));
+if (canPreload) console.log('Assuming audio can be preloaded before user action.');
+else console.log("Assuming audio can't be preloaded before user action.");
+
 /** @param {import('../audio/patches.js').PatchLoader} loader */
 export const initPatchPool = loader =>
 	addResourcePool({
 		name: 'patches',
 		generate: function* (camX, camZ) {
-			if (!runMode.enabled) return;
+			if (!canPreload && !runMode.enabled) return;
 			for (let record of beaconRecords) {
 				if (!('x' in record)) continue;
 				const [x, z, patch] = [record.x, record.z, getMeta(record).patch];
 				const dSquare = sq(camX - x) + sq(camZ - z);
-				const wake = patchWake*record.reach;
-				if (dSquare > wake*wake) {
-					if (patch?.status !== 'playing') continue;
-					if (patch.isDone()) continue;
+				if (dSquare > patchLoadSquare) {
+					// not sure the isDone does anything here
+					if (!patch || patch.isDone()) continue;
 				}
-				if (record.floor !== camFloor && patch?.status !== 'playing') continue;
+				// remove near but wrong-floor non-playing patches
+				if (!patch && record.floor !== camFloor) {
+					continue;
+				}
+				// keep patches that should be preloading or playing
 				yield { x, z, record };
 			}
 		},
 		/** @param {PatchResource} res */
-		add(res, camX, camZ) {
+		add(res) {
 			Object.assign(res, res.record);
-			res.patchId = patchId();
-			(async () => {
-				await loader.startPatch(res, proximity(res, camX, camZ));
-				if (res.patch.status !== 'playing') return;
-				startGlow(res.record);
-			})();
+			loader.preloadPatch(res);
 		},
 		/** @param {PatchResource} res */
 		remove(res) {
@@ -164,11 +152,25 @@ export const initPatchPool = loader =>
 		},
 		/** @param {import('../resourcePool.js').ResourcePool & {loaded: Array.<PatchResource>}} pool */
 		afterUpdate(pool, camX, camZ) {
-			updateWake();
+			if (!runMode.enabled) return;
 			if (clock.worldTime - lastProxSetTime > 0.1) {
 				for (let resource of pool.loaded) {
-					if (resource.patch?.status !== 'playing') continue;
-					resource.patch.setProximity(proximity(resource, camX, camZ));
+					// preloadPatch does not immediately create the patch
+					if (!resource.patch) continue;
+					const record = resource.record;
+					const [x, z, patch] = [record.x, record.z, resource.patch];
+					const prox = proximity(resource, camX, camZ);
+					patch.setProximity(prox);
+					if (patch.status !== 'preloading') continue;
+					const dSquare = sq(camX - x) + sq(camZ - z);
+					const wake = patchWake*record.reach;
+					if (record.floor !== camFloor || dSquare > wake*wake) continue;
+					(async () => {
+						// immediately sets the status to 'loading' so we don't race
+						await loader.playPatch(resource, prox);
+						if (patch.status !== 'playing') return;
+						startGlow(record);
+					})();
 				}
 				lastProxSetTime = clock.worldTime;
 			}

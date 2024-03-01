@@ -10,9 +10,8 @@ const defaultParamSpec = {
 };
 
 class TeasynthPatch extends Patch {
-	constructor({ url, processorName, callbacks, initParams = {} }) {
-		super(initParams.amp);
-		this.initParams = initParams;
+	constructor({ url, processorName, callbacks }) {
+		super();
 		/** @type {string} */
 		this.url = url;
 		this.processorName = processorName;
@@ -23,7 +22,9 @@ class TeasynthPatch extends Patch {
 		events.on('pause', this.pauseListener);
 		events.on('resume', this.resumeListener);
 	}
-	async init() {
+	async init(initParams) {
+		this.prePlay(initParams.amp);
+		this.initParams = initParams;
 		await this.audioContext.audioWorklet.addModule(this.url);
 		const node = new AudioWorkletNode(this.audioContext, this.processorName, {
 			numberOfInputs: 0,
@@ -61,7 +62,6 @@ class TeasynthPatch extends Patch {
 			};
 			node.port.addEventListener('message', readyListener);
 			node.port.start();
-			if (this.url.includes('vibrem')) console.log('sending init main', this.initParams);
 			node.port.postMessage({ type: 'init main', initParams: this.initParams });
 		});
 		this.node.connect(this.audioContext.destination);
@@ -105,7 +105,9 @@ const cachedFetch = async (url, format) => {
 
 export class LivePatchLoader extends PatchLoader {
 	/** @param {import('../beacons/beaconPool.js').PatchResource} resource */
-	async startPatch(resource, proximity) {
+	async preloadPatch(resource) {
+		// Hack: playPatch doesn't check if this function is done
+		// So it has to be sync actually
 		const workletRoot = `${window.agVersionedPath}generated/worklets/${resource.patchName}/`;
 		const processorName = `worklet_${resource.patchName}`;
 		const sourceRoot = `${window.agVersionedPath}generated/source/${resource.patchName}/`;
@@ -120,19 +122,23 @@ export class LivePatchLoader extends PatchLoader {
 				return [ui8Code, dspMeta];
 			},
 		};
-		const initParams = Object.assign({ amp: proximity }, resource.patchParams);
 		const patch = new TeasynthPatch({
 			url: `${workletRoot}${processorName}.js`,
 			processorName,
 			callbacks,
-			initParams,
 		});
 		resource.patch = patch;
 		getMeta(resource.record).patch = patch;
-		await patch.init();
+	}
+	/** @param {import('../beacons/beaconPool.js').PatchResource} resource */
+	async playPatch(resource, proximity) {
+		const patch = resource.patch;
+		patch.status = 'loading';
+		const initParams = Object.assign({ amp: proximity }, resource.patchParams);
+		await patch.init(initParams);
 		if (patch.playResult.type !== 'main ready') {
 			throw new Error('Error adding node: ' + processorName);
 		}
-		console.log(`playing patch ${resource.patchName}`);
+		console.log(`playing patch ${resource.record.desc}`);
 	}
 }
