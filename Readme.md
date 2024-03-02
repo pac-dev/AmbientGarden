@@ -1,4 +1,4 @@
-# ambient.garden: an Algorithmic Audio Landscape
+# ambient.garden: An Algorithmic Audio Landscape
 
 [ambient.garden](https://ambient.garden/) is a musical landscape in a website. All the music in ambient.garden is generated from code. The music is then laid out in a landscape which can be explored, either interactively, or automatically when the autopilot is left on.
 

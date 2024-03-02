@@ -2,14 +2,14 @@ export const aboutContent = `
 <div class=album_box>
     <span>get the music</span>
 	<b>Pure Code - A Walk Through the Ambient Garden</b>
-	<a href="https://open.spotify.com/album/6RPvBkBjCymWOk7BeONDv4">Spotify</a>
-	<a href="https://music.apple.com/us/album/a-walk-through-the-ambient-garden/1732863542">Apple Music</a>
-	<a href="https://github.com/pac-dev/AmbientGardenAlbum">source code on Github</a>
+	<a href="https://open.spotify.com/album/6RPvBkBjCymWOk7BeONDv4" target="_blank">Spotify</a>
+	<a href="https://music.apple.com/us/album/a-walk-through-the-ambient-garden/1732863542" target="_blank">Apple Music</a>
+	<a href="https://github.com/pac-dev/AmbientGardenAlbum" target="_blank">source code on Github</a>
 </div>
 `+`
 # About ambient.garden
 
-ambient.garden is an experiment that started with the question: can a composition be organized in space rather than time? Can it be experienced in space by the listener? To explore this concept, all the sounds and graphics were entirely generated from <a href="https://github.com/pac-dev/AmbientGarden">open source code</a>. The sounds of ambient.garden were assembled and grown into a music album, <i>A Walk Through the Ambient Garden</i>, which is <a href="https://github.com/pac-dev/AmbientGardenAlbum">also open source</a>.
+ambient.garden is an experiment that started with the question: can a composition be organized in space rather than time? Can it be experienced in space by the listener? To explore this concept, all the sounds and graphics were entirely generated from <a href="https://github.com/pac-dev/AmbientGarden">open source code</a>. The sounds of ambient.garden were assembled and grown into a music album, <i>A Walk Through the Ambient Garden</i>, <a href="https://github.com/pac-dev/AmbientGardenAlbum">also open source</a>.
 
 ## Generative Aspects
 
