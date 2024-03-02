@@ -50,6 +50,30 @@ body {
 	font: inherit;
 }
 #modal_ok:hover { background-color: #3a3a3a; }
+.album_box {
+	border: 4px solid #946857;
+	margin: 10px 0 30px;
+	padding: 20px 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	position: relative;
+}
+.album_box > span {
+	position: absolute;
+	padding: 2px 4px;
+	top: -13px;
+	left: 50%;
+	background-color: #2b2728;
+	transform: translateX(-50%);
+}
+.album_box > b {
+	width: calc(100% - 40px);
+	text-align: center;
+}
+.album_box > a,b {
+	margin: 10px 16px;
+}
 #welcome {
 	margin: auto;
 	width: fit-content;
