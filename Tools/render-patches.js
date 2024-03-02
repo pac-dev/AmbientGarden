@@ -1,5 +1,4 @@
-import { exists, parse, path } from './deps.js';
-import { MultiRenderer } from '../../Teasynth/teasynth.js';
+import { exists, parse, path, MultiRenderer } from './deps.js';
 import { beaconRecords } from '../Web/versioned/js/beacons/beaconRecords.js';
 
 const baseDir = path.join(path.fromFileUrl(import.meta.url), '..', '..');

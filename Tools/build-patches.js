@@ -1,5 +1,4 @@
-import { path, copy } from './deps.js';
-import { build } from '../../Teasynth/teasynth.js';
+import { path, copy, build } from './deps.js';
 
 const scaredCopy = async (src, dst, yes) => {
 	if (yes) {
