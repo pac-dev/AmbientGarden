@@ -2,7 +2,7 @@
 
 [ambient.garden](https://ambient.garden/) is a musical landscape in a website. All the music in ambient.garden is generated from code. The music is then laid out in a landscape which can be explored, either interactively, or automatically when the autopilot is left on.
 
-The music of ambient.garden also exists as an album, which is open source and fully generated from code. You can listen to it on streaming platforms ([Spotify](https://open.spotify.com/album/6RPvBkBjCymWOk7BeONDv4), [Apple Music](https://music.apple.com/us/album/a-walk-through-the-ambient-garden/1732863542)) or [build it from source](https://github.com/pac-dev/AmbientGardenAlbum).
+The music of ambient.garden also exists as [an album](https://github.com/pac-dev/AmbientGardenAlbum), which is open source and fully generated from code.
 
 ## Structure
 
