@@ -5,7 +5,9 @@
  * | 'resize'
  * | 'timestep'
  * | 'doneWelcome'
- * | 'interval' } EventType
+ * | 'interval'
+ * | 'radiusChanged'
+ * | 'volumeChanged' } EventType
  */
 
 

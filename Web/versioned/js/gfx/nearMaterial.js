@@ -6,6 +6,7 @@
  * integrates with THREE.js shadows, assuming a single directional light.
  */
 
+import { events } from '../events.js';
 import * as THREE from '../lib/three.module.js';
 import { mapcnv, terrainGlsl } from '../world.js';
 
@@ -40,6 +41,7 @@ uniform mat4 directionalShadowMatrix[ NUM_DIR_LIGHT_SHADOWS ];
 
 uniform sampler2D maptex;
 uniform float mapsz;
+uniform float radsetting;
 varying vec3 vPos;
 varying float vCamDist;
 
@@ -144,7 +146,7 @@ void main() {
 	col.xyz += ter.xyz * (1.-col.a);
 	gl_FragColor.rgb = col.xyz;
 
-	float br = rangeBrightness(length(vPos.xz - cameraPosition.xz)/250.);
+	float br = rangeBrightness(length(vPos.xz - cameraPosition.xz)/radsetting);
 	gl_FragColor.rgb *= 1.+br*0.2;
 
 	// let's assume the near material is always in the shadow frustum:
@@ -168,6 +170,7 @@ export const mkNearMaterial = () => {
 			{
 				maptex: { type: 't', value: maptex },
 				mapsz: { type: 'f', value: mapcnv.width },
+				radsetting: { type: 'f', value: 250 },
 			},
 			THREE.UniformsLib.lights,
 			THREE.UniformsLib.fog,
@@ -177,6 +180,9 @@ export const mkNearMaterial = () => {
 		lights: true,
 		// transparent: for near-terrain to fade onto far-terrain
 		transparent: true,
+	});
+	events.on('radiusChanged', (rad) => {
+		ret.uniforms.radsetting.value = rad;
 	});
 	return ret;
 };

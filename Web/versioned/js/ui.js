@@ -18,8 +18,27 @@ const autoBox = document.getElementById('autopilot');
 /** @type {HTMLInputElement} */
 const speedIn = document.getElementById('speedin');
 
+let lastRadiusSetting = 250, lastVolumeSetting = 1;
+const getSettingsContent = () => `
+<h1 class=center>Settings</h1>
+<p class=center>
+<label id=volumeout>
+	<span>Global Volume:</span>
+	<input id=volume type=range min=0 max=1 value=${lastVolumeSetting} step=any>
+</label>
+</p>
+<p class=center>
+<label id=radiusout>
+	<span>Listening Radius:</span>
+	<input id=radius type=range min=50 max=800 value=${lastRadiusSetting} step=any list=radiusmark>
+	<datalist id=radiusmark><option value="250"></option></datalist>
+</label>
+</p>
+`;
+
 let welcomeContent;
 const uiStack = ['welcome'];
+const exclusive = ['about', 'settings'];
 
 const refreshUi = () => {
 	if (!uiStack.length) {
@@ -28,7 +47,7 @@ const refreshUi = () => {
 		runMode.enable();
 		toggleAutopilot(autoBox.checked, true);
 	}
-	switch(uiStack.at(-1)) {
+	switch(uiStack[uiStack.length-1]) {
 		case 'welcome':
 			content.innerHTML = welcomeContent;
 			modal.style.display = 'block';
@@ -42,18 +61,36 @@ const refreshUi = () => {
 			window.document.addEventListener('keydown', modalKeyListener);
 			ok.innerText = 'Close';
 			break;
+		case 'settings':
+			content.innerHTML = getSettingsContent();
+			modal.style.display = 'block';
+			modalBack.style.display = 'block';
+			window.document.addEventListener('keydown', modalKeyListener);
+			ok.innerText = 'Close';
+			/** @type {HTMLInputElement} */
+			const volIn = document.getElementById('volume');
+			/** @type {HTMLInputElement} */
+			const radIn = document.getElementById('radius');
+			volIn.oninput = () => {
+				lastVolumeSetting = parseFloat(volIn.value);
+				events.trigger('volumeChanged', lastVolumeSetting);
+			};
+			radIn.oninput = () => {
+				lastRadiusSetting = parseFloat(radIn.value);
+				events.trigger('radiusChanged', lastRadiusSetting)
+			};
+			break;
 		case 'world':
 			pauseButton.disabled = false;
 			break;
 	}
-
 };
 
 export const popUi = () => {
-	if (uiStack.at(-1) === 'world') return;
+	if (uiStack[uiStack.length-1] === 'world') return;
 	const lastState = uiStack.pop();
-	if (lastState === 'about') modalBack.style.display = 'none';
-	if (lastState === 'welcome' || lastState === 'about') {
+	if (lastState === 'about' || lastState === 'settings') modalBack.style.display = 'none';
+	if (lastState === 'welcome' || lastState === 'about' || lastState === 'settings') {
 		modal.style.display = 'none';
 		window.document.removeEventListener('keydown', modalKeyListener);
 	}
@@ -61,6 +98,9 @@ export const popUi = () => {
 };
 
 const pushUi = (state) => {
+	if (exclusive.includes(state) && exclusive.includes(uiStack[uiStack.length-1])) {
+		uiStack.pop();
+	}
 	uiStack.push(state);
 	refreshUi();
 };
@@ -75,7 +115,7 @@ export const initUI = () => {
 	ok.disabled = false;
 	autoBox.disabled = false;
 	autoBox.onchange = () => toggleAutopilot(autoBox.checked);
-	speedIn.oninput = (v) => runMode.speed = Number(speedIn.value);
+	speedIn.oninput = (v) => runMode.speed = parseFloat(speedIn.value);
 	events.on('pause', () => { pauseButton.innerText = 'Resume'; });
 	events.on('resume', () => { pauseButton.innerText = 'Pause'; });
 	pauseButton.addEventListener('click', () => {
@@ -84,9 +124,13 @@ export const initUI = () => {
 	document.body.addEventListener('pointerdown', () => {
 		if (detailEle) detailEle.remove();
 	});
-	document.getElementById('about').onclick = () => {
-		if (uiStack.at(-1) === 'about') popUi();
+	if (document.getElementById('about')) document.getElementById('about').onclick = () => {
+		if (uiStack[uiStack.length-1] === 'about') popUi();
 		else pushUi('about');
+	};
+	if (document.getElementById('settings')) document.getElementById('settings').onclick = () => {
+		if (uiStack[uiStack.length-1] === 'settings') popUi();
+		else pushUi('settings');
 	};
 	modalBack.onclick = popUi;
 	refreshUi();

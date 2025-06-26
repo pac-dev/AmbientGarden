@@ -10,7 +10,10 @@ events.on('doneWelcome', () => context.resume());
 events.on('pause', () => context.suspend());
 events.on('resume', () => context.resume());
 const compressor = context.createDynamicsCompressor();
-compressor.connect(context.destination);
+const globalGain = context.createGain();
+compressor.connect(globalGain).connect(context.destination);
+
+events.on('volumeChanged', (vol) => globalGain.gain.setValueAtTime(vol, 0));
 
 /**
  * In most browsers, HTMLAudioElement is the resource-efficient way of playing

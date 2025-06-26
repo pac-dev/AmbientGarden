@@ -5,6 +5,7 @@ import { addGlow, startGlow, stopGlow } from '../gfx/glow.js';
 import { camFloor, runMode } from '../runMode.js';
 import { beaconRecords } from './beaconRecords.js';
 import { generateForm } from './beaconForms.js';
+import { events } from '../events.js';
 
 /**
  * @typedef {Object} BeaconMeta
@@ -27,15 +28,23 @@ export const getMeta = record => {
 
 export const beaconGroup = new THREE.Group();
 const beaconMinSquare = beaconLoadDist * beaconLoadDist;
-const patchLoadDist = 350;
-const patchLoadSquare = patchLoadDist * patchLoadDist;
 let wakeMul = 0.7;
-let patchWake = 250 * wakeMul;
+let radSetting = 250;
+let patchWake = radSetting * wakeMul;
+let patchLoadDist = radSetting+100;
+let patchLoadSquare = patchLoadDist * patchLoadDist;
 export const patchHush = 330;
 export const beginWakeIntro = () => window.setInterval(() => {
 	if (!anyLoading()) wakeMul += 0.04;
-	patchWake = 250 * Math.min(1, wakeMul);
+	patchWake = radSetting * Math.min(1, wakeMul);
 }, 200);
+
+events.on('radiusChanged', (rad) => {
+	radSetting = rad;
+	patchWake = radSetting * Math.min(1, wakeMul);
+	patchLoadDist = radSetting+100;
+	patchLoadSquare = patchLoadDist * patchLoadDist;
+});
 
 /**
  * @typedef {Object} _BeaconResource

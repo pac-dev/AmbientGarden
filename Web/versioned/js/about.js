@@ -2,8 +2,8 @@ export const aboutContent = `
 <div class=album_box>
     <span>get the music</span>
 	<b>Pure Code - A Walk Through the Ambient Garden</b>
+	<a href="https://purecode.bandcamp.com/album/a-walk-through-the-ambient-garden" target="_blank">Bandcamp</a>
 	<a href="https://open.spotify.com/album/6RPvBkBjCymWOk7BeONDv4" target="_blank">Spotify</a>
-	<a href="https://music.apple.com/us/album/a-walk-through-the-ambient-garden/1732863542" target="_blank">Apple Music</a>
 	<a href="https://github.com/pac-dev/AmbientGardenAlbum" target="_blank">source code on Github</a>
 </div>
 `+`

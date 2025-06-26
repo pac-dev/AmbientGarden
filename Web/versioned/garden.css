@@ -7,7 +7,7 @@ body {
 	display: none;
 	position: absolute;
 	top: 0;
-	bottom: 0;
+	bottom: 38px;
 	left: 0;
 	right: 0;
 }
@@ -50,6 +50,11 @@ body {
 	font: inherit;
 }
 #modal_ok:hover { background-color: #3a3a3a; }
+.center { text-align: center; }
+.center label span {
+	display: inline-block;
+	width: 140px;
+}
 .album_box {
 	border: 4px solid #946857;
 	margin: 10px 0 30px;
@@ -164,7 +169,7 @@ body {
 	pointer-events: none;
 	cursor: default;
 }
-#speedin {
+input[type=range] {
 	width: 110px;
 	opacity: 0.7;
 	filter: grayscale(1);
@@ -190,6 +195,26 @@ button#about {
 	border: none;
 	cursor: pointer;
 	font: inherit;
+}
+button#settings {
+	position: absolute;
+	bottom: 0;
+	top: 0;
+	left: 0;
+	width: 40px;
+	color: #999;
+	padding: 11px;
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+#settings img {
+	width: 26px;
+	height: 26px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 .switch {
 	position: relative;
@@ -278,6 +303,9 @@ input:checked + .slider:before {
 	#ctrls {
 		height: 58px;
 		width: 90%;
+	}
+	#modal_back {
+		bottom: 58px;
 	}
 	button#about {
 		right: calc(0px - 10%);
