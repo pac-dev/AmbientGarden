@@ -179,17 +179,28 @@ const stepWorld = (gfx = true) => {
 	if (terrainReady) updateResources(camera.position.x, camera.position.z);
 };
 
+const fpsInterval = 1000 / 70;
+let fpsNow, fpsThen, fpsElapsed;
+
 const animate = () => {
 	requestAnimationFrame(animate);
-	stepWorld(true);
-	if (gpuPanel) gpuPanel.startQuery();
-	renderer.render(scene, camera);
-	// shadowMapHelper.render(renderer);
-	if (gpuPanel) gpuPanel.endQuery();
-	if (stats) stats.update();
+	fpsNow = Date.now();
+	fpsElapsed = fpsNow - fpsThen;
+
+	// if enough time has fpsElapsed, draw the next frame
+	if (fpsElapsed > fpsInterval) {
+		fpsThen = fpsNow - (fpsElapsed % fpsInterval);
+		stepWorld(true);
+		if (gpuPanel) gpuPanel.startQuery();
+		renderer.render(scene, camera);
+		// shadowMapHelper.render(renderer);
+		if (gpuPanel) gpuPanel.endQuery();
+		if (stats) stats.update();
+	}
 };
 
 export const startMainLoop = () => {
+	fpsThen = Date.now();
 	setInterval(stepWorld, 125, false);
 	animate();
 };
