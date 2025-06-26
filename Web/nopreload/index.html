@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>ambient.garden</title>
+		<meta name="viewport" content="width=300, initial-scale=1">
+		<meta property="og:image" content="https://ambient.garden/versioned/img/sharecard-main.png">
+		<meta property="og:title" content="ambient.garden">
+		<meta property="og:description" content="An Algorithmic Audio Landscape">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<link rel="stylesheet" href="../versioned/garden.css">
+		<link rel="icon" href="../favicon.ico" type="image/x-icon">
+		<script>
+            window.agVersionedPath = '../versioned/';
+            window.noPreload = true;
+        </script>
+	</head>
+	<body>
+		<div id=gl_container></div>
+		<div id=ctrls>
+			<label for=autopilot>
+				<label class=switch>
+					<input id=autopilot type=checkbox checked>
+					<span class=slider></span>
+				</label>
+				Autopilot
+			</label>
+			<button id=pause disabled>
+				Pause
+			</button>
+			<label id=speedout>
+				Speed:
+				<input id=speedin type=range min="-1" max=3 value=0 list=speedmark step=any>
+				<datalist id=speedmark><option value="0"></option></datalist>
+			</label>
+			<button id=about>About / Music</button>
+		</div>
+		<div id=modal_back></div>
+		<div id=modal>
+			<div id=modal_content>
+				<div id=welcome>
+					<h1>ambient.garden: an algorithmic audio landscape</h1>
+					<p>Navigation:</p>
+					<ul>
+						<li>Drag to look around.</li>
+						<li>Click to go somewhere.</li>
+						<li style="list-style-type: '↓ ';">Toggle the autopilot anytime.</li>
+					</ul>
+				</div>
+			</div>
+			<button id=modal_ok disabled>Loading...</button>
+		</div>
+		<script type="module" src="../versioned/js/appFrozen.js"></script>
+	</body>
+</html>

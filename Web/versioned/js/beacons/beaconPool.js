@@ -114,7 +114,8 @@ const proximity = (resource, camX, camZ) => {
 };
 
 const inUa = (term) => navigator.userAgent.includes(term);
-const canPreload = inUa('Chrome') || !(inUa('Mobile') && inUa('Safari'));
+let canPreload = inUa('Chrome') || !(inUa('Mobile') && inUa('Safari'));
+if (window.noPreload) canPreload = false;
 if (canPreload) console.log('Assuming audio can be preloaded before user action.');
 else console.log("Assuming audio can't be preloaded before user action.");
 
