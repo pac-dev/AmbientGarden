@@ -7,7 +7,8 @@
  * | 'doneWelcome'
  * | 'interval'
  * | 'radiusChanged'
- * | 'volumeChanged' } EventType
+ * | 'volumeChanged'
+ * | 'initError' } EventType
  */
 
 

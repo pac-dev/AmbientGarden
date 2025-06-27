@@ -21,7 +21,13 @@ import { addSky } from './gfx/sky.js';
 import { mkMonument } from './gfx/monument.js';
 
 const getAspect = () => window.innerWidth / window.innerHeight;
-export const renderer = new THREE.WebGLRenderer({ antialias: true });
+export const renderer = (() => {
+	try {
+		return new THREE.WebGLRenderer({ antialias: true });
+	} catch (error) {
+		events.trigger('initError', error.toString());
+	}
+})();
 export const camera = new THREE.PerspectiveCamera(70, getAspect(), 1, 10000);
 export const scene = new THREE.Scene();
 const container = document.getElementById('gl_container');

@@ -136,6 +136,16 @@ export const initUI = () => {
 	refreshUi();
 };
 
+events.on('initError', (msg) => {
+	if (uiStack[uiStack.length-1] !== 'welcome') return;
+	const errorNode = document.createElement('p');
+	errorNode.innerText = msg;
+	errorNode.style.color = '#f88';
+	errorNode.style.fontWeight = 'bold';
+	errorNode.style.textAlign = 'center';
+	ok.parentElement.insertBefore(errorNode, ok);
+});
+
 let flashingMessage;
 const flashPilotOff = () => {
 	if (detailEle) detailEle.style.display = 'none';

@@ -35,6 +35,11 @@ body {
 	font-size: 16px;
 	font-weight: 600;
 }
+#modal label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
 #modal a {
 	color: #dea2f7;
 	text-decoration: none;
