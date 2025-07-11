@@ -40,6 +40,7 @@ void main() {
 	vec3 shaded = vColor * (0.7 + 0.3 * getShadow(
 		directionalShadowMap[0],
 		directionalLightShadow.shadowMapSize,
+		1.0, // intensity
 		directionalLightShadow.shadowBias,
 		directionalLightShadow.shadowRadius,// + 10.0,
 		directionalShadowCoord
@@ -78,6 +79,11 @@ const ptSunVert = /*glsl*/ `
 precision mediump float;
 precision mediump int;
 
+// these hacky defines are actually idiomatic three.js shader code
+#define attribute in
+#define varying out
+#define texture2D texture
+
 #include <packing>
 
 uniform mat4 modelViewMatrix;
@@ -102,6 +108,21 @@ void main() {
 const ptSunFrag = /*glsl*/ `
 precision mediump float;
 precision mediump int;
+
+// these hacky defines are actually idiomatic three.js shader code
+#define varying in
+layout(location = 0) out highp vec4 pc_fragColor;
+#define gl_FragColor pc_fragColor
+#define gl_FragDepthEXT gl_FragDepth
+#define texture2D texture
+#define textureCube texture
+#define texture2DProj textureProj
+#define texture2DLodEXT textureLod
+#define texture2DProjLodEXT textureProjLod
+#define textureCubeLodEXT textureLod
+#define texture2DGradEXT textureGrad
+#define texture2DProjGradEXT textureProjGrad
+#define textureCubeGradEXT textureGrad
 
 varying vec4 vColor;
 
@@ -142,6 +163,7 @@ export const initLeafMaterials = (width, height, shadowWidth) => {
 		]),
 		vertexShader: ptSunVert,
 		fragmentShader: ptSunFrag,
+		glslVersion: THREE.GLSL3,
 	});
 	const resize = ({width, height, shadowWidth}) => {
 		leafMaterial.uniforms.vpSize.value = new THREE.Vector2(

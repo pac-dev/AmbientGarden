@@ -226,7 +226,7 @@ const addTransformerPool = () =>
 		add(res) {
 			const refObj = res.beacon.form;
 			res.form = new TransformControls(camera, renderer.domElement);
-			res.form.traverse(child => {
+			res.form.getHelper().traverse(child => {
 				if (child.name === 'X' || child.name === 'Z') child.layers.set(2);
 			});
 			res.form.size = 1;
@@ -243,11 +243,11 @@ const addTransformerPool = () =>
 				drag(res.beacon, diff);
 				forSelected(bRes => drag(bRes, diff));
 			});
-			scene.add(res.form);
+			scene.add(res.form.getHelper());
 		},
 		/** @param {TransformerResource} res */
 		remove(res) {
-			res.form.removeFromParent();
+			res.form.getHelper().removeFromParent();
 			res.form.detach();
 			res.form.dispose();
 		},

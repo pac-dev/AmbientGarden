@@ -95,7 +95,7 @@ void main() {
 
 export const addSky = (width, height) => {
 	const dist = 0.9 * camera.far;
-	const geo = new THREE.PlaneBufferGeometry(dist*6,dist*2,1,1);
+	const geo = new THREE.PlaneGeometry(dist*6,dist*2,1,1);
 	const material = new THREE.ShaderMaterial({
 		vertexShader, fragmentShader,
 		uniforms: { vpSize: new THREE.Vector2() }
